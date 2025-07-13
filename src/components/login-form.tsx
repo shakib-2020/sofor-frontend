@@ -3,24 +3,41 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { signIn } from "@/lib/actions";
+// import { signIn } from "@/lib/actions";
 import Link from "next/link";
-import { useActionState, useEffect } from "react";
+import { useActionState, useEffect, useState } from "react";
 import { toast } from "sonner";
+
+import {signIn} from "@/lib/auth-client"
 
 export default function LoginForm() {
   const initialState = { errorMessage: "" };
-  const [state, formAction, pending] = useActionState(signIn, initialState);
+//  const [state, formAction, pending] = useActionState(handleSubmit,initialState);
+ 
+//   const handleSubmit = (state, formData) => {
+// console.log(state, formData)
 
-  useEffect(() => {
-    if (state.errorMessage.length) {
-      toast.error(state.errorMessage);
-    }
-  }, [state.errorMessage]);
+  // }
+
+  const [email, setEmail] = useState(null)
+  const [password, setPassword] = useState(null)
+
+  const handleLogin = () => {
+    if(email && password){
+    const user = signIn.email({
+            email,
+            password,
+            callbackURL: "/dashboard",
+            rememberMe: false
+          })
+        }
+      
+  }
 
   return (
     <form
-      action={formAction}
+      // action={formAction}
+
       className="bg-card m-auto h-fit w-full max-w-sm rounded-[calc(var(--radius)+.125rem)] border p-0.5 shadow-md dark:[--color-muted:var(--color-zinc-900)]"
     >
       <div className="p-8 pb-6">
@@ -87,7 +104,7 @@ export default function LoginForm() {
             <Label htmlFor="email" className="block text-sm">
               Username
             </Label>
-            <Input type="email" required name="email" id="email" />
+            <Input type="email" required name="email" id="email"  onChange={(e)=>setEmail(e.target.value)}/>
           </div>
 
           <div className="space-y-0.5">
@@ -110,10 +127,11 @@ export default function LoginForm() {
               name="password"
               id="password"
               className="input sz-md variant-mixed"
+              onChange={(e)=>setPassword(e.target.value)}
             />
           </div>
 
-          <Button className="w-full">Sign In</Button>
+          <Button className="w-full" onClick={handleLogin}>Sign In</Button>
         </div>
       </div>
 
