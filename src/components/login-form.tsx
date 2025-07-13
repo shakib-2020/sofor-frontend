@@ -8,31 +8,32 @@ import Link from "next/link";
 import { useActionState, useEffect, useState } from "react";
 import { toast } from "sonner";
 
-import {signIn} from "@/lib/auth-client"
+import { signIn } from "@/lib/auth-client";
 
 export default function LoginForm() {
   const initialState = { errorMessage: "" };
-//  const [state, formAction, pending] = useActionState(handleSubmit,initialState);
- 
-//   const handleSubmit = (state, formData) => {
-// console.log(state, formData)
+  //  const [state, formAction, pending] = useActionState(handleSubmit,initialState);
+
+  //   const handleSubmit = (state, formData) => {
+  // console.log(state, formData)
 
   // }
 
-  const [email, setEmail] = useState(null)
-  const [password, setPassword] = useState(null)
+  const [email, setEmail] = useState(null);
+  const [password, setPassword] = useState(null);
 
-  const handleLogin = () => {
-    if(email && password){
-    const user = signIn.email({
-            email,
-            password,
-            callbackURL: "/dashboard",
-            rememberMe: false
-          })
-        }
-      
-  }
+  const handleLogin = (e) => {
+    e.preventDefault();
+
+    if (email && password) {
+      const user = signIn.email({
+        email,
+        password,
+        callbackURL: "/",
+        rememberMe: false,
+      });
+    }
+  };
 
   return (
     <form
@@ -104,7 +105,13 @@ export default function LoginForm() {
             <Label htmlFor="email" className="block text-sm">
               Username
             </Label>
-            <Input type="email" required name="email" id="email"  onChange={(e)=>setEmail(e.target.value)}/>
+            <Input
+              type="email"
+              required
+              name="email"
+              id="email"
+              onChange={(e) => setEmail(e.target.value)}
+            />
           </div>
 
           <div className="space-y-0.5">
@@ -127,11 +134,13 @@ export default function LoginForm() {
               name="password"
               id="password"
               className="input sz-md variant-mixed"
-              onChange={(e)=>setPassword(e.target.value)}
+              onChange={(e) => setPassword(e.target.value)}
             />
           </div>
 
-          <Button className="w-full" onClick={handleLogin}>Sign In</Button>
+          <Button className="w-full" onClick={handleLogin}>
+            Sign In
+          </Button>
         </div>
       </div>
 

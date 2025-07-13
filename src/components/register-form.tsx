@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import Link from "next/link";
 import { useActionState, useEffect, useState } from "react";
 import { toast } from "sonner";
-import {signUp} from "@/lib/auth-client"
+import { signUp } from "@/lib/auth-client";
 
 export default function RegisterForm() {
   // const initialState = { errorMessage: "" };
@@ -19,22 +19,22 @@ export default function RegisterForm() {
   //   }
   // }, [state.errorMessage]);
 
-  const [name, setName] = useState("Admin User")
-   const [email, setEmail] = useState(null)
-    const [password, setPassword] = useState(null)
-  
-    const handlSignUp = () => {
-      if(email && password){
-      const user = signUp.email({
-              email,
-              password,
-               name,
-              callbackURL: "/dashboard"
-            })
-          }
-        
-    }
+  const [name, setName] = useState("Admin User");
+  const [email, setEmail] = useState(null);
+  const [password, setPassword] = useState(null);
 
+  const handlSignUp = (e: any) => {
+    e.preventDefault();
+    if (email && password) {
+      console.log({ email, password, name });
+      const user = signUp.email({
+        email,
+        password,
+        name,
+        callbackURL: "/",
+      });
+    }
+  };
 
   return (
     <form
@@ -120,7 +120,13 @@ export default function RegisterForm() {
             <Label htmlFor="email" className="block text-sm">
               Username
             </Label>
-            <Input type="email" required name="email" id="email" onChange={(e)=>setEmail(e.target.value)}/>
+            <Input
+              type="email"
+              required
+              name="email"
+              id="email"
+              onChange={(e) => setEmail(e.target.value)}
+            />
           </div>
 
           <div className="space-y-2">
@@ -132,12 +138,14 @@ export default function RegisterForm() {
               required
               name="password"
               id="password"
-              onChange={(e)=>setPassword(e.target.value)}
+              onChange={(e) => setPassword(e.target.value)}
               className="input sz-md variant-mixed"
             />
           </div>
 
-          <Button className="w-full" onClick={handlSignUp}>Continue</Button>
+          <Button className="w-full" onClick={handlSignUp}>
+            Continue
+          </Button>
         </div>
       </div>
 
