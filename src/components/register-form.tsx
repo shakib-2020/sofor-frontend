@@ -3,23 +3,42 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { signUp } from "@/lib/actions";
+// import { signUp } from "@/lib/actions";
 import Link from "next/link";
-import { useActionState, useEffect } from "react";
+import { useActionState, useEffect, useState } from "react";
 import { toast } from "sonner";
+import {signUp} from "@/lib/auth-client"
 
 export default function RegisterForm() {
-  const initialState = { errorMessage: "" };
-  const [state, formAction, pending] = useActionState(signUp, initialState);
+  // const initialState = { errorMessage: "" };
+  // const [state, formAction, pending] = useActionState(signUp, initialState);
 
-  useEffect(() => {
-    if (state.errorMessage.length) {
-      toast.error(state.errorMessage);
+  // useEffect(() => {
+  //   if (state.errorMessage.length) {
+  //     toast.error(state.errorMessage);
+  //   }
+  // }, [state.errorMessage]);
+
+  const [name, setName] = useState("Admin User")
+   const [email, setEmail] = useState(null)
+    const [password, setPassword] = useState(null)
+  
+    const handlSignUp = () => {
+      if(email && password){
+      const user = signUp.email({
+              email,
+              password,
+               name,
+              callbackURL: "/dashboard"
+            })
+          }
+        
     }
-  }, [state.errorMessage]);
+
+
   return (
     <form
-      action={formAction}
+      // action={formAction}
       className="bg-card m-auto h-fit w-full max-w-sm rounded-[calc(var(--radius)+.125rem)] border p-0.5 shadow-md dark:[--color-muted:var(--color-zinc-900)]"
     >
       <div className="p-8 pb-6">
@@ -101,7 +120,7 @@ export default function RegisterForm() {
             <Label htmlFor="email" className="block text-sm">
               Username
             </Label>
-            <Input type="email" required name="email" id="email" />
+            <Input type="email" required name="email" id="email" onChange={(e)=>setEmail(e.target.value)}/>
           </div>
 
           <div className="space-y-2">
@@ -113,11 +132,12 @@ export default function RegisterForm() {
               required
               name="password"
               id="password"
+              onChange={(e)=>setPassword(e.target.value)}
               className="input sz-md variant-mixed"
             />
           </div>
 
-          <Button className="w-full">Continue</Button>
+          <Button className="w-full" onClick={handlSignUp}>Continue</Button>
         </div>
       </div>
 

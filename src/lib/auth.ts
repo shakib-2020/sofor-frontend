@@ -1,5 +1,4 @@
 import { betterAuth } from "better-auth";
-import "dotenv/config";
 import { drizzle } from "drizzle-orm/node-postgres";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { schema } from "./auth-schema";
