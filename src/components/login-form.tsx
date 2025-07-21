@@ -25,6 +25,8 @@ export default function LoginForm() {
   const handleLogin = (e) => {
     e.preventDefault();
 
+    
+
     if (email && password) {
       const user = signIn.email({
         email,
