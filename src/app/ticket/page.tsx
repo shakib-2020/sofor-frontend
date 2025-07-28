@@ -1,20 +1,20 @@
-import TicketSelectionCard from "@/components/ticket-selection-card";
-import React from "react";
+import TicketSelectionCard from '@/components/ticket-selection-card';
+import React from 'react';
 import {
   Sheet,
   SheetContent,
   SheetHeader,
   SheetTitle,
-} from "@/components/ui/sheet";
-import seatplan from "@/lib/seatplan.json";
-import SeatPlan from "@/components/seat-plan";
-import Image from "next/image";
-import { Button } from "@/components/ui/button";
+} from '@/components/ui/sheet';
+import seatplan from '@/lib/seatplan.json';
+import SeatPlan from '@/components/seat-plan';
+import Image from 'next/image';
+import { Button } from '@/components/ui/button';
 function TicketPage() {
   return (
     <Sheet>
       <h2 className="text-3xl font-semibold my-4">
-        Choose Departing Ticket :{" "}
+        Choose Departing Ticket :{' '}
       </h2>
       <TicketSelectionCard />
       <SheetContent className="items-start overflow-y-scroll overflow-x-hidden p-0 m-0 border-none">
@@ -30,7 +30,7 @@ function TicketPage() {
               <div className="flex items-start flex-col mb-4 w-auto">
                 <Image
                   src={
-                    "https://bus-promotion-bucket.s3-ap-southeast-1.amazonaws.com/production/busowners-logo/hanif.png?v=1.0.0"
+                    'https://bus-promotion-bucket.s3-ap-southeast-1.amazonaws.com/production/busowners-logo/hanif.png?v=1.0.0'
                   }
                   width={100}
                   height={100}
@@ -43,7 +43,7 @@ function TicketPage() {
                   <p>
                     Route: Dhaka - Ashuganj - Sayestagong - Sherpur - Sylhet
                   </p>
-                </div>{" "}
+                </div>{' '}
               </div>
 
               {/* part 2 */}

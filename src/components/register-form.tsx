@@ -1,13 +1,13 @@
-"use client";
+'use client';
 
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 // import { signUp } from "@/lib/actions";
-import Link from "next/link";
-import { useActionState, useEffect, useState } from "react";
-import { toast } from "sonner";
-import { signUp } from "@/lib/auth-client";
+import Link from 'next/link';
+import { useActionState, useEffect, useState } from 'react';
+import { toast } from 'sonner';
+import { signUp } from '@/lib/auth-client';
 
 export default function RegisterForm() {
   // const initialState = { errorMessage: "" };
@@ -19,7 +19,7 @@ export default function RegisterForm() {
   //   }
   // }, [state.errorMessage]);
 
-  const [name, setName] = useState("Admin User");
+  const [name, setName] = useState('Admin User');
   const [email, setEmail] = useState(null);
   const [password, setPassword] = useState(null);
 
@@ -31,7 +31,7 @@ export default function RegisterForm() {
         email,
         password,
         name,
-        callbackURL: "/",
+        callbackURL: '/',
       });
     }
   };

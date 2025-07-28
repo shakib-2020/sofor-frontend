@@ -1,24 +1,24 @@
-"use client";
+'use client';
 
-import { useRouter } from "next/navigation";
-import React, { useState } from "react";
-import { Card, CardDescription, CardHeader } from "./ui/card";
-import { Input } from "./ui/input";
-import { ArrowLeftRight } from "lucide-react";
-import { Label } from "./ui/label";
-import { Button } from "./ui/button";
-import { DatePicker } from "./date-picker";
+import { useRouter } from 'next/navigation';
+import React, { useState } from 'react';
+import { Card, CardDescription, CardHeader } from './ui/card';
+import { Input } from './ui/input';
+import { ArrowLeftRight } from 'lucide-react';
+import { Label } from './ui/label';
+import { Button } from './ui/button';
+import { DatePicker } from './date-picker';
 
 export default function SearchForm() {
-  const [from, setFrom] = useState("Dhaka");
-  const [to, setTo] = useState("Sylhet");
+  const [from, setFrom] = useState('Dhaka');
+  const [to, setTo] = useState('Sylhet');
   const [isOneWay, setIsOneWay] = useState(false);
   const [journyDate, setJournyDate] = useState<Date | null>(new Date());
   const [returnDate, setReturnDate] = useState<Date | null>(new Date());
   const router = useRouter();
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    router.push("/ticket");
+    router.push('/ticket');
   };
 
   return (

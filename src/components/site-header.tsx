@@ -1,19 +1,19 @@
-"use client";
-import { Separator } from "@/components/ui/separator";
-import { SidebarTrigger } from "@/components/ui/sidebar";
-import { usePathname } from "next/navigation";
+'use client';
+import { Separator } from '@/components/ui/separator';
+import { SidebarTrigger } from '@/components/ui/sidebar';
+import { usePathname } from 'next/navigation';
 import {
   Breadcrumb,
   BreadcrumbItem,
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb";
-import Link from "next/link";
+} from '@/components/ui/breadcrumb';
+import Link from 'next/link';
 export function SiteHeader() {
   const path = usePathname();
-  const [path2] = path?.split("/")?.slice(2, 3);
-  const path3 = path2?.split("-")?.join(" ");
+  const [path2] = path?.split('/')?.slice(2, 3);
+  const path3 = path2?.split('-')?.join(' ');
   return (
     <header className="group-has-data-[collapsible=icon]/sidebar-wrapper:h-12 flex h-12 shrink-0 items-center gap-2 border-b transition-[width,height] ease-linear">
       <div className="flex w-full items-center gap-1 px-4 lg:gap-2 lg:px-6">
@@ -38,7 +38,7 @@ export function SiteHeader() {
                 <BreadcrumbSeparator className="hidden md:block" />
                 <BreadcrumbItem>
                   <BreadcrumbPage className="text-gray-600 capitalize cursor-pointer">
-                    {path3 || "Dashboard"}
+                    {path3 || 'Dashboard'}
                   </BreadcrumbPage>
                 </BreadcrumbItem>
               </BreadcrumbList>

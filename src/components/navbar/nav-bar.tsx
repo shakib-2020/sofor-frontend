@@ -1,6 +1,6 @@
-"use client";
-import Link from "next/link";
-import React, { useEffect } from "react";
+'use client';
+import Link from 'next/link';
+import React, { useEffect } from 'react';
 import {
   NavigationMenu,
   NavigationMenuContent,
@@ -11,14 +11,14 @@ import {
   NavigationMenuTrigger,
   navigationMenuTriggerStyle,
   NavigationMenuViewport,
-} from "@/components/ui/navigation-menu";
-import { signOut, useSession } from "@/lib/auth-client";
-import { Button } from "../ui/button";
-import { usePathname, useRouter } from "next/navigation";
+} from '@/components/ui/navigation-menu';
+import { signOut, useSession } from '@/lib/auth-client';
+import { Button } from '../ui/button';
+import { usePathname, useRouter } from 'next/navigation';
 function NavBar() {
   const pathname = usePathname();
   // Hide Navbar on /dashboard and all its subroutes
-  if (pathname.startsWith("/dashboard")) return null;
+  if (pathname.startsWith('/dashboard')) return null;
 
   const route = useRouter();
   const { data, error, isPending } = useSession();
@@ -27,7 +27,7 @@ function NavBar() {
   }, [data, error, isPending]);
   return (
     <nav className="flex justify-between px-16 py-4 border-b-2 sticky top-0 bg-white">
-      <Link href={"/"}>
+      <Link href={'/'}>
         <h1 className="text-lg font-bold text-black text-center">Sofor 🚌</h1>
       </Link>
       <div>
@@ -71,7 +71,7 @@ function NavBar() {
                       await signOut({
                         fetchOptions: {
                           onSuccess() {
-                            route.push("/");
+                            route.push('/');
                           },
                         },
                       });

@@ -1,6 +1,5 @@
 "use client";
 
-import * as React from "react";
 import {
   Armchair,
   ArrowUpCircleIcon,
@@ -18,12 +17,15 @@ import {
   HelpCircleIcon,
   LayoutDashboardIcon,
   ListIcon,
+  LocationEdit,
+  MapPin,
   SearchIcon,
   SettingsIcon,
   ShieldUser,
   TicketCheck,
   UsersIcon,
 } from "lucide-react";
+import type * as React from "react";
 
 import { NavDocuments } from "@/components/nav-documents";
 import { NavMain } from "@/components/nav-main";
@@ -89,6 +91,24 @@ const data = {
       ],
     },
     {
+      title: "Route",
+      url: "/route",
+      icon: MapPin,
+      isActive: false,
+      items: [
+        {
+          title: "Add Route",
+          url: "/add-route",
+          icon: LocationEdit,
+        },
+        {
+          title: "Manage route",
+          url: "/manage-route",
+          icon: LocationEdit,
+        },
+      ],
+    },
+    {
       title: "Bus",
       url: "/bus",
       icon: BusIcon,
@@ -102,6 +122,24 @@ const data = {
         {
           title: "Manage Bus",
           url: "/manage-bus",
+          icon: CalendarCheck,
+        },
+      ],
+    },
+    {
+      title: "Trip",
+      url: "/trip",
+      icon: BusIcon,
+      isActive: false,
+      items: [
+        {
+          title: "Add Trip",
+          url: "/add-trip",
+          icon: CalendarPlus,
+        },
+        {
+          title: "Manage Trip",
+          url: "/manage-trip",
           icon: CalendarCheck,
         },
       ],
@@ -165,7 +203,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               asChild
               className="data-[slot=sidebar-menu-button]:!p-1.5"
             >
-              <a href="#">
+              <a href="/dashboard">
                 <ArrowUpCircleIcon className="h-5 w-5" />
                 <span className="text-base font-semibold">Sofor-Admin</span>
               </a>

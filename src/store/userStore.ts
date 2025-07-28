@@ -1,5 +1,5 @@
-import { create } from "zustand";
-import { persist } from "zustand/middleware";
+import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 
 export const useUserStore = create(
   persist(
@@ -20,7 +20,7 @@ export const useUserStore = create(
         })),
     }),
     {
-      name: "user-storage",
+      name: 'user-storage',
     }
   )
 );

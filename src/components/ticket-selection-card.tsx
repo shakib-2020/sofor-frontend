@@ -1,7 +1,7 @@
-import { MapPin } from "lucide-react";
-import Image from "next/image";
-import React from "react";
-import { SheetTrigger } from "./ui/sheet";
+import { MapPin } from 'lucide-react';
+import Image from 'next/image';
+import React from 'react';
+import { SheetTrigger } from './ui/sheet';
 
 function TicketSelectionCard() {
   return (
@@ -11,7 +11,7 @@ function TicketSelectionCard() {
         <div className="flex items-start flex-col mb-4 w-auto">
           <Image
             src={
-              "https://bus-promotion-bucket.s3-ap-southeast-1.amazonaws.com/production/busowners-logo/hanif.png?v=1.0.0"
+              'https://bus-promotion-bucket.s3-ap-southeast-1.amazonaws.com/production/busowners-logo/hanif.png?v=1.0.0'
             }
             width={100}
             height={100}
@@ -22,7 +22,7 @@ function TicketSelectionCard() {
           <div className="text-gray-700 mb-4 text-xs font-semibold">
             <p>Hino, AK1J Super Plus Non AC</p>
             <p>Route: Dhaka - Ashuganj - Sayestagong - Sherpur - Sylhet</p>
-          </div>{" "}
+          </div>{' '}
         </div>
 
         {/* part 2 */}

@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import {
   MailIcon,
@@ -6,13 +6,13 @@ import {
   CornerUpRight,
   ChevronRight,
   type LucideIcon,
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
+} from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
-} from "@/components/ui/collapsible";
+} from '@/components/ui/collapsible';
 import {
   SidebarGroup,
   SidebarMenu,
@@ -23,10 +23,10 @@ import {
   SidebarMenuSubItem,
   SidebarGroupContent,
   useSidebar,
-} from "@/components/ui/sidebar";
-import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
-import { useTheme } from "next-themes";
+} from '@/components/ui/sidebar';
+import Link from 'next/link';
+import { usePathname, useRouter } from 'next/navigation';
+import { useTheme } from 'next-themes';
 
 export function NavMain({
   items,
@@ -106,12 +106,12 @@ export function NavMain({
                           flex items-center gap-1  transition-colors rounded-sm
                           ${
                             path === subItem.url
-                              ? "bg-gray-200 dark:bg-gray-700"
-                              : ""
+                              ? 'bg-gray-200 dark:bg-gray-700'
+                              : ''
                           }
                           hover:bg-gray-200 dark:hover:bg-gray-700
                           ${
-                            theme === "dark" ? "text-gray-300" : "text-gray-700"
+                            theme === 'dark' ? 'text-gray-300' : 'text-gray-700'
                           }
                         `}
                           >

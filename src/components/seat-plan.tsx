@@ -1,21 +1,21 @@
-import React from "react";
+import React from 'react';
 
 const seatStatus: any = {
-  0: "bg-gray-300", // Sold
-  1: "bg-white border border-black", // Available
+  0: 'bg-gray-300', // Sold
+  1: 'bg-white border border-black', // Available
 };
 
 const Seat = ({ seat }: any) => {
   const isAvailable = seat?.seat_availability === 1;
-  const statusClass = seat ? seatStatus[seat.seat_availability] : "";
+  const statusClass = seat ? seatStatus[seat.seat_availability] : '';
 
   return (
     <div
       className={`w-10 h-10 flex items-center justify-center text-sm font-medium rounded ${
-        statusClass || ""
-      } ${seat?.selected ? "bg-green-500 text-white" : ""}`}
+        statusClass || ''
+      } ${seat?.selected ? 'bg-green-500 text-white' : ''}`}
     >
-      {seat?.seat_number || ""}
+      {seat?.seat_number || ''}
     </div>
   );
 };

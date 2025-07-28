@@ -1,17 +1,17 @@
-"use client";
+'use client';
 
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 // import { signIn } from "@/lib/actions";
-import Link from "next/link";
-import { useActionState, useEffect, useState } from "react";
-import { toast } from "sonner";
+import Link from 'next/link';
+import { useActionState, useEffect, useState } from 'react';
+import { toast } from 'sonner';
 
-import { signIn } from "@/lib/auth-client";
+import { signIn } from '@/lib/auth-client';
 
 export default function LoginForm() {
-  const initialState = { errorMessage: "" };
+  const initialState = { errorMessage: '' };
   //  const [state, formAction, pending] = useActionState(handleSubmit,initialState);
 
   //   const handleSubmit = (state, formData) => {
@@ -25,13 +25,11 @@ export default function LoginForm() {
   const handleLogin = (e) => {
     e.preventDefault();
 
-    
-
     if (email && password) {
       const user = signIn.email({
         email,
         password,
-        callbackURL: "/",
+        callbackURL: '/',
         rememberMe: false,
       });
     }
