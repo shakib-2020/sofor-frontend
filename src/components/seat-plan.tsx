@@ -11,7 +11,7 @@ const Seat = ({ seat }: any) => {
 
   return (
     <div
-      className={`w-10 h-10 flex items-center justify-center text-sm font-medium rounded ${
+      className={`flex h-10 w-10 items-center justify-center rounded font-medium text-sm ${
         statusClass || ''
       } ${seat?.selected ? 'bg-green-500 text-white' : ''}`}
     >
@@ -28,34 +28,34 @@ const SeatPlan = ({ layout }: any) => {
   );
 
   return (
-    <div className="flex flex-col items-center gap-2 w-full">
+    <div className="flex w-full flex-col items-center gap-2">
       <div className="flex gap-4 text-sm">
         <div className="flex items-center gap-1">
-          <div className="w-4 h-4 bg-white border border-black rounded"></div>
+          <div className="h-4 w-4 rounded border border-black bg-white" />
           Available
         </div>
         <div className="flex items-center gap-1">
-          <div className="w-4 h-4 bg-gray-300 rounded"></div>
+          <div className="h-4 w-4 rounded bg-gray-300" />
           Sold
         </div>
         <div className="flex items-center gap-1">
-          <div className="w-4 h-4 bg-green-500 rounded"></div>
+          <div className="h-4 w-4 rounded bg-green-500" />
           Selected
         </div>
       </div>
       <div>
-        <p className="text-sm font-medium text-red-500">
+        <p className="font-medium text-red-500 text-sm">
           Maximul 4 seat can be selected
         </p>
       </div>
-      <div className="grid grid-cols-5 gap-4 w-full p-4 rounded border border-gray-200">
+      <div className="grid w-full grid-cols-5 gap-4 rounded border border-gray-200 p-4">
         {layout[0].map((_: any, rowIndex: any) => (
           <React.Fragment key={rowIndex}>
             {layout.map((column: any, colIndex: any) => {
               const seat = column[rowIndex];
               if (!seat || seat.seat_type === 0) {
                 return (
-                  <div key={`${rowIndex}-${colIndex}`} className="w-10 h-10" />
+                  <div className="h-10 w-10" key={`${rowIndex}-${colIndex}`} />
                 );
               }
               return <Seat key={`${rowIndex}-${colIndex}`} seat={seat} />;

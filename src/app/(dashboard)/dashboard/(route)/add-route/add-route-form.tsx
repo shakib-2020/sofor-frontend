@@ -1,48 +1,48 @@
-"use client";
-import { ArrowLeftRight, Check, ChevronsUpDown, X } from "lucide-react";
-import { useState } from "react";
-import { useForm } from "react-hook-form";
-import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
+'use client';
+import { ArrowLeftRight, Check, ChevronsUpDown, X } from 'lucide-react';
+import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { toast } from 'sonner';
+import { Button } from '@/components/ui/button';
 import {
   Command,
   CommandEmpty,
   CommandGroup,
   CommandInput,
   CommandItem,
-} from "@/components/ui/command";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+} from '@/components/ui/command';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/components/ui/popover";
+} from '@/components/ui/popover';
 // import { ScrollArea } from "@/components/ui/scroll-area";
-import { cn } from "@/lib/utils"; // utility for className merge (if needed)
+import { cn } from '@/lib/utils'; // utility for className merge (if needed)
 
 const cityList = [
-  { id: 1, name: "Uttara", districtId: 1 },
-  { id: 2, name: "Savar", districtId: 1 },
-  { id: 3, name: "Sylhet City", districtId: 5 },
+  { id: 1, name: 'Uttara', districtId: 1 },
+  { id: 2, name: 'Savar', districtId: 1 },
+  { id: 3, name: 'Sylhet City', districtId: 5 },
 
   // Add more cities as needed
 ];
 
 export default function CreateRouteForm() {
   const [route, setRoute] = useState<number[]>([]); // route is array of city ids
-  const [cityNameInput, setCityNameInput] = useState(""); // was counterInput
+  const [cityNameInput, setCityNameInput] = useState(''); // was counterInput
   const { register, handleSubmit, reset } = useForm();
 
   // Helper to get city name by id
   const getCityName = (id: number) =>
-    cityList.find((c) => c.id === id)?.name || "";
+    cityList.find((c) => c.id === id)?.name || '';
 
   const onAddCity = () => {
     const selectedCity = cityList.find((c) => c.name === cityNameInput);
     if (selectedCity && !route.includes(selectedCity.id)) {
       setRoute([...route, selectedCity.id]);
-      setCityNameInput("");
+      setCityNameInput('');
     }
   };
 
@@ -68,27 +68,27 @@ export default function CreateRouteForm() {
       fares,
     };
 
-    await fetch("http://localhost:5000/api/route", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
+    await fetch('http://localhost:5000/api/route', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
     });
-    toast("Route has been created.");
+    toast('Route has been created.');
     console.log(payload);
     reset();
     setRoute([]);
   };
 
   return (
-    <div className="max-w-3xl p-6  text-black">
-      <div className="flex gap-4 mb-4">
+    <div className="max-w-3xl p-6 text-black">
+      <div className="mb-4 flex gap-4">
         <Popover>
           <PopoverTrigger asChild>
             <Button
+              className="w-[200px] justify-between border-black text-black"
               variant="outline"
-              className="w-[200px] justify-between text-black border-black"
             >
-              {cityNameInput ? cityNameInput : "Search City"}
+              {cityNameInput ? cityNameInput : 'Search City'}
               <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
             </Button>
           </PopoverTrigger>
@@ -99,17 +99,17 @@ export default function CreateRouteForm() {
               <CommandGroup>
                 {cityList.map((city) => (
                   <CommandItem
+                    disabled={route.includes(city.id)}
                     key={city.id}
-                    value={city.name}
                     onSelect={(currentValue) => {
                       setCityNameInput(currentValue);
                     }}
-                    disabled={route.includes(city.id)}
+                    value={city.name}
                   >
                     <Check
                       className={cn(
-                        "mr-2 h-4 w-4",
-                        route.includes(city.id) ? "opacity-100" : "opacity-0",
+                        'mr-2 h-4 w-4',
+                        route.includes(city.id) ? 'opacity-100' : 'opacity-0'
                       )}
                     />
                     {city.name}
@@ -121,8 +121,8 @@ export default function CreateRouteForm() {
         </Popover>
 
         <Button
+          className="border border-black text-white"
           onClick={onAddCity}
-          className="border-black border text-white"
           type="button"
         >
           + Add to route
@@ -131,23 +131,23 @@ export default function CreateRouteForm() {
 
       <div className="mb-6">
         <Label className="mb-2 block">Route :</Label>
-        <div className="flex flex-wrap gap-2 border border-dotted border-black p-2 rounded">
+        <div className="flex flex-wrap gap-2 rounded border border-black border-dotted p-2">
           {route.map((cityId, index) => (
-            <div key={cityId} className="flex">
-              <span className="flex items-center gap-2 px-2 py-1 rounded bg-gray-100 border border-black">
+            <div className="flex" key={cityId}>
+              <span className="flex items-center gap-2 rounded border border-black bg-gray-100 px-2 py-1">
                 <span>{getCityName(cityId)}</span>
                 <button
-                  type="button"
+                  className="hover:text-red-500"
                   onClick={() => {
                     setRoute(route.filter((r) => r !== cityId));
                   }}
-                  className="hover:text-red-500"
+                  type="button"
                 >
-                  <X className="w-4 h-4" />
+                  <X className="h-4 w-4" />
                 </button>
               </span>
               {index < route.length - 1 && (
-                <span className="text-xl ml-1">→</span>
+                <span className="ml-1 text-xl">→</span>
               )}
             </div>
           ))}
@@ -163,23 +163,23 @@ export default function CreateRouteForm() {
               const toName = getCityName(toId);
               const key = `${fromId} - ${toId}`;
               return (
-                <div key={key} className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 gap-4" key={key}>
                   <Label htmlFor={key}>
                     {fromName} - {toName}:
                   </Label>
                   <Input
                     id={key}
                     {...register(key)}
+                    className=" border border-black text-black"
                     placeholder="Enter fare"
                     type="number"
-                    className=" text-black border-black border"
                   />
                 </div>
               );
-            }),
+            })
           )}
         </div>
-        <Button type="submit" className="mt-6 border-black border text-white">
+        <Button className="mt-6 border border-black text-white" type="submit">
           Save
         </Button>
       </form>

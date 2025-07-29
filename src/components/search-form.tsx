@@ -1,13 +1,14 @@
 'use client';
 
+import { ArrowLeftRight } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import React, { useState } from 'react';
+import type React from 'react';
+import { useState } from 'react';
+import { DatePicker } from './date-picker';
+import { Button } from './ui/button';
 import { Card, CardDescription, CardHeader } from './ui/card';
 import { Input } from './ui/input';
-import { ArrowLeftRight } from 'lucide-react';
 import { Label } from './ui/label';
-import { Button } from './ui/button';
-import { DatePicker } from './date-picker';
 
 export default function SearchForm() {
   const [from, setFrom] = useState('Dhaka');
@@ -22,37 +23,37 @@ export default function SearchForm() {
   };
 
   return (
-    <Card className="max-w-[1024px]  h-fit">
+    <Card className="h-fit max-w-[1024px]">
       <CardDescription>
         <form onSubmit={handleSubmit}>
-          <div className="px-6 py-3 flex flex-col gap-4 items-center">
-            <div className="grid lg:grid-cols-2 gap-4 items-center">
-              <div className="flex justify-between y- gap-4 items-center">
-                <div className="space-y-2 w-[45.25%]">
+          <div className="flex flex-col items-center gap-4 px-6 py-3">
+            <div className="grid items-center gap-4 lg:grid-cols-2">
+              <div className="y- flex items-center justify-between gap-4">
+                <div className="w-[45.25%] space-y-2">
                   <Label htmlFor="from">From</Label>
                   <Input
-                    type="text"
                     id="from"
-                    value={from}
                     onChange={(e) => setFrom(e.target.value)}
                     required
+                    type="text"
+                    value={from}
                   />
                 </div>
-                <div className="w-[5%] h-full flex justify-center items-end mt-6">
+                <div className="mt-6 flex h-full w-[5%] items-end justify-center">
                   <ArrowLeftRight />
                 </div>
-                <div className="space-y-2 w-[45.25%]">
+                <div className="w-[45.25%] space-y-2">
                   <Label htmlFor="to">To</Label>
                   <Input
-                    type="text"
                     id="to"
-                    value={to}
                     onChange={(e) => setTo(e.target.value)}
                     required
+                    type="text"
+                    value={to}
                   />
                 </div>
               </div>
-              <div className="grid lg:grid-cols-2 gap-4">
+              <div className="grid gap-4 lg:grid-cols-2">
                 <div className="space-y-2">
                   <Label className="mr-4">Journy Date</Label>
                   <DatePicker curretDate={true} />

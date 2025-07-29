@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import {
   Armchair,
@@ -24,13 +24,13 @@ import {
   ShieldUser,
   TicketCheck,
   UsersIcon,
-} from "lucide-react";
-import type * as React from "react";
+} from 'lucide-react';
+import type * as React from 'react';
 
-import { NavDocuments } from "@/components/nav-documents";
-import { NavMain } from "@/components/nav-main";
-import { NavSecondary } from "@/components/nav-secondary";
-import { NavUser } from "@/components/nav-user";
+import { NavDocuments } from '@/components/nav-documents';
+import { NavMain } from '@/components/nav-main';
+import { NavSecondary } from '@/components/nav-secondary';
+import { NavUser } from '@/components/nav-user';
 import {
   Sidebar,
   SidebarContent,
@@ -39,138 +39,138 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-} from "@/components/ui/sidebar";
+} from '@/components/ui/sidebar';
 
 const data = {
   user: {
-    name: "shadcn",
-    email: "m@example.com",
-    avatar: "/avatars/shadcn.jpg",
+    name: 'shadcn',
+    email: 'm@example.com',
+    avatar: '/avatars/shadcn.jpg',
   },
   navMain: [
     {
-      title: "Dashboard",
-      url: "/",
+      title: 'Dashboard',
+      url: '/',
       icon: LayoutDashboardIcon,
       isActive: false,
     },
     {
-      title: "Bus Owner",
-      url: "/bus-owner",
+      title: 'Bus Owner',
+      url: '/bus-owner',
       icon: ShieldUser,
       isActive: false,
       items: [
         {
-          title: "Add Bus Owner",
-          url: "/add-bus-owner",
+          title: 'Add Bus Owner',
+          url: '/add-bus-owner',
           icon: CalendarPlus,
         },
         {
-          title: "Manage Counter",
-          url: "/manage-bus-owner",
+          title: 'Manage Counter',
+          url: '/manage-bus-owner',
           icon: CalendarCheck,
         },
       ],
     },
     {
-      title: "Counter",
-      url: "/counter",
+      title: 'Counter',
+      url: '/counter',
       icon: TicketCheck,
       isActive: false,
       items: [
         {
-          title: "Add Counter",
-          url: "/add-counter",
+          title: 'Add Counter',
+          url: '/add-counter',
           icon: CalendarPlus,
         },
         {
-          title: "Manage Counter",
-          url: "/manage-counter",
+          title: 'Manage Counter',
+          url: '/manage-counter',
           icon: CalendarCheck,
         },
       ],
     },
     {
-      title: "Route",
-      url: "/route",
+      title: 'Route',
+      url: '/route',
       icon: MapPin,
       isActive: false,
       items: [
         {
-          title: "Add Route",
-          url: "/add-route",
+          title: 'Add Route',
+          url: '/add-route',
           icon: LocationEdit,
         },
         {
-          title: "Manage route",
-          url: "/manage-route",
+          title: 'Manage route',
+          url: '/manage-route',
           icon: LocationEdit,
         },
       ],
     },
     {
-      title: "Bus",
-      url: "/bus",
+      title: 'Bus',
+      url: '/bus',
       icon: BusIcon,
       isActive: false,
       items: [
         {
-          title: "Add Bus",
-          url: "/add-bus",
+          title: 'Add Bus',
+          url: '/add-bus',
           icon: CalendarPlus,
         },
         {
-          title: "Manage Bus",
-          url: "/manage-bus",
+          title: 'Manage Bus',
+          url: '/manage-bus',
           icon: CalendarCheck,
         },
       ],
     },
     {
-      title: "Trip",
-      url: "/trip",
+      title: 'Trip',
+      url: '/trip',
       icon: BusIcon,
       isActive: false,
       items: [
         {
-          title: "Add Trip",
-          url: "/add-trip",
+          title: 'Add Trip',
+          url: '/add-trip',
           icon: CalendarPlus,
         },
         {
-          title: "Manage Trip",
-          url: "/manage-trip",
+          title: 'Manage Trip',
+          url: '/manage-trip',
           icon: CalendarCheck,
         },
       ],
     },
     {
-      title: "Seat",
-      url: "/seat",
+      title: 'Seat',
+      url: '/seat',
       icon: Armchair,
       isActive: false,
     },
     {
-      title: "User",
-      url: "/user",
+      title: 'User',
+      url: '/user',
       icon: UsersIcon,
       isActive: false,
     },
   ],
   navSecondary: [
     {
-      title: "Settings",
-      url: "#",
+      title: 'Settings',
+      url: '#',
       icon: SettingsIcon,
     },
     {
-      title: "Get Help",
-      url: "#",
+      title: 'Get Help',
+      url: '#',
       icon: HelpCircleIcon,
     },
     {
-      title: "Search",
-      url: "#",
+      title: 'Search',
+      url: '#',
       icon: SearchIcon,
     },
   ],
@@ -205,7 +205,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             >
               <a href="/dashboard">
                 <ArrowUpCircleIcon className="h-5 w-5" />
-                <span className="text-base font-semibold">Sofor-Admin</span>
+                <span className="font-semibold text-base">Sofor-Admin</span>
               </a>
             </SidebarMenuButton>
           </SidebarMenuItem>
@@ -214,7 +214,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       <SidebarContent>
         <NavMain items={data.navMain} />
         {/* <NavDocuments items={data.documents} /> */}
-        <NavSecondary items={data.navSecondary} className="mt-auto" />
+        <NavSecondary className="mt-auto" items={data.navSecondary} />
       </SidebarContent>
       <SidebarFooter>
         <NavUser user={data.user} />

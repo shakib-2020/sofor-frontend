@@ -1,8 +1,7 @@
 import type { Metadata } from 'next';
 import './globals.css';
+import { DM_Sans, MuseoModerno } from 'next/font/google';
 import NavBar from '@/components/navbar/nav-bar';
-import { DM_Sans } from 'next/font/google';
-import { MuseoModerno } from 'next/font/google';
 import { Toaster } from '@/components/ui/sonner';
 
 const dm_sans = DM_Sans({
@@ -27,11 +26,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="h-full">
+    <html className="h-full" lang="en">
       <body
-        className={
-          'h-full   bg-white' + museoModerno.variable + dm_sans.variable
-        }
+        className={'h-full bg-white' + museoModerno.variable + dm_sans.variable}
       >
         <NavBar />
         {children}

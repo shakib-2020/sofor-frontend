@@ -1,10 +1,10 @@
-"use client";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
-import { toast } from "sonner";
-import { z } from "zod";
-import { Button } from "@/components/ui/button";
+'use client';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useEffect, useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { toast } from 'sonner';
+import { z } from 'zod';
+import { Button } from '@/components/ui/button';
 import {
   Form,
   FormControl,
@@ -12,22 +12,22 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
+} from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { addCounterSiteText } from "./sitetext";
+} from '@/components/ui/select';
+import { addCounterSiteText } from './sitetext';
 
 const formSchema = z.object({
-  name: z.string().min(1, "Counter name is required"),
-  divisionId: z.string().min(1, "Division is required"),
-  districtId: z.string().min(1, "District is required"),
-  cityId: z.string().min(1, "City is required"),
+  name: z.string().min(1, 'Counter name is required'),
+  divisionId: z.string().min(1, 'Division is required'),
+  districtId: z.string().min(1, 'District is required'),
+  cityId: z.string().min(1, 'City is required'),
   locationNote: z.string().optional(),
 });
 
@@ -36,17 +36,17 @@ export function AddCounterForm() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      name: "",
-      divisionId: "",
-      districtId: "",
-      cityId: "",
-      locationNote: "",
+      name: '',
+      divisionId: '',
+      districtId: '',
+      cityId: '',
+      locationNote: '',
     },
   });
 
   const { watch } = form;
-  const divisionId = watch("divisionId");
-  const districtId = watch("districtId");
+  const divisionId = watch('divisionId');
+  const districtId = watch('districtId');
 
   const [loading, setLoading] = useState(false);
 
@@ -56,21 +56,21 @@ export function AddCounterForm() {
 
   // Load divisions once
   useEffect(() => {
-    fetch("http://localhost:5000/api/division")
+    fetch('http://localhost:5000/api/division')
       .then((res) => res.json())
       .then(setDivisions);
   }, []);
 
   // Division change handler
   const handleDivisionChange = async (value: string) => {
-    form.setValue("divisionId", value);
-    form.setValue("districtId", "");
-    form.setValue("cityId", "");
+    form.setValue('divisionId', value);
+    form.setValue('districtId', '');
+    form.setValue('cityId', '');
     setDistricts([]);
     setCities([]);
 
     const res = await fetch(
-      `http://localhost:5000/api/district?divisionId=${value}`,
+      `http://localhost:5000/api/district?divisionId=${value}`
     );
     const data = await res.json();
     setDistricts(data);
@@ -78,34 +78,34 @@ export function AddCounterForm() {
 
   // District change handler
   const handleDistrictChange = async (value: string) => {
-    form.setValue("districtId", value);
-    form.setValue("cityId", "");
+    form.setValue('districtId', value);
+    form.setValue('cityId', '');
     setCities([]);
 
     const res = await fetch(
-      `http://localhost:5000/api/city?districtId=${value}`,
+      `http://localhost:5000/api/city?districtId=${value}`
     );
     const data = await res.json();
     setCities(data);
   };
 
   const onSubmit = async (data: z.infer<typeof formSchema>) => {
-    setLoading(true)
-    await fetch("http://localhost:5000/api/counter", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
+    setLoading(true);
+    await fetch('http://localhost:5000/api/counter', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
     });
-    setLoading(false)
-    toast("Counter has been created.")
+    setLoading(false);
+    toast('Counter has been created.');
     form.reset();
   };
 
   return (
     <Form {...form}>
       <form
+        className="mb-4 max-w-lg space-y-6"
         onSubmit={form.handleSubmit(onSubmit)}
-        className="space-y-6 max-w-lg mb-4"
       >
         {/* Counter Name */}
         <FormField
@@ -115,7 +115,10 @@ export function AddCounterForm() {
             <FormItem>
               <FormLabel>{form_info.headings.counter_name}</FormLabel>
               <FormControl>
-                <Input placeholder={form_info.placeholder.counter_name} {...field} />
+                <Input
+                  placeholder={form_info.placeholder.counter_name}
+                  {...field}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -130,9 +133,8 @@ export function AddCounterForm() {
             <FormItem>
               <FormLabel>{form_info.headings.division}</FormLabel>
               <Select
-                onValueChange={handleDivisionChange}
                 defaultValue={field.value}
-
+                onValueChange={handleDivisionChange}
               >
                 <FormControl>
                   <SelectTrigger>
@@ -220,14 +222,21 @@ export function AddCounterForm() {
             <FormItem>
               <FormLabel>{form_info.headings.location_note}</FormLabel>
               <FormControl>
-                <Input placeholder={form_info.placeholder.location_note} {...field} />
+                <Input
+                  placeholder={form_info.placeholder.location_note}
+                  {...field}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
 
-        <Button disabled={loading} type="submit">{!loading ? form_info.button.submit.regular : form_info.button.submit.onLoading}</Button>
+        <Button disabled={loading} type="submit">
+          {loading
+            ? form_info.button.submit.onLoading
+            : form_info.button.submit.regular}
+        </Button>
       </form>
     </Form>
   );

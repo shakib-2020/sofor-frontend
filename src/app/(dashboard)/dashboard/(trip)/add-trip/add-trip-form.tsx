@@ -1,15 +1,15 @@
-"use client";
+'use client';
 
-import { zodResolver } from "@hookform/resolvers/zod";
-import { format } from "date-fns";
-import { ChevronDownIcon } from "lucide-react";
-import React, { useState } from "react";
-import { Controller, useForm } from "react-hook-form";
+import { zodResolver } from '@hookform/resolvers/zod';
+import { format } from 'date-fns';
+import { ChevronDownIcon } from 'lucide-react';
+import React, { useState } from 'react';
+import { Controller, useForm } from 'react-hook-form';
 // import Select from "react-select";
-import { number, z } from "zod";
-import { Button } from "@/components/ui/button";
-import { Calendar } from "@/components/ui/calendar";
-import { Checkbox } from "@/components/ui/checkbox";
+import { number, z } from 'zod';
+import { Button } from '@/components/ui/button';
+import { Calendar } from '@/components/ui/calendar';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   Form,
   FormControl,
@@ -17,26 +17,26 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
+} from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/components/ui/popover";
+} from '@/components/ui/popover';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from '@/components/ui/select';
 
 const formSchema = z.object({
-  tripNumber: z.string().min(1, "Trip number is required"),
-  heading: z.string().min(1, "Heading is required"),
-  busId: z.string().min(1, "Bus selection is required"),
-  routeId: z.string().min(1, "Route selection is required"),
+  tripNumber: z.string().min(1, 'Trip number is required'),
+  heading: z.string().min(1, 'Heading is required'),
+  busId: z.string().min(1, 'Bus selection is required'),
+  routeId: z.string().min(1, 'Route selection is required'),
   departureDate: z.date(),
   departureTime: z.string(),
   arrivalDate: z.date(),
@@ -48,20 +48,20 @@ const formSchema = z.object({
 type FormValues = z.infer<typeof formSchema>;
 
 const buses = [
-  { name: "Hanif", id: 1 },
-  { name: "Shyamoli", id: 2 },
-  { name: "Ena", id: 3 },
+  { name: 'Hanif', id: 1 },
+  { name: 'Shyamoli', id: 2 },
+  { name: 'Ena', id: 3 },
 ];
 
 const routes = [
-  { name: "Dhaka – Ashuganj – Sylhet", id: 1 },
-  { name: "Sylhet – Moulvibazar – Dhaka", id: 2 },
+  { name: 'Dhaka – Ashuganj – Sylhet', id: 1 },
+  { name: 'Sylhet – Moulvibazar – Dhaka', id: 2 },
 ];
 
 const counters = [
-  { name: "Gabtoli", id: 1 },
-  { name: "Narayanganj", id: 2 },
-  { name: "Ashuganj", id: 3 },
+  { name: 'Gabtoli', id: 1 },
+  { name: 'Narayanganj', id: 2 },
+  { name: 'Ashuganj', id: 3 },
 ];
 
 export function AddTripForm() {
@@ -71,14 +71,14 @@ export function AddTripForm() {
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      tripNumber: "",
-      heading: "",
+      tripNumber: '',
+      heading: '',
       busId: undefined,
       routeId: undefined,
       departureDate: undefined,
-      departureTime: "00:00",
+      departureTime: '00:00',
       arrivalDate: undefined,
-      arrivalTime: "00:00",
+      arrivalTime: '00:00',
       boardingPoints: [],
       droppingPoints: [],
     },
@@ -87,11 +87,11 @@ export function AddTripForm() {
   function onSubmit(data: z.infer<typeof formSchema>) {
     const departureDateTime = combineDateAndTime(
       data.departureDate,
-      data.departureTime,
+      data.departureTime
     );
     const arrivalDateTime = combineDateAndTime(
       data.arrivalDate,
-      data.arrivalTime,
+      data.arrivalTime
     );
 
     const payload = {
@@ -105,13 +105,13 @@ export function AddTripForm() {
       droppingPoints: data.droppingPoints.map((item) => item.id),
     };
 
-    console.log("Submit Payload:", payload);
+    console.log('Submit Payload:', payload);
 
     form.reset();
   }
 
   function combineDateAndTime(date: Date, time: string) {
-    const [hours, minutes] = time.split(":").map(Number);
+    const [hours, minutes] = time.split(':').map(Number);
     const dt = new Date(date);
     dt.setHours(hours);
     dt.setMinutes(minutes);
@@ -121,8 +121,8 @@ export function AddTripForm() {
   return (
     <Form {...form}>
       <form
+        className="mb-4 max-w-lg space-y-6"
         onSubmit={form.handleSubmit(onSubmit)}
-        className="space-y-6 max-w-lg mb-4"
       >
         <FormField
           control={form.control}
@@ -158,7 +158,7 @@ export function AddTripForm() {
           render={({ field }) => (
             <FormItem>
               <FormLabel>Bus</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
+              <Select defaultValue={field.value} onValueChange={field.onChange}>
                 <FormControl>
                   <SelectTrigger>
                     <SelectValue placeholder="Select Bus" />
@@ -184,7 +184,7 @@ export function AddTripForm() {
           render={({ field }) => (
             <FormItem>
               <FormLabel>Route</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
+              <Select defaultValue={field.value} onValueChange={field.onChange}>
                 <FormControl>
                   <SelectTrigger>
                     <SelectValue placeholder="Select Route" />
@@ -212,27 +212,27 @@ export function AddTripForm() {
               <FormItem className="flex flex-col">
                 <FormLabel>Departure Date</FormLabel>
                 <FormControl>
-                  <Popover open={openDeparture} onOpenChange={setOpenDeparture}>
+                  <Popover onOpenChange={setOpenDeparture} open={openDeparture}>
                     <PopoverTrigger asChild>
                       <Button
-                        variant="outline"
                         className="w-[150px] justify-between font-normal"
+                        variant="outline"
                       >
                         {field.value
-                          ? format(field.value, "PPP")
-                          : "Select date"}
+                          ? format(field.value, 'PPP')
+                          : 'Select date'}
                         <ChevronDownIcon />
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent className="p-0">
                       <Calendar
+                        captionLayout="dropdown"
                         mode="single"
-                        selected={field.value}
                         onSelect={(date) => {
                           field.onChange(date);
                           setOpenDeparture(false);
                         }}
-                        captionLayout="dropdown"
+                        selected={field.value}
                       />
                     </PopoverContent>
                   </Popover>
@@ -265,27 +265,27 @@ export function AddTripForm() {
               <FormItem className="flex flex-col">
                 <FormLabel>Arrival Date</FormLabel>
                 <FormControl>
-                  <Popover open={openArrival} onOpenChange={setOpenArrival}>
+                  <Popover onOpenChange={setOpenArrival} open={openArrival}>
                     <PopoverTrigger asChild>
                       <Button
-                        variant="outline"
                         className="w-[150px] justify-between font-normal"
+                        variant="outline"
                       >
                         {field.value
-                          ? format(field.value, "PPP")
-                          : "Select date"}
+                          ? format(field.value, 'PPP')
+                          : 'Select date'}
                         <ChevronDownIcon />
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent className="p-0">
                       <Calendar
+                        captionLayout="dropdown"
                         mode="single"
-                        selected={field.value}
                         onSelect={(date) => {
                           field.onChange(date);
                           setOpenArrival(false);
                         }}
-                        captionLayout="dropdown"
+                        selected={field.value}
                       />
                     </PopoverContent>
                   </Popover>
@@ -319,18 +319,20 @@ export function AddTripForm() {
               <div className="space-y-2">
                 {counters.map((counter) => (
                   <FormField
-                    key={counter.id}
                     control={form.control}
+                    key={counter.id}
                     name="boardingPoints"
                     render={({ field }) => {
                       return (
                         <FormItem
-                          key={counter.id}
                           className="flex flex-row items-start space-x-3 space-y-0"
+                          key={counter.id}
                         >
                           <FormControl>
                             <Checkbox
-                              checked={field.value?.some((v) => v.id === counter.id)}
+                              checked={field.value?.some(
+                                (v) => v.id === counter.id
+                              )}
                               onCheckedChange={(checked) => {
                                 if (checked) {
                                   field.onChange([
@@ -340,8 +342,8 @@ export function AddTripForm() {
                                 } else {
                                   field.onChange(
                                     field.value.filter(
-                                      (v) => v.id !== counter.id,
-                                    ),
+                                      (v) => v.id !== counter.id
+                                    )
                                   );
                                 }
                               }}
@@ -371,18 +373,20 @@ export function AddTripForm() {
               <div className="space-y-2">
                 {counters.map((counter) => (
                   <FormField
-                    key={counter.id}
                     control={form.control}
+                    key={counter.id}
                     name="droppingPoints"
                     render={({ field }) => {
                       return (
                         <FormItem
-                          key={counter.id}
                           className="flex flex-row items-start space-x-3 space-y-0"
+                          key={counter.id}
                         >
                           <FormControl>
                             <Checkbox
-                              checked={field.value?.some((v) => v.id === counter.id)}
+                              checked={field.value?.some(
+                                (v) => v.id === counter.id
+                              )}
                               onCheckedChange={(checked) => {
                                 if (checked) {
                                   field.onChange([
@@ -392,16 +396,18 @@ export function AddTripForm() {
                                 } else {
                                   field.onChange(
                                     field.value.filter(
-                                      (v) => v.id !== counter.id,
-                                    ),
+                                      (v) => v.id !== counter.id
+                                    )
                                   );
                                 }
                               }}
                             />
                           </FormControl>
-                          <FormLabel className="font-normal">{counter.name}</FormLabel>
+                          <FormLabel className="font-normal">
+                            {counter.name}
+                          </FormLabel>
                         </FormItem>
-                      )
+                      );
                     }}
                   />
                 ))}
@@ -410,7 +416,6 @@ export function AddTripForm() {
             </FormItem>
           )}
         />
-
 
         <Button type="submit">Add Trip</Button>
       </form>

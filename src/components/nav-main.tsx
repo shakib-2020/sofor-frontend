@@ -1,12 +1,15 @@
 'use client';
 
 import {
+  ChevronRight,
+  CornerUpRight,
+  type LucideIcon,
   MailIcon,
   PlusCircleIcon,
-  CornerUpRight,
-  ChevronRight,
-  type LucideIcon,
 } from 'lucide-react';
+import Link from 'next/link';
+import { usePathname, useRouter } from 'next/navigation';
+import { useTheme } from 'next-themes';
 import { Button } from '@/components/ui/button';
 import {
   Collapsible,
@@ -15,18 +18,15 @@ import {
 } from '@/components/ui/collapsible';
 import {
   SidebarGroup,
+  SidebarGroupContent,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarMenuSub,
   SidebarMenuSubButton,
   SidebarMenuSubItem,
-  SidebarGroupContent,
   useSidebar,
 } from '@/components/ui/sidebar';
-import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
-import { useTheme } from 'next-themes';
 
 export function NavMain({
   items,
@@ -69,23 +69,23 @@ export function NavMain({
           ))} */}
           {items.map((item: any) => (
             <Collapsible
-              key={item.title}
               asChild
-              defaultOpen={item.isActive}
               className="group/collapsible"
+              defaultOpen={item.isActive}
+              key={item.title}
             >
               <SidebarMenuItem>
                 <CollapsibleTrigger asChild>
                   <SidebarMenuButton
-                    tooltip={item.title}
                     className="cursor-pointer "
                     onClick={() => {
-                      if (!item?.items) {
-                        router.push(`/dashboard/${item?.url}`);
-                      } else {
+                      if (item?.items) {
                         !open && setOpen(true);
+                      } else {
+                        router.push(`/dashboard/${item?.url}`);
                       }
                     }}
+                    tooltip={item.title}
                   >
                     {item.icon && <item.icon />}
                     <span>{item.title}</span>
@@ -102,22 +102,19 @@ export function NavMain({
                         <SidebarMenuSubItem key={subItem.title}>
                           <SidebarMenuSubButton
                             asChild
-                            className={`
-                          flex items-center gap-1  transition-colors rounded-sm
-                          ${
-                            path === subItem.url
-                              ? 'bg-gray-200 dark:bg-gray-700'
-                              : ''
-                          }
-                          hover:bg-gray-200 dark:hover:bg-gray-700
-                          ${
-                            theme === 'dark' ? 'text-gray-300' : 'text-gray-700'
-                          }
-                        `}
+                            className={`flex items-center gap-1 rounded-sm transition-colors ${
+                              path === subItem.url
+                                ? 'bg-gray-200 dark:bg-gray-700'
+                                : ''
+                            }hover:bg-gray-200 dark:hover:bg-gray-700 ${
+                              theme === 'dark'
+                                ? 'text-gray-300'
+                                : 'text-gray-700'
+                            } `}
                           >
                             <Link
+                              className="flex w-full items-center gap-1 px-2 py-1"
                               href={`/dashboard/${subItem.url}`}
-                              className="flex items-center gap-1 w-full px-2 py-1"
                             >
                               {subItem.icon && <subItem.icon />}
                               <span className="capitalize">
