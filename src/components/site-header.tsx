@@ -1,4 +1,5 @@
 'use client';
+import { HomeIcon } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
@@ -8,6 +9,7 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb';
+import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 export function SiteHeader() {
@@ -45,7 +47,14 @@ export function SiteHeader() {
             </Breadcrumb>
           </div>
         </header>
-        {/* <div className="p-5 pt-0 ">{children}</div> */}
+      </div>
+      <div className="mr-6 flex w-full items-center justify-end">
+        <Button asChild size="sm" variant="outline">
+          <Link href="/">
+            <HomeIcon />
+            Sofor
+          </Link>
+        </Button>
       </div>
     </header>
   );

@@ -50,12 +50,6 @@ const data = {
   },
   navMain: [
     {
-      title: 'Home',
-      url: '/',
-      icon: HomeIcon,
-      isActive: false,
-    },
-    {
       title: 'Dashboard',
       url: '/',
       icon: LayoutDashboardIcon,
