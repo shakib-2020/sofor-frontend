@@ -105,7 +105,7 @@ export default function LoginForm() {
               <Button asChild size="sm" variant="link">
                 <Link
                   className="link intent-info variant-ghost text-sm"
-                  href="#"
+                  href="/forget-password"
                 >
                   Forgot your Password ?
                 </Link>
