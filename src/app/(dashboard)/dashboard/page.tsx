@@ -1,5 +1,5 @@
 import { ChartAreaInteractive } from '@/components/dashboard/chart-area-interactive';
-import { DataTable } from '@/components/data-table';
+import { DataTable } from '@/components/dashboard/data-table';
 import { SectionCards } from '@/components/section-cards';
 
 import data from './data.json' with { type: 'json' };

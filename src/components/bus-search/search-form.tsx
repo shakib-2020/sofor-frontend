@@ -1,14 +1,16 @@
 'use client';
 
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { ArrowLeftRight } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import type React from 'react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { DatePicker } from '@/components/bus-search/date-picker';
 import { Button } from '@/components/ui/button';
 import { Card, CardDescription } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { _error, _log } from '@/lib/logs';
 
 export default function SearchForm() {
   const [from, setFrom] = useState('Dhaka');
@@ -17,6 +19,21 @@ export default function SearchForm() {
   const [journyDate, setJournyDate] = useState<Date | null>(new Date());
   const [returnDate, setReturnDate] = useState<Date | null>(new Date());
   const router = useRouter();
+
+  const fetchCities = async () => {
+    try {
+      const res = await fetch('/api/city');
+      const data = await res.json();
+      _log(data);
+    } catch (err) {
+      _error('Error fetching cities:', err);
+    }
+  };
+
+  useEffect(() => {
+    fetchCities();
+  }, []);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     router.push('/ticket');
