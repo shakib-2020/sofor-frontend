@@ -35,38 +35,40 @@ function NavBar() {
         <NavigationMenu>
           <NavigationMenuList>
             <NavigationMenuItem className="">
-              <NavigationMenuLink
-                asChild
-                className={navigationMenuTriggerStyle()}
-              >
-                <Link href="/">Home</Link>
-              </NavigationMenuLink>
-              <NavigationMenuLink
-                asChild
-                className={navigationMenuTriggerStyle()}
-              >
-                <Link href="/profile">Profile</Link>
-              </NavigationMenuLink>
               {data?.session ? (
-                <NavigationMenuLink
-                  asChild
-                  className={navigationMenuTriggerStyle()}
-                >
-                  <Button
-                    className="bg-red-600 hover:bg-red-700 hover:text-white"
-                    onClick={async () => {
-                      await signOut({
-                        fetchOptions: {
-                          onSuccess() {
-                            route.push('/');
-                          },
-                        },
-                      });
-                    }}
+                <>
+                  <NavigationMenuLink
+                    asChild
+                    className={navigationMenuTriggerStyle()}
                   >
-                    Sign Out
-                  </Button>
-                </NavigationMenuLink>
+                    <Link href="/profile">Profile</Link>
+                  </NavigationMenuLink>
+
+                  {data.user.role === 'admin' && (
+                    <Button className="ml-2" type="button" variant="secondary">
+                      <Link href="/dashboard">Dashboard</Link>
+                    </Button>
+                  )}
+                  <NavigationMenuLink
+                    asChild
+                    className={navigationMenuTriggerStyle()}
+                  >
+                    <Button
+                      className="ml-2 bg-red-600 hover:bg-red-700 hover:text-white"
+                      onClick={async () => {
+                        await signOut({
+                          fetchOptions: {
+                            onSuccess() {
+                              route.push('/');
+                            },
+                          },
+                        });
+                      }}
+                    >
+                      Sign Out
+                    </Button>
+                  </NavigationMenuLink>
+                </>
               ) : (
                 <>
                   <NavigationMenuLink
