@@ -81,6 +81,8 @@ export function NavMain({
                     onClick={() => {
                       if (item?.items) {
                         !open && setOpen(true);
+                      } else if (item.title === 'Home') {
+                        router.push('/');
                       } else {
                         router.push(`/dashboard/${item?.url}`);
                       }

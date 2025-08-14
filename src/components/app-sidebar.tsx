@@ -15,6 +15,7 @@ import {
   FileTextIcon,
   FolderIcon,
   HelpCircleIcon,
+  HomeIcon,
   LayoutDashboardIcon,
   ListIcon,
   LocationEdit,
@@ -48,6 +49,12 @@ const data = {
     avatar: '/avatars/shadcn.jpg',
   },
   navMain: [
+    {
+      title: 'Home',
+      url: '/',
+      icon: HomeIcon,
+      isActive: false,
+    },
     {
       title: 'Dashboard',
       url: '/',
