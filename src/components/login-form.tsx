@@ -1,58 +1,56 @@
 'use client';
 
-// import { signIn } from "@/lib/actions";
+import { Loader2 } from 'lucide-react';
 import Link from 'next/link';
-import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { useState, useTransition } from 'react';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-
 import { signIn } from '@/lib/auth-client';
 import { _log } from '@/lib/logs';
 
 export default function LoginForm() {
-  // const initialState = { errorMessage: '' };
-  //  const [state, formAction, pending] = useActionState(handleSubmit,initialState);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, startTransition] = useTransition();
+  const [rememberMe, setRememberMe] = useState(false);
+  const router = useRouter();
 
-  //   const handleSubmit = (state, formData) => {
-  // console.log(state, formData)
-
-  // }
-
-  const [email, setEmail] = useState<string>();
-  const [password, setPassword] = useState<string>();
-
-  const handleLogin = (): void => {
-    if (email && password) {
-      const user = signIn.email({
-        email,
-        password,
-        callbackURL: '/',
-        rememberMe: false,
-      });
-
-      _log(user);
+  const handleLogin = () => {
+    if (!(email && password)) {
+      toast.error('Please fill in all fields');
+      return;
     }
+    startTransition(async () => {
+      await signIn.email(
+        { email, password, rememberMe },
+        {
+          onSuccess(_context) {
+            router.push('/');
+          },
+          onError: (ctx) => {
+            _log(ctx);
+            toast.error(ctx.error.message);
+          },
+        }
+      );
+    });
   };
 
   return (
-    <form
-      // action={formAction}
-
-      className="m-auto h-fit w-full max-w-sm rounded-[calc(var(--radius)+.125rem)] border bg-card p-0.5 shadow-md dark:[--color-muted:var(--color-zinc-900)]"
-    >
+    <div className="m-auto h-fit w-full max-w-sm rounded-[calc(var(--radius)+.125rem)] border bg-card p-0.5 shadow-md dark:[--color-muted:var(--color-zinc-900)]">
       <div className="p-8 pb-6">
         <div>
-          <Link aria-label="go home" href="/">
-            Sofor-🚌
-          </Link>
-          <h1 className="mt-4 mb-1 text-xl font-semibold">
-            Sign In to Tailark
+          <h1 className="mt-4 mb-1 font-semibold text-xl">
+            Sign In to Sofor-🚌
           </h1>
           <p className="text-sm">Welcome back! Sign in to continue</p>
         </div>
 
-        <div className="grid grid-cols-2 gap-3 mt-6">
+        <div className="mt-6 grid grid-cols-1 gap-3">
           <Button type="button" variant="outline">
             <svg
               height="1em"
@@ -80,21 +78,6 @@ export default function LoginForm() {
             </svg>
             <span>Google</span>
           </Button>
-          <Button type="button" variant="outline">
-            <svg
-              height="1em"
-              viewBox="0 0 256 256"
-              width="1em"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <title>""</title>
-              <path d="M121.666 121.666H0V0h121.666z" fill="#f1511b" />
-              <path d="M256 121.666H134.335V0H256z" fill="#80cc28" />
-              <path d="M121.663 256.002H0V134.336h121.663z" fill="#00adef" />
-              <path d="M256 256.002H134.335V134.336H256z" fill="#fbbc09" />
-            </svg>
-            <span>Microsoft</span>
-          </Button>
         </div>
 
         <hr className="my-4 border-dashed" />
@@ -102,25 +85,26 @@ export default function LoginForm() {
         <div className="space-y-6">
           <div className="space-y-2">
             <Label className="block text-sm" htmlFor="email">
-              Username
+              Email
             </Label>
             <Input
               id="email"
               name="email"
               onChange={(e) => setEmail(e.target.value)}
+              placeholder="m@example.com"
               required
               type="email"
             />
           </div>
 
           <div className="space-y-0.5">
-            <div className="flex justify-between items-center">
+            <div className="flex items-center justify-between">
               <Label className="text-sm text-title" htmlFor="password">
                 Password
               </Label>
               <Button asChild size="sm" variant="link">
                 <Link
-                  className="text-sm link intent-info variant-ghost"
+                  className="link intent-info variant-ghost text-sm"
                   href="#"
                 >
                   Forgot your Password ?
@@ -132,25 +116,44 @@ export default function LoginForm() {
               id="password"
               name="password"
               onChange={(e) => setPassword(e.target.value)}
+              placeholder="Password"
               required
               type="password"
             />
           </div>
+          <div className="flex items-center gap-2">
+            <Checkbox
+              id="remember"
+              onClick={() => {
+                setRememberMe(!rememberMe);
+              }}
+            />
+            <Label htmlFor="remember">Remember me</Label>
+          </div>
 
-          <Button className="w-full" onClick={() => handleLogin}>
-            Sign In
+          <Button
+            className="w-full"
+            disabled={loading}
+            onClick={handleLogin}
+            type="submit"
+          >
+            {loading ? (
+              <Loader2 className="animate-spin" size={16} />
+            ) : (
+              'Sign In'
+            )}
           </Button>
         </div>
       </div>
 
       <div className="rounded-(--radius) border bg-muted p-3">
-        <p className="text-sm text-center text-accent-foreground">
+        <p className="text-center text-accent-foreground text-sm">
           Don't have an account ?
           <Button asChild className="px-2" variant="link">
             <Link href="/signup">Create account</Link>
           </Button>
         </p>
       </div>
-    </form>
+    </div>
   );
 }

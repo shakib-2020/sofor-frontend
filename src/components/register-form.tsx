@@ -1,44 +1,67 @@
 'use client';
 
-// import { signUp } from "@/lib/actions";
+import { Loader2, X } from 'lucide-react';
+import Image from 'next/image';
 import Link from 'next/link';
-import { useActionState, useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { signUp } from '@/lib/auth-client';
-import { _log } from '@/lib/logs';
+// import { _log } from '@/lib/logs';
+import { convertImageToBase64 } from '@/lib/utils';
 
 export default function RegisterForm() {
-  // const initialState = { errorMessage: "" };
-  // const [state, formAction, pending] = useActionState(signUp, initialState);
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [passwordConfirmation, setPasswordConfirmation] = useState('');
+  const [image, setImage] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const router = useRouter();
+  const [loading, setLoading] = useState(false);
 
-  // useEffect(() => {
-  //   if (state.errorMessage.length) {
-  //     toast.error(state.errorMessage);
-  //   }
-  // }, [state.errorMessage]);
-
-  const [name, _setName] = useState('Admin User');
-  const [email, setEmail] = useState<string>();
-  const [password, setPassword] = useState<string>();
-
-  const handlSignUp = () => {
-    if (email && password) {
-      _log({ email, password, name });
-      const user = signUp.email({
-        email,
-        password,
-        name,
-        callbackURL: '/',
-      });
-      _log({ user });
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setImage(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
     }
   };
 
+  const handlSignUp = async () => {
+    await signUp.email({
+      email,
+      password,
+      name: `${firstName} ${lastName}`,
+      image: image ? await convertImageToBase64(image) : '',
+      callbackURL: '/dashboard',
+      fetchOptions: {
+        onResponse: () => {
+          setLoading(false);
+        },
+        onRequest: () => {
+          setLoading(true);
+        },
+        onError: (ctx) => {
+          toast.error(ctx.error.message);
+        },
+        onSuccess: async () => {
+          await router.push('/dashboard');
+        },
+      },
+    });
+  };
+
   return (
-    <form
+    <div
       // action={formAction}
       className="m-auto h-fit w-full max-w-sm rounded-[calc(var(--radius)+.125rem)] border bg-card p-0.5 shadow-md dark:[--color-muted:var(--color-zinc-900)]"
     >
@@ -47,13 +70,13 @@ export default function RegisterForm() {
           <Link aria-label="go home" href="/">
             Sofor-🚌
           </Link>
-          <h1 className="mt-4 mb-1 text-xl font-semibold text-title">
-            Create a Tailark Account
+          <h1 className="mt-4 mb-1 font-semibold text-title text-xl">
+            Create a Account
           </h1>
           <p className="text-sm">Welcome! Create an account to get started</p>
         </div>
 
-        <div className="grid grid-cols-2 gap-3 mt-6">
+        <div className="mt-6 grid grid-cols-1 gap-3">
           <Button type="button" variant="outline">
             <svg
               height="1em"
@@ -61,6 +84,7 @@ export default function RegisterForm() {
               width="0.98em"
               xmlns="http://www.w3.org/2000/svg"
             >
+              <title>""</title>
               <path
                 d="M255.878 133.451c0-10.734-.871-18.567-2.756-26.69H130.55v48.448h71.947c-1.45 12.04-9.283 30.172-26.69 42.356l-.244 1.622l38.755 30.023l2.685.268c24.659-22.774 38.875-56.282 38.875-96.027"
                 fill="#4285f4"
@@ -80,48 +104,47 @@ export default function RegisterForm() {
             </svg>
             <span>Google</span>
           </Button>
-          <Button type="button" variant="outline">
-            <svg
-              height="1em"
-              viewBox="0 0 256 256"
-              width="1em"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path d="M121.666 121.666H0V0h121.666z" fill="#f1511b" />
-              <path d="M256 121.666H134.335V0H256z" fill="#80cc28" />
-              <path d="M121.663 256.002H0V134.336h121.663z" fill="#00adef" />
-              <path d="M256 256.002H134.335V134.336H256z" fill="#fbbc09" />
-            </svg>
-            <span>Microsoft</span>
-          </Button>
         </div>
 
         <hr className="my-4 border-dashed" />
 
         <div className="space-y-5">
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-2">
-              <Label className="block text-sm" htmlFor="firstname">
-                Firstname
-              </Label>
-              <Input id="firstname" name="firstname" required type="text" />
+          <div className="grid grid-cols-2 gap-4">
+            <div className="grid gap-2">
+              <Label htmlFor="first-name">First name</Label>
+              <Input
+                id="first-name"
+                onChange={(e) => {
+                  setFirstName(e.target.value);
+                }}
+                placeholder="Max"
+                required
+                value={firstName}
+              />
             </div>
-            <div className="space-y-2">
-              <Label className="block text-sm" htmlFor="lastname">
-                Lastname
-              </Label>
-              <Input id="lastname" name="lastname" required type="text" />
+            <div className="grid gap-2">
+              <Label htmlFor="last-name">Last name</Label>
+              <Input
+                id="last-name"
+                onChange={(e) => {
+                  setLastName(e.target.value);
+                }}
+                placeholder="Robinson"
+                required
+                value={lastName}
+              />
             </div>
           </div>
 
           <div className="space-y-2">
             <Label className="block text-sm" htmlFor="email">
-              Username
+              Email
             </Label>
             <Input
               id="email"
               name="email"
               onChange={(e) => setEmail(e.target.value)}
+              placeholder="m@example.com"
               required
               type="email"
             />
@@ -136,25 +159,79 @@ export default function RegisterForm() {
               id="password"
               name="password"
               onChange={(e) => setPassword(e.target.value)}
+              placeholder="Password"
               required
               type="password"
             />
           </div>
+          <div className="grid gap-2">
+            <Label htmlFor="password">Confirm Password</Label>
+            <Input
+              autoComplete="new-password"
+              id="password_confirmation"
+              onChange={(e) => setPasswordConfirmation(e.target.value)}
+              placeholder="Confirm Password"
+              type="password"
+              value={passwordConfirmation}
+            />
+          </div>
+          <div className="grid gap-2">
+            <Label htmlFor="image">Profile Image (optional)</Label>
+            <div className="flex items-end gap-4">
+              {imagePreview && (
+                <div className="relative h-16 w-16 overflow-hidden rounded-sm">
+                  <Image
+                    alt="Profile preview"
+                    layout="fill"
+                    objectFit="cover"
+                    src={imagePreview}
+                  />
+                </div>
+              )}
+              <div className="flex w-full items-center gap-2">
+                <Input
+                  accept="image/*"
+                  className="w-full"
+                  id="image"
+                  onChange={handleImageChange}
+                  type="file"
+                />
+                {imagePreview && (
+                  <X
+                    className="cursor-pointer"
+                    onClick={() => {
+                      setImage(null);
+                      setImagePreview(null);
+                    }}
+                  />
+                )}
+              </div>
+            </div>
+          </div>
 
-          <Button className="w-full" onClick={handlSignUp}>
-            Continue
+          <Button
+            className="w-full"
+            disabled={loading}
+            onClick={handlSignUp}
+            type="submit"
+          >
+            {loading ? (
+              <Loader2 className="animate-spin" size={16} />
+            ) : (
+              'Continue'
+            )}
           </Button>
         </div>
       </div>
 
       <div className="rounded-(--radius) border bg-muted p-3">
-        <p className="text-sm text-center text-accent-foreground">
+        <p className="text-center text-accent-foreground text-sm">
           Have an account ?
           <Button asChild className="px-2" variant="link">
             <Link href="/signin">Sign In</Link>
           </Button>
         </p>
       </div>
-    </form>
+    </div>
   );
 }
