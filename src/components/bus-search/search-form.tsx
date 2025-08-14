@@ -4,11 +4,11 @@ import { ArrowLeftRight } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import type React from 'react';
 import { useState } from 'react';
-import { DatePicker } from './date-picker';
-import { Button } from './ui/button';
-import { Card, CardDescription, CardHeader } from './ui/card';
-import { Input } from './ui/input';
-import { Label } from './ui/label';
+import { DatePicker } from '@/components/bus-search/date-picker';
+import { Button } from '@/components/ui/button';
+import { Card, CardDescription } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 export default function SearchForm() {
   const [from, setFrom] = useState('Dhaka');

@@ -1,5 +1,4 @@
-import React, { useEffect, useState } from 'react';
-import SearchForm from '../components/search-form';
+import SearchForm from '@/components/bus-search/search-form';
 
 export default function Home() {
   return (

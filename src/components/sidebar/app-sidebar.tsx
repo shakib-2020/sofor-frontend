@@ -3,21 +3,11 @@
 import {
   Armchair,
   ArrowUpCircleIcon,
-  BarChartIcon,
   BusIcon,
   CalendarCheck,
   CalendarPlus,
-  CameraIcon,
-  ClipboardListIcon,
-  DatabaseIcon,
-  FileCodeIcon,
-  FileIcon,
-  FileTextIcon,
-  FolderIcon,
   HelpCircleIcon,
-  HomeIcon,
   LayoutDashboardIcon,
-  ListIcon,
   LocationEdit,
   MapPin,
   SearchIcon,
@@ -28,10 +18,10 @@ import {
 } from 'lucide-react';
 import type * as React from 'react';
 
-import { NavDocuments } from '@/components/nav-documents';
-import { NavMain } from '@/components/nav-main';
-import { NavSecondary } from '@/components/nav-secondary';
-import { NavUser } from '@/components/nav-user';
+// import { NavDocuments } from '@/components/nav-documents';
+import { NavMain } from '@/components/sidebar/nav-main';
+import { NavSecondary } from '@/components/sidebar/nav-secondary';
+import { NavUser } from '@/components/sidebar/nav-user';
 import {
   Sidebar,
   SidebarContent,
@@ -51,109 +41,109 @@ const data = {
   navMain: [
     {
       title: 'Dashboard',
-      url: '/',
+      url: '',
       icon: LayoutDashboardIcon,
       isActive: false,
     },
     {
       title: 'Bus Owner',
-      url: '/bus-owner',
+      url: 'bus-owner',
       icon: ShieldUser,
       isActive: false,
       items: [
         {
           title: 'Add Bus Owner',
-          url: '/add-bus-owner',
+          url: 'add-bus-owner',
           icon: CalendarPlus,
         },
         {
           title: 'Manage Counter',
-          url: '/manage-bus-owner',
+          url: 'manage-bus-owner',
           icon: CalendarCheck,
         },
       ],
     },
     {
       title: 'Counter',
-      url: '/counter',
+      url: 'counter',
       icon: TicketCheck,
       isActive: false,
       items: [
         {
           title: 'Add Counter',
-          url: '/add-counter',
+          url: 'add-counter',
           icon: CalendarPlus,
         },
         {
           title: 'Manage Counter',
-          url: '/manage-counter',
+          url: 'manage-counter',
           icon: CalendarCheck,
         },
       ],
     },
     {
       title: 'Route',
-      url: '/route',
+      url: 'route',
       icon: MapPin,
       isActive: false,
       items: [
         {
           title: 'Add Route',
-          url: '/add-route',
+          url: 'add-route',
           icon: LocationEdit,
         },
         {
           title: 'Manage route',
-          url: '/manage-route',
+          url: 'manage-route',
           icon: LocationEdit,
         },
       ],
     },
     {
       title: 'Bus',
-      url: '/bus',
+      url: 'bus',
       icon: BusIcon,
       isActive: false,
       items: [
         {
           title: 'Add Bus',
-          url: '/add-bus',
+          url: 'add-bus',
           icon: CalendarPlus,
         },
         {
           title: 'Manage Bus',
-          url: '/manage-bus',
+          url: 'manage-bus',
           icon: CalendarCheck,
         },
       ],
     },
     {
       title: 'Trip',
-      url: '/trip',
+      url: 'trip',
       icon: BusIcon,
       isActive: false,
       items: [
         {
           title: 'Add Trip',
-          url: '/add-trip',
+          url: 'add-trip',
           icon: CalendarPlus,
         },
         {
           title: 'Manage Trip',
-          url: '/manage-trip',
+          url: 'manage-trip',
           icon: CalendarCheck,
         },
       ],
     },
     {
       title: 'Seat',
-      url: '/seat',
+      url: 'seat',
       icon: Armchair,
       isActive: false,
     },
     {
       title: 'User',
-      url: '/user',
+      url: 'user',
       icon: UsersIcon,
       isActive: false,
     },
