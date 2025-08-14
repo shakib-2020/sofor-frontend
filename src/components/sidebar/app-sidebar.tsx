@@ -57,7 +57,7 @@ const data = {
           icon: CalendarPlus,
         },
         {
-          title: 'Manage Counter',
+          title: 'Manage Bus Owner',
           url: 'manage-bus-owner',
           icon: CalendarCheck,
         },
