@@ -1,16 +1,11 @@
 'use client';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import React, { useEffect } from 'react';
 import {
   NavigationMenu,
-  NavigationMenuContent,
-  NavigationMenuIndicator,
   NavigationMenuItem,
   NavigationMenuLink,
   NavigationMenuList,
-  NavigationMenuTrigger,
-  NavigationMenuViewport,
   navigationMenuTriggerStyle,
 } from '@/components/ui/navigation-menu';
 import { signOut, useSession } from '@/lib/auth-client';
@@ -18,14 +13,14 @@ import { Button } from '../ui/button';
 
 function NavBar() {
   const pathname = usePathname();
-  // Hide Navbar on /dashboard and all its subroutes
-  if (pathname.startsWith('/dashboard')) return null;
-
   const route = useRouter();
-  const { data, error, isPending } = useSession();
-  useEffect(() => {
-    console.log({ data, error, isPending });
-  }, [data, error, isPending]);
+  const { data } = useSession();
+
+  // Hide Navbar on /dashboard and all its subroutes
+  if (pathname.startsWith('/dashboard')) {
+    return null;
+  }
+
   return (
     <nav className="sticky top-0 flex justify-between border-b-2 bg-white px-16 py-4">
       <Link href={'/'}>
