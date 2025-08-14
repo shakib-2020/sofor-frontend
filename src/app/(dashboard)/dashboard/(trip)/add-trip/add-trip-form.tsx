@@ -1,10 +1,11 @@
+/** biome-ignore-all lint/correctness/useExhaustiveDependencies: <explanation> */
 "use client";
-
 import { zodResolver } from "@hookform/resolvers/zod";
 import { format } from "date-fns";
 import { ChevronDownIcon } from "lucide-react";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
+import { toast } from "sonner";
 // import Select from "react-select";
 import { number, z } from "zod";
 import { Button } from "@/components/ui/button";
@@ -47,26 +48,18 @@ const formSchema = z.object({
 
 type FormValues = z.infer<typeof formSchema>;
 
-const buses = [
-	{ name: "Hanif", id: 1 },
-	{ name: "Shyamoli", id: 2 },
-	{ name: "Ena", id: 3 },
-];
-
-const routes = [
-	{ name: "Dhaka – Ashuganj – Sylhet", id: 1 },
-	{ name: "Sylhet – Moulvibazar – Dhaka", id: 2 },
-];
-
-const counters = [
-	{ name: "Gabtoli", id: 1 },
-	{ name: "Narayanganj", id: 2 },
-	{ name: "Ashuganj", id: 3 },
-];
+interface nameIdTypes {
+	id: number;
+	name: string;
+}
 
 export function AddTripForm() {
+	const [buses, setBuses] = useState<nameIdTypes[]>([]);
+	const [routes, setRoutes] = useState<nameIdTypes[]>([]);
+	const [counters, setCounters] = useState<nameIdTypes[]>([]);
 	const [openDeparture, setOpenDeparture] = useState(false);
 	const [openArrival, setOpenArrival] = useState(false);
+	const [loading, setLoading] = useState(false);
 
 	const form = useForm<FormValues>({
 		resolver: zodResolver(formSchema),
@@ -84,7 +77,45 @@ export function AddTripForm() {
 		},
 	});
 
-	function onSubmit(data: z.infer<typeof formSchema>) {
+	const fetchBuses = async () => {
+		try {
+			const res = await fetch("http://localhost:5000/api/bus");
+			const data = await res.json();
+			console.log("bus", data);
+			setBuses(data);
+		} catch (err) {
+			console.error("Error fetching cities:", err);
+		}
+	};
+	const fetchRoutes = async () => {
+		try {
+			const res = await fetch("http://localhost:5000/api/route");
+			const data = await res.json();
+			console.log("Route", data);
+			setRoutes(data);
+		} catch (err) {
+			console.error("Error fetching cities:", err);
+		}
+	};
+
+	const fetchCounters = async () => {
+		try {
+			const res = await fetch("http://localhost:5000/api/counter");
+			const data = await res.json();
+			console.log("Counter", data);
+			setCounters(data);
+		} catch (err) {
+			console.error("Error fetching cities:", err);
+		}
+	};
+
+	useEffect(() => {
+		fetchBuses();
+		fetchRoutes();
+		fetchCounters();
+	}, []);
+
+	async function onSubmit(data: z.infer<typeof formSchema>) {
 		const departureDateTime = combineDateAndTime(
 			data.departureDate,
 			data.departureTime,
@@ -107,7 +138,33 @@ export function AddTripForm() {
 
 		console.log("Submit Payload:", payload);
 
-		form.reset();
+		setLoading(true);
+
+		try {
+			await fetch("http://localhost:5000/api/trip", {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify(payload),
+			});
+			toast.success("Trip has been created.");
+			// After successful creation
+			form.reset({
+				tripNumber: "",
+				heading: "",
+				busId: undefined, // reset bus
+				routeId: undefined, // reset route
+				departureDate: undefined,
+				departureTime: "00:00",
+				arrivalDate: undefined,
+				arrivalTime: "00:00",
+				boardingPoints: [],
+				droppingPoints: [],
+			});
+		} catch (err) {
+			toast.error("Failed to create trip");
+		} finally {
+			setLoading(false);
+		}
 	}
 
 	function combineDateAndTime(date: Date, time: string) {
@@ -150,7 +207,6 @@ export function AddTripForm() {
 						</FormItem>
 					)}
 				/>
-
 				{/* Bus Select */}
 				<FormField
 					control={form.control}
@@ -176,7 +232,6 @@ export function AddTripForm() {
 						</FormItem>
 					)}
 				/>
-
 				{/* Route Select */}
 				<FormField
 					control={form.control}
@@ -202,7 +257,6 @@ export function AddTripForm() {
 						</FormItem>
 					)}
 				/>
-
 				{/* Departure Date & Time */}
 				<div className="flex gap-4">
 					<FormField
@@ -255,7 +309,6 @@ export function AddTripForm() {
 						)}
 					/>
 				</div>
-
 				{/* Arrival Date & Time */}
 				<div className="flex gap-4">
 					<FormField
@@ -308,7 +361,6 @@ export function AddTripForm() {
 						)}
 					/>
 				</div>
-
 				{/* Boarding Points */}
 				<FormField
 					control={form.control}
@@ -317,7 +369,7 @@ export function AddTripForm() {
 						<FormItem>
 							<FormLabel>Boarding Points</FormLabel>
 							<div className="space-y-2">
-								{counters.map((counter) => (
+								{counters?.map((counter) => (
 									<FormField
 										control={form.control}
 										key={counter.id}
@@ -362,7 +414,6 @@ export function AddTripForm() {
 						</FormItem>
 					)}
 				/>
-
 				{/* Dropping Points */}
 				<FormField
 					control={form.control}
@@ -371,7 +422,7 @@ export function AddTripForm() {
 						<FormItem>
 							<FormLabel>Dropping Points</FormLabel>
 							<div className="space-y-2">
-								{counters.map((counter) => (
+								{counters?.map((counter) => (
 									<FormField
 										control={form.control}
 										key={counter.id}
@@ -416,8 +467,9 @@ export function AddTripForm() {
 						</FormItem>
 					)}
 				/>
-
-				<Button type="submit">Add Trip</Button>
+				<Button type="submit" disabled={loading}>
+					{loading ? "Creating..." : "Create Trip"}
+				</Button>{" "}
 			</form>
 		</Form>
 	);

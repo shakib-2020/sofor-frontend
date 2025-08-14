@@ -18,16 +18,14 @@ import {
 	PopoverContent,
 	PopoverTrigger,
 } from "@/components/ui/popover";
-// import { ScrollArea } from "@/components/ui/scroll-area";
-import { cn } from "@/lib/utils"; // utility for className merge (if needed)
+import { cn } from "@/lib/utils";
 
 export default function CreateRouteForm() {
 	const [cityList, setCityList] = useState<{ id: number; name: string }[]>([]);
-	const [route, setRoute] = useState<number[]>([]); // route is array of city ids
-	const [cityNameInput, setCityNameInput] = useState(""); // was counterInput
+	const [route, setRoute] = useState<number[]>([]); // array of city IDs
+	const [cityNameInput, setCityNameInput] = useState("");
 	const { register, handleSubmit, reset } = useForm();
 
-	// Fetch city list from API
 	useEffect(() => {
 		const fetchCities = async () => {
 			try {
@@ -38,11 +36,9 @@ export default function CreateRouteForm() {
 				console.error("Error fetching cities:", err);
 			}
 		};
-
 		fetchCities();
 	}, []);
 
-	// Helper to get city name by id
 	const getCityName = (id: number) =>
 		cityList.find((c) => c.id === id)?.name || "";
 
@@ -55,15 +51,16 @@ export default function CreateRouteForm() {
 	};
 
 	const onSubmit = async (data: any) => {
-		const fares: Record<string, string> = {};
+		// Build fares object using actual DB IDs
+		const fares: Record<string, number> = {};
 		for (let i = 0; i < route.length; i++) {
 			for (let j = i + 1; j < route.length; j++) {
 				const key = `${route[i]} - ${route[j]}`;
-				fares[key] = data[key];
+				fares[key] = Number(data[key]) || 0; // ensure number
 			}
 		}
 
-		// Map route ids to city objects
+		// Map route IDs to city objects (id + name)
 		const routeCities = route
 			.map((id) => {
 				const city = cityList.find((c) => c.id === id);
@@ -71,24 +68,28 @@ export default function CreateRouteForm() {
 			})
 			.filter(Boolean);
 
-		const payload = {
-			route: routeCities,
-			fares,
-		};
+		const payload = { route: routeCities, fares };
 
-		await fetch("http://localhost:5000/api/route", {
-			method: "POST",
-			headers: { "Content-Type": "application/json" },
-			body: JSON.stringify(payload),
-		});
-		toast("Route has been created.");
-		console.log(payload);
-		reset();
-		setRoute([]);
+		console.log("Payload to backend:", payload);
+
+		try {
+			await fetch("http://localhost:5000/api/route", {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify(payload),
+			});
+			toast.success("Route has been created.");
+			reset();
+			setRoute([]);
+		} catch (err) {
+			console.error("Error creating route:", err);
+			toast.error("Failed to create route.");
+		}
 	};
 
 	return (
 		<div className="max-w-3xl p-6 text-black">
+			{/* City Selector */}
 			<div className="mb-4 flex gap-4">
 				<Popover>
 					<PopoverTrigger asChild>
@@ -109,9 +110,7 @@ export default function CreateRouteForm() {
 									<CommandItem
 										disabled={route.includes(city.id)}
 										key={city.id}
-										onSelect={(currentValue) => {
-											setCityNameInput(currentValue);
-										}}
+										onSelect={(currentValue) => setCityNameInput(currentValue)}
 										value={city.name}
 									>
 										<Check
@@ -127,7 +126,6 @@ export default function CreateRouteForm() {
 						</Command>
 					</PopoverContent>
 				</Popover>
-
 				<Button
 					className="border border-black text-white"
 					onClick={onAddCity}
@@ -137,6 +135,7 @@ export default function CreateRouteForm() {
 				</Button>
 			</div>
 
+			{/* Route Display */}
 			<div className="mb-6">
 				<Label className="mb-2 block">Route :</Label>
 				<div className="flex flex-wrap gap-2 rounded border border-black border-dotted p-2">
@@ -146,9 +145,7 @@ export default function CreateRouteForm() {
 								<span>{getCityName(cityId)}</span>
 								<button
 									className="hover:text-red-500"
-									onClick={() => {
-										setRoute(route.filter((r) => r !== cityId));
-									}}
+									onClick={() => setRoute(route.filter((r) => r !== cityId))}
 									type="button"
 								>
 									<X className="h-4 w-4" />
@@ -162,8 +159,9 @@ export default function CreateRouteForm() {
 				</div>
 			</div>
 
+			{/* Fare Form */}
 			<form onSubmit={handleSubmit(onSubmit)}>
-				<Label className="mb-2 block">Price/fare:</Label>
+				<Label className="mb-2 block">Price/Fare:</Label>
 				<div className="grid gap-4">
 					{route.map((fromId, i) =>
 						route.slice(i + 1).map((toId) => {
@@ -178,7 +176,7 @@ export default function CreateRouteForm() {
 									<Input
 										id={key}
 										{...register(key)}
-										className=" border border-black text-black"
+										className="border border-black text-black"
 										placeholder="Enter fare"
 										type="number"
 									/>
