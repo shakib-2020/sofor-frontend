@@ -12,10 +12,15 @@ function _log(message: any, data?: any): void {
 }
 
 // biome-ignore lint/suspicious/noExplicitAny: <explanation>
-function _error(message: any): void {
+function _error(message: any, data?: any): void {
   if (process.env.NODE_ENV === 'development') {
-    // biome-ignore lint/suspicious/noConsole: <explanation>
-    console.error(`${message}`);
+    if (data) {
+      // biome-ignore lint/suspicious/noConsole: <explanation>
+      console.error(message, data);
+    } else {
+      // biome-ignore lint/suspicious/noConsole: <explanation>
+      console.error(message);
+    }
   }
 }
 
