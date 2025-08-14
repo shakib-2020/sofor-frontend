@@ -33,6 +33,7 @@ export function DatePicker({ curretDate }: { curretDate?: boolean }) {
         <PopoverContent align="start" className="w-auto overflow-hidden p-0">
           <Calendar
             captionLayout="dropdown"
+            disabled={{ before: new Date() }}
             mode="single"
             onSelect={(date: any) => {
               setDate(date);
