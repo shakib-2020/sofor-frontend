@@ -38,7 +38,7 @@ export function AddBusOwnerForm() {
 		setLoading(true);
 
 		try {
-			await fetch("http://localhost:5000/api/bus-owner", {
+			await fetch("/api/bus-owner", {
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
 				body: JSON.stringify(data),

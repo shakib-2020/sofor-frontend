@@ -29,14 +29,14 @@ export default function ManageBusOwner() {
   const router = useRouter();
 
   useEffect(() => {
-    fetch('http://localhost:5000/api/bus-owner')
+    fetch('/api/bus-owner')
       .then((res) => res.json())
       .then((data) => setOwners(data))
       .catch((err) => console.error('Error fetching owners:', err));
   }, []);
 
   const handleDelete = async (id: number) => {
-    await fetch(`http://localhost:5000/api/bus-owner/${id}`, {
+    await fetch(`/api/bus-owner/${id}`, {
       method: 'DELETE',
     });
     setOwners((prev) => prev.filter((o) => o.id !== id));
@@ -48,7 +48,7 @@ export default function ManageBusOwner() {
     }
 
     setLoading(true);
-    await fetch(`http://localhost:5000/api/bus-owner/${selectedOwner.id}`, {
+    await fetch(`/api/bus-owner/${selectedOwner.id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(selectedOwner),

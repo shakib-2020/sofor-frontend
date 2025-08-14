@@ -44,8 +44,8 @@ export default function ManageCounter() {
 
 	useEffect(() => {
 		Promise.all([
-			fetch("http://localhost:5000/api/counter").then((res) => res.json()),
-			fetch("http://localhost:5000/api/city").then((res) => res.json()),
+			fetch("/api/counter").then((res) => res.json()),
+			fetch("/api/city").then((res) => res.json()),
 		])
 			.then(([counterData, cityData]) => {
 				setCounters(counterData);
@@ -55,7 +55,7 @@ export default function ManageCounter() {
 	}, []);
 
 	const handleDelete = async (id: number) => {
-		await fetch(`http://localhost:5000/api/counter/${id}`, {
+		await fetch(`/api/counter/${id}`, {
 			method: "DELETE",
 		});
 		setCounters((prev) => prev.filter((o) => o.id !== id));
@@ -65,7 +65,7 @@ export default function ManageCounter() {
 		if (!selectedCounter) return;
 
 		setLoading(true);
-		await fetch(`http://localhost:5000/api/counter/${selectedCounter.id}`, {
+		await fetch(`/api/counter/${selectedCounter.id}`, {
 			method: "PUT",
 			headers: { "Content-Type": "application/json" },
 			body: JSON.stringify(selectedCounter),

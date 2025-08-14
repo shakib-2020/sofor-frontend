@@ -11,6 +11,14 @@ const nextConfig = {
       },
     ],
   },
+  async rewrites() {
+    return [
+      {
+        source: "/api/:path*", // what frontend calls
+        destination: `${process.env.NEXT_PUBLIC_BETTER_SERVER}/api/:path*`, // your Express API
+      },
+    ];
+  },
 };
 
 module.exports = nextConfig;

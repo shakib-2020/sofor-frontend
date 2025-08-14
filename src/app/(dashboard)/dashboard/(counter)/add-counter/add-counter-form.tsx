@@ -56,7 +56,7 @@ export function AddCounterForm() {
 
 	// Load divisions once
 	useEffect(() => {
-		fetch("http://localhost:5000/api/division")
+		fetch("/api/division")
 			.then((res) => res.json())
 			.then(setDivisions);
 	}, []);
@@ -70,7 +70,7 @@ export function AddCounterForm() {
 		setCities([]);
 
 		const res = await fetch(
-			`http://localhost:5000/api/district?divisionId=${value}`,
+			`/api/district?divisionId=${value}`,
 		);
 		const data = await res.json();
 		setDistricts(data);
@@ -83,7 +83,7 @@ export function AddCounterForm() {
 		setCities([]);
 
 		const res = await fetch(
-			`http://localhost:5000/api/city?districtId=${value}`,
+			`/api/city?districtId=${value}`,
 		);
 		const data = await res.json();
 		setCities(data);
@@ -91,7 +91,7 @@ export function AddCounterForm() {
 
 	const onSubmit = async (data: z.infer<typeof formSchema>) => {
 		setLoading(true);
-		await fetch("http://localhost:5000/api/counter", {
+		await fetch("/api/counter", {
 			method: "POST",
 			headers: { "Content-Type": "application/json" },
 			body: JSON.stringify(data),

@@ -60,8 +60,8 @@ export default function ManageRoute() {
 	// Load data
 	useEffect(() => {
 		Promise.all([
-			fetch("http://localhost:5000/api/route").then((r) => r.json()),
-			fetch("http://localhost:5000/api/city").then((r) => r.json()),
+			fetch("/api/route").then((r) => r.json()),
+			fetch("/api/city").then((r) => r.json()),
 		])
 			.then(([routeData, cityData]) => {
 				setRoutes(routeData);
@@ -83,7 +83,7 @@ export default function ManageRoute() {
 	const totalPages = Math.ceil(routes.length / itemsPerPage);
 
 	const handleDelete = async (id: number) => {
-		await fetch(`http://localhost:5000/api/route/${id}`, {
+		await fetch(`/api/route/${id}`, {
 			method: "DELETE",
 		});
 		setRoutes((prev) => prev.filter((r) => r.id !== id));
@@ -182,7 +182,7 @@ export default function ManageRoute() {
 			faresPayload[key] = Number.isFinite(num) ? num : 0;
 		});
 
-		await fetch(`http://localhost:5000/api/route/${selectedRoute.id}`, {
+		await fetch(`/api/route/${selectedRoute.id}`, {
 			method: "PUT",
 			headers: { "Content-Type": "application/json" },
 			body: JSON.stringify({ route: routePayload, fares: faresPayload }),

@@ -79,7 +79,7 @@ export function AddTripForm() {
 
 	const fetchBuses = async () => {
 		try {
-			const res = await fetch("http://localhost:5000/api/bus");
+			const res = await fetch("/api/bus");
 			const data = await res.json();
 			console.log("bus", data);
 			setBuses(data);
@@ -89,7 +89,7 @@ export function AddTripForm() {
 	};
 	const fetchRoutes = async () => {
 		try {
-			const res = await fetch("http://localhost:5000/api/route");
+			const res = await fetch("/api/route");
 			const data = await res.json();
 			console.log("Route", data);
 			setRoutes(data);
@@ -100,7 +100,7 @@ export function AddTripForm() {
 
 	const fetchCounters = async () => {
 		try {
-			const res = await fetch("http://localhost:5000/api/counter");
+			const res = await fetch("/api/counter");
 			const data = await res.json();
 			console.log("Counter", data);
 			setCounters(data);
@@ -141,7 +141,7 @@ export function AddTripForm() {
 		setLoading(true);
 
 		try {
-			await fetch("http://localhost:5000/api/trip", {
+			await fetch("/api/trip", {
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
 				body: JSON.stringify(payload),

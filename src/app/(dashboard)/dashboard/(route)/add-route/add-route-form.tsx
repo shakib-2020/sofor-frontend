@@ -29,7 +29,7 @@ export default function CreateRouteForm() {
 	useEffect(() => {
 		const fetchCities = async () => {
 			try {
-				const res = await fetch("http://localhost:5000/api/city");
+				const res = await fetch("/api/city");
 				const data = await res.json();
 				setCityList(data);
 			} catch (err) {
@@ -73,7 +73,7 @@ export default function CreateRouteForm() {
 		console.log("Payload to backend:", payload);
 
 		try {
-			await fetch("http://localhost:5000/api/route", {
+			await fetch("/api/route", {
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
 				body: JSON.stringify(payload),
