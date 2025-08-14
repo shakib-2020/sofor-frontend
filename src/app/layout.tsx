@@ -3,6 +3,7 @@ import './globals.css';
 import { DM_Sans, MuseoModerno } from 'next/font/google';
 import NavBar from '@/components/navbar/nav-bar';
 import { Toaster } from '@/components/ui/sonner';
+import { WrapperWithQuery } from '@/components/wrapper-with-query';
 
 const dm_sans = DM_Sans({
   subsets: ['latin'],
@@ -27,12 +28,12 @@ export default function RootLayout({
 }>) {
   return (
     <html className="h-full" lang="en">
-      <body
-        className={'h-full bg-white' + museoModerno.variable + dm_sans.variable}
-      >
-        <NavBar />
-        {children}
-        <Toaster richColors />
+      <body className={'h-full bg-white'}>
+        <WrapperWithQuery>
+          <NavBar />
+          {children}
+          <Toaster richColors />
+        </WrapperWithQuery>
       </body>
     </html>
   );
