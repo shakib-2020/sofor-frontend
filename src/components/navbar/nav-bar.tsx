@@ -76,7 +76,7 @@ function NavBar() {
                     asChild
                     className={navigationMenuTriggerStyle()}
                   >
-                    <Link href="/signin">Sign In</Link>
+                    <Link href="/sign-in">Sign In</Link>
                   </NavigationMenuLink>
                 </>
               )}

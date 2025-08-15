@@ -228,7 +228,7 @@ export default function RegisterForm() {
         <p className="text-center text-accent-foreground text-sm">
           Have an account ?
           <Button asChild className="px-2" variant="link">
-            <Link href="/signin">Sign In</Link>
+            <Link href="/sign-in">Sign In</Link>
           </Button>
         </p>
       </div>
