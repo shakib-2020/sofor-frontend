@@ -11,10 +11,12 @@ import { Card, CardDescription } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { _error, _log } from '@/lib/logs';
+import { CityPicker } from './city-picker';
 
 export default function SearchForm() {
   const [from, setFrom] = useState('Dhaka');
   const [to, setTo] = useState('Sylhet');
+  const [cities, setCities] = useState<City[]>([]);
   const [isOneWay, setIsOneWay] = useState(false);
   const [journyDate, setJournyDate] = useState<Date | null>(new Date());
   const [returnDate, setReturnDate] = useState<Date | null>(new Date());
@@ -24,7 +26,7 @@ export default function SearchForm() {
     try {
       const res = await fetch('/api/city');
       const data = await res.json();
-      _log(data);
+      setCities(data);
     } catch (err) {
       _error('Error fetching cities:', err);
     }
@@ -48,13 +50,7 @@ export default function SearchForm() {
               <div className="y- flex items-center justify-between gap-4">
                 <div className="w-[45.25%] space-y-2">
                   <Label htmlFor="from">From</Label>
-                  <Input
-                    id="from"
-                    onChange={(e) => setFrom(e.target.value)}
-                    required
-                    type="text"
-                    value={from}
-                  />
+                  <CityPicker cities={cities} />
                 </div>
                 <div className="mt-6 flex h-full w-[5%] items-end justify-center">
                   <ArrowLeftRight />
