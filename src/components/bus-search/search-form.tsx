@@ -7,14 +7,28 @@ import { useCallback, useEffect, useState } from 'react';
 import { DatePicker } from '@/components/bus-search/date-picker';
 import { Button } from '@/components/ui/button';
 import { Card, CardDescription } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { _error } from '@/lib/logs';
 import { CityPicker } from './city-picker';
 
+type City = {
+  id: number;
+  name: string;
+  districtId: number;
+};
+
 export default function SearchForm() {
-  const [to, setTo] = useState('Sylhet');
-  const [cities, setCities] = useState<Array<{ id: number; name: string }>>([]);
+  const [to, setTo] = useState<City>({
+    id: 7,
+    name: 'Sylhet',
+    districtId: 7,
+  });
+  const [from, setFrom] = useState<City>({
+    id: 4,
+    name: 'Dhaka',
+    districtId: 4,
+  });
+  const [cities, setCities] = useState<City[]>([]);
   const router = useRouter();
 
   const fetchCities = useCallback(async () => {
@@ -45,20 +59,14 @@ export default function SearchForm() {
               <div className="y- flex items-center justify-between gap-4">
                 <div className="w-[45.25%] space-y-2">
                   <Label htmlFor="from">From</Label>
-                  <CityPicker cities={cities} />
+                  <CityPicker cities={cities} setValue={setFrom} value={from} />
                 </div>
                 <div className="mt-6 flex h-full w-[5%] items-end justify-center">
                   <ArrowLeftRight />
                 </div>
                 <div className="w-[45.25%] space-y-2">
                   <Label htmlFor="to">To</Label>
-                  <Input
-                    id="to"
-                    onChange={(e) => setTo(e.target.value)}
-                    required
-                    type="text"
-                    value={to}
-                  />
+                  <CityPicker cities={cities} setValue={setTo} value={to} />
                 </div>
               </div>
               <div className="grid gap-4 lg:grid-cols-2">
