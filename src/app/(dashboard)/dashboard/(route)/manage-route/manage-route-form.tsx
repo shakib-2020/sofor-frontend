@@ -27,9 +27,14 @@ import {
 } from "@/components/ui/popover";
 
 type City = { id: number; name: string };
-
 type RouteStop = { id: number; name: string; serial: number };
-type RouteFare = { from: string; to: string; amount: number };
+type RouteFare = {
+	from: string;
+	to: string;
+	amount: number;
+	fromStopId?: number;
+	toStopId?: number;
+};
 
 interface RouteRow {
 	id: number;
@@ -65,13 +70,11 @@ export default function ManageRoute() {
 		])
 			.then(([routeData, cityData]) => {
 				setRoutes(routeData);
-				console.log("routedata", routeData);
 				setCities(cityData);
 			})
 			.catch((err) => console.error("Error loading routes/cities:", err));
 	}, []);
 
-	// Helpers
 	const getCityName = (id: number) =>
 		cities.find((c) => c.id === id)?.name ?? "";
 
@@ -83,17 +86,13 @@ export default function ManageRoute() {
 	const totalPages = Math.ceil(routes.length / itemsPerPage);
 
 	const handleDelete = async (id: number) => {
-		await fetch(`http://localhost:5000/api/route/${id}`, {
-			method: "DELETE",
-		});
+		await fetch(`http://localhost:5000/api/route/${id}`, { method: "DELETE" });
 		setRoutes((prev) => prev.filter((r) => r.id !== id));
-		// adjust page if needed
 		const after = routes.length - 1;
 		const newTotalPages = Math.max(1, Math.ceil(after / itemsPerPage));
 		if (currentPage > newTotalPages) setCurrentPage(newTotalPages);
 	};
 
-	// Open Update dialog with prefilled data
 	const openUpdate = (routeRow: RouteRow) => {
 		setSelectedRoute(routeRow);
 
@@ -103,20 +102,15 @@ export default function ManageRoute() {
 			.map((s) => s.id);
 		setEditStops(ids);
 
-		// Build fare record by matching stop IDs instead of names
+		// Build fare record by stop IDs
 		const faresRec: Record<string, string> = {};
 		for (let i = 0; i < ids.length; i++) {
 			for (let j = i + 1; j < ids.length; j++) {
 				const fromId = ids[i];
 				const toId = ids[j];
-
-				// Find existing fare using stop IDs
 				const existing = routeRow.fares.find(
-					(f) =>
-						routeRow.stops.find((s) => s.id === fromId)?.name === f.from &&
-						routeRow.stops.find((s) => s.id === toId)?.name === f.to,
+					(f: any) => f.fromStopId === fromId && f.toStopId === toId,
 				);
-
 				const key = `${fromId} - ${toId}`;
 				faresRec[key] = existing ? String(existing.amount ?? "") : "";
 			}
@@ -127,19 +121,17 @@ export default function ManageRoute() {
 		setIsDialogOpen(true);
 	};
 
-	// City add/remove
 	const addCityToRoute = (cityName: string) => {
 		const city = cities.find((c) => c.name === cityName);
 		if (!city) return;
-		if (!editStops.includes(city.id)) {
+		if (!editStops.includes(city.id))
 			setEditStops((prev) => [...prev, city.id]);
-		}
 		setCityPickerInput("");
 		setCityPickerOpen(false);
 	};
+
 	const removeCityFromRoute = (id: number) => {
 		setEditStops((prev) => prev.filter((x) => x !== id));
-		// also remove related fares
 		setEditFares((prev) => {
 			const next = { ...prev };
 			Object.keys(next).forEach((k) => {
@@ -150,21 +142,18 @@ export default function ManageRoute() {
 		});
 	};
 
-	// Fare grid keys based on current editStops
 	const fareKeys = useMemo(() => {
 		const keys: string[] = [];
 		for (let i = 0; i < editStops.length; i++) {
-			for (let j = i + 1; j < editStops.length; j++) {
+			for (let j = i + 1; j < editStops.length; j++)
 				keys.push(`${editStops[i]} - ${editStops[j]}`);
-			}
 		}
 		return keys;
 	}, [editStops]);
 
-	// Save (PUT)
 	const handleUpdate = async () => {
 		if (!selectedRoute) return;
-		if (editStops.length < 2) return; // backend requires at least two
+		if (editStops.length < 2) return;
 
 		setLoading(true);
 
@@ -188,7 +177,7 @@ export default function ManageRoute() {
 			body: JSON.stringify({ route: routePayload, fares: faresPayload }),
 		});
 
-		// Update local list (to avoid full refetch)
+		// Build updated route object
 		const newName = routePayload.map((c) => c.name).join(" to ");
 		const newStops: RouteStop[] = routePayload.map((c, idx) => ({
 			id: c.id,
@@ -201,16 +190,23 @@ export default function ManageRoute() {
 				from: getCityName(fromId),
 				to: getCityName(toId),
 				amount: Number(editFares[key] ?? 0),
+				fromStopId: fromId,
+				toStopId: toId,
 			};
 		});
 
+		const updatedRoute: RouteRow = {
+			id: selectedRoute.id,
+			name: newName,
+			stops: newStops,
+			fares: newFares,
+		};
+
+		// Update state
 		setRoutes((prev) =>
-			prev.map((r) =>
-				r.id === selectedRoute.id
-					? { ...r, name: newName, stops: newStops, fares: newFares }
-					: r,
-			),
+			prev.map((r) => (r.id === selectedRoute.id ? updatedRoute : r)),
 		);
+		setSelectedRoute(updatedRoute); // important: keep selectedRoute in sync
 
 		setLoading(false);
 		setIsDialogOpen(false);
@@ -259,7 +255,12 @@ export default function ManageRoute() {
 								</div>
 							</td>
 							<td className="flex justify-center gap-2 border p-2">
-								<Button variant="outline" onClick={() => openUpdate(route)}>
+								<Button
+									variant="outline"
+									onClick={() =>
+										openUpdate(routes.find((r) => r.id === route.id)!)
+									}
+								>
 									Update
 								</Button>
 								<Button
@@ -308,7 +309,6 @@ export default function ManageRoute() {
 						<DialogTitle>Update Route</DialogTitle>
 					</DialogHeader>
 
-					{/* Add City to Route */}
 					<div className="mb-4 flex gap-3">
 						<Popover open={cityPickerOpen} onOpenChange={setCityPickerOpen}>
 							<PopoverTrigger asChild>
@@ -349,7 +349,6 @@ export default function ManageRoute() {
 						</Button>
 					</div>
 
-					{/* Route chips */}
 					<div className="mb-6">
 						<Label className="mb-2 block">Route:</Label>
 						<div className="flex flex-wrap gap-2 rounded border border-dotted p-2">
@@ -373,7 +372,6 @@ export default function ManageRoute() {
 						</div>
 					</div>
 
-					{/* Fare grid */}
 					<div>
 						<Label className="mb-2 block">Price / fare:</Label>
 						<div className="grid gap-4">
