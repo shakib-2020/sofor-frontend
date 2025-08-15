@@ -192,7 +192,7 @@ function CalendarDayButton({
         defaultClassNames.day,
         className
       )}
-      data-day={day.date.toLocaleDateString()}
+      data-day={`${day.date.getMonth() + 1}/${day.date.getDate()}/${day.date.getFullYear()}`}
       data-range-end={modifiers.range_end}
       data-range-middle={modifiers.range_middle}
       data-range-start={modifiers.range_start}

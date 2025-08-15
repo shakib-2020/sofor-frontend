@@ -1,28 +1,23 @@
 'use client';
 
-import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { ArrowLeftRight } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import type React from 'react';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { DatePicker } from '@/components/bus-search/date-picker';
 import { Button } from '@/components/ui/button';
 import { Card, CardDescription } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { _error, _log } from '@/lib/logs';
+import { _error } from '@/lib/logs';
 import { CityPicker } from './city-picker';
 
 export default function SearchForm() {
-  const [from, setFrom] = useState('Dhaka');
   const [to, setTo] = useState('Sylhet');
-  const [cities, setCities] = useState<City[]>([]);
-  const [isOneWay, setIsOneWay] = useState(false);
-  const [journyDate, setJournyDate] = useState<Date | null>(new Date());
-  const [returnDate, setReturnDate] = useState<Date | null>(new Date());
+  const [cities, setCities] = useState<Array<{ id: number; name: string }>>([]);
   const router = useRouter();
 
-  const fetchCities = async () => {
+  const fetchCities = useCallback(async () => {
     try {
       const res = await fetch('/api/city');
       const data = await res.json();
@@ -30,11 +25,11 @@ export default function SearchForm() {
     } catch (err) {
       _error('Error fetching cities:', err);
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchCities();
-  }, []);
+  }, [fetchCities]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

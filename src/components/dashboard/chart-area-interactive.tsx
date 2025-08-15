@@ -245,10 +245,9 @@ export function ChartAreaInteractive() {
               minTickGap={32}
               tickFormatter={(value) => {
                 const date = new Date(value);
-                return date.toLocaleDateString('en-US', {
-                  month: 'short',
-                  day: 'numeric',
-                });
+                const month = date.toLocaleString('en-US', { month: 'short' });
+                const day = date.getDate();
+                return `${month} ${day}`;
               }}
               tickLine={false}
               tickMargin={8}
@@ -258,10 +257,12 @@ export function ChartAreaInteractive() {
                 <ChartTooltipContent
                   indicator="dot"
                   labelFormatter={(value) => {
-                    return new Date(value).toLocaleDateString('en-US', {
+                    const date = new Date(value);
+                    const month = date.toLocaleString('en-US', {
                       month: 'short',
-                      day: 'numeric',
                     });
+                    const day = date.getDate();
+                    return `${month} ${day}`;
                   }}
                 />
               }

@@ -26,7 +26,9 @@ export function DatePicker({ curretDate }: { curretDate?: boolean }) {
             id="date"
             variant="outline"
           >
-            {date ? date.toLocaleDateString() : 'Select date'}
+            {date
+              ? `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`
+              : 'Select date'}
             <ChevronDownIcon />
           </Button>
         </PopoverTrigger>
