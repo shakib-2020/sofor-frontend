@@ -51,7 +51,7 @@ export function CityPicker({
       </PopoverTrigger>
       <PopoverContent className="w-[200px] p-0">
         <Command>
-          <CommandInput placeholder="Search cities..." />
+          <CommandInput placeholder="Search city..." />
           <CommandList>
             <CommandEmpty>No City found.</CommandEmpty>
             <CommandGroup>
