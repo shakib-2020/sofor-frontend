@@ -1,79 +1,115 @@
-import { MapPin } from 'lucide-react';
-import Image from 'next/image';
-import React from 'react';
-import { SheetTrigger } from './ui/sheet';
+import { BusIcon, MapPin } from "lucide-react";
+import React from "react";
+import { SheetTrigger } from "./ui/sheet";
 
-function TicketSelectionCard() {
-  return (
-    <div className="rounded-lg bg-white p-6 shadow-md">
-      <div className="grid grid-cols-3">
-        {/* part 1 */}
-        <div className="mb-4 flex w-auto flex-col items-start">
-          <Image
-            alt="bus company logo"
-            className="h-auto w-16"
-            height={100}
-            src={
-              'https://bus-promotion-bucket.s3-ap-southeast-1.amazonaws.com/production/busowners-logo/hanif.png?v=1.0.0'
-            }
-            width={100}
-          />
-          <h2 className="font-bold text-lg">Hanif Enterprise</h2>
-          <div className="mb-4 font-semibold text-gray-700 text-xs">
-            <p>Hino, AK1J Super Plus Non AC</p>
-            <p>Route: Dhaka - Ashuganj - Sayestagong - Sherpur - Sylhet</p>
-          </div>{' '}
-        </div>
+type TripCardProps = {
+	trip: {
+		trip_number: string;
+		heading: string;
+		bus_info: {
+			id: number;
+			ownerId: number;
+			name: string;
+			seatCount: number;
+		};
+		route_info: {
+			id: number;
+			name: string;
+		};
+		departure_date: string;
+		departure_time: string;
+		arrival_date: string;
+		arrival_time: string;
+		boarding_points: { counterId: number; name: string; serial: number }[];
+		dropping_points: { counterId: number; name: string; serial: number }[];
+		fare: number;
+		duration?: string;
+	};
+};
 
-        {/* part 2 */}
-        <div className="mb-4 flex items-center justify-between gap-2">
-          <div>
-            <span className="font-bold text-xl">04:30 AM</span>
-            <p className="text-gray-500 text-sm">Fri, 4 Jul</p>
-            <span>Sylhet</span>
-          </div>
-          <div className="flex flex-col items-center">
-            <span className="text-gray-500">7h 30m</span>
-            <div className="relative h-6 w-40">
-              <div className="absolute top-3 w-full border border-yellow-400" />
-              <div className="absolute top-1 left-0-0 h-4 w-4 rounded-full bg-white">
-                <MapPin className="h-4 w-4 text-red-600" />
-              </div>
-              <div className="absolute top-1 right-0 h-4 w-4 rounded-full bg-white">
-                <MapPin className="h-4 w-4 text-green-500" />
-              </div>
-            </div>
-          </div>
-          <div className="text-end">
-            <span className="font-bold text-xl">12:00 PM</span>
-            <p className="text-gray-500 text-sm">Fri, 4 Jul</p>
-            <span>Dhaka</span>
-          </div>
-        </div>
+function TicketSelectionCard({ trip }: TripCardProps) {
+	const departure = new Date(`${trip.departure_date}T${trip.departure_time}`);
+	const arrival = new Date(`${trip.arrival_date}T${trip.arrival_time}`);
 
-        {/* part 3 */}
-        <div className="mb-4 flex flex-col items-end justify-between text-gray-500 text-sm">
-          <span className="font-bold text-blue-600 text-lg">৳700</span>
-          <span>36 Seat(s) Available</span>
-          <SheetTrigger className="rounded-lg bg-green-500 px-4 py-2 text-white hover:bg-green-600">
-            BOOK TICKET
-          </SheetTrigger>
-        </div>
-      </div>
-      <div className="flex space-x-2">
-        <button className="rounded-lg bg-green-100 px-4 py-1">
-          Cancellation Policy
-        </button>
-        <button className="rounded-lg bg-green-100 px-4 py-1">
-          Boarding Point
-        </button>
-        <button className="rounded-lg bg-green-100 px-4 py-1">
-          Dropping Point
-        </button>
-        <button className="rounded-lg bg-green-100 px-4 py-1">Amenities</button>
-      </div>
-    </div>
-  );
+	const fromCity = trip.boarding_points[0]?.name ?? "N/A";
+	const toCity =
+		trip.dropping_points[trip.dropping_points.length - 1]?.name ?? "N/A";
+
+	return (
+		<div className="rounded-lg bg-white p-6 shadow-md mb-4">
+			<div className="grid grid-cols-3 gap-4">
+				{/* part 1 */}
+				<div className="flex flex-col items-start">
+					{/* <div className="h-16 w-16 bg-gray-200 rounded-md flex items-center justify-center text-white"></div> */}
+					<h2 className="font-bold text-lg">
+						<BusIcon />
+						{trip.bus_info.name}
+					</h2>
+					<div className="font-semibold text-gray-700 text-xs">
+						<p>Seats: {trip.bus_info.seatCount}</p>
+						<p>Route: {trip.route_info.name}</p>
+					</div>
+				</div>
+
+				{/* part 2 */}
+				<div className="flex items-center justify-center gap-2">
+					<div className="text-center">
+						<span className="font-bold text-xl">
+							{departure.toLocaleTimeString([], {
+								hour: "2-digit",
+								minute: "2-digit",
+							})}
+						</span>
+						<p className="text-gray-500 text-sm">{departure.toDateString()}</p>
+						<span>{fromCity}</span>
+					</div>
+					<div className="flex flex-col items-center">
+						<span className="text-gray-500">{trip.duration ?? "N/A"}</span>
+						<div className="relative h-6 w-40">
+							<div className="absolute top-3 w-full border border-yellow-400" />
+							<div className="absolute top-1 left-0 h-4 w-4 rounded-full bg-white">
+								<MapPin className="h-4 w-4 text-red-600" />
+							</div>
+							<div className="absolute top-1 right-0 h-4 w-4 rounded-full bg-white">
+								<MapPin className="h-4 w-4 text-green-500" />
+							</div>
+						</div>
+					</div>
+					<div className="text-end">
+						<span className="font-bold text-xl">
+							{arrival.toLocaleTimeString([], {
+								hour: "2-digit",
+								minute: "2-digit",
+							})}
+						</span>
+						<p className="text-gray-500 text-sm">{arrival.toDateString()}</p>
+						<span>{toCity}</span>
+					</div>
+				</div>
+
+				{/* part 3 */}
+				<div className="flex flex-col items-end justify-between text-gray-500 text-sm">
+					<span className="font-bold text-blue-600 text-lg">৳{trip.fare}</span>
+					<span>{trip.bus_info.seatCount} Seat(s) Available</span>
+					<SheetTrigger className="rounded-lg bg-green-500 px-4 py-2 text-white hover:bg-green-600">
+						BOOK TICKET
+					</SheetTrigger>
+				</div>
+			</div>
+
+			{/* boarding & dropping points */}
+			<div className="flex flex-wrap gap-2 mt-4 text-xs text-gray-600">
+				<div>
+					<span className="font-semibold">Boarding Points: </span>
+					{trip.boarding_points.map((b) => b.name).join(", ")}
+				</div>
+				<div>
+					<span className="font-semibold">Dropping Points: </span>
+					{trip.dropping_points.map((d) => d.name).join(", ")}
+				</div>
+			</div>
+		</div>
+	);
 }
 
 export default TicketSelectionCard;
