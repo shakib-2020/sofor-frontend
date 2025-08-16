@@ -17,12 +17,14 @@ import {
   AlertCircle,
   CheckCircle,
   XCircle,
-  Clock3
+  Clock3,
+  Printer
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuthUser } from '@/hooks/use-auth-user';
 import { apiClient } from '@/lib/api';
 import { format, isValid, parseISO } from 'date-fns';
+import { generateTicketPDF, printTicket, type TicketData } from '@/lib/ticket-generator';
 
 interface Booking {
   id: number;
@@ -188,9 +190,64 @@ function MyBookingsContent() {
     }
   };
 
-  const handleDownloadTicket = (booking: Booking) => {
-    // TODO: Implement ticket download
-    toast.info('Ticket download will be available soon');
+  const handleDownloadTicket = async (booking: Booking) => {
+    try {
+      const ticketData: TicketData = {
+        bookingNumber: booking.bookingNumber,
+        passengerName: booking.passengerName,
+        passengerPhone: booking.passengerPhone,
+        passengerEmail: booking.passengerEmail,
+        tripHeading: booking.trip?.heading || 'Bus Journey',
+        departureDate: booking.trip?.departure_date || 'N/A',
+        departureTime: booking.trip?.departure_time || 'N/A',
+        arrivalDate: booking.trip?.arrival_date || 'N/A',
+        arrivalTime: booking.trip?.arrival_time || 'N/A',
+        busName: booking.bus?.name || 'Bus',
+        seatNumber: booking.seat?.seatName || `Seat ${booking.seatId}`,
+        boardingPoint: booking.boardingPoint?.name || 'N/A',
+        droppingPoint: booking.droppingPoint?.name || 'N/A',
+        totalAmount: booking.totalAmount,
+        paymentMethod: booking.payment?.method || 'Online',
+        transactionId: booking.payment?.transactionId,
+        status: booking.status.charAt(0).toUpperCase() + booking.status.slice(1)
+      };
+
+      await generateTicketPDF(ticketData);
+      toast.success('Ticket downloaded successfully!');
+    } catch (error) {
+      console.error('Download error:', error);
+      toast.error('Failed to download ticket');
+    }
+  };
+
+  const handlePrintTicket = async (booking: Booking) => {
+    try {
+      const ticketData: TicketData = {
+        bookingNumber: booking.bookingNumber,
+        passengerName: booking.passengerName,
+        passengerPhone: booking.passengerPhone,
+        passengerEmail: booking.passengerEmail,
+        tripHeading: booking.trip?.heading || 'Bus Journey',
+        departureDate: booking.trip?.departure_date || 'N/A',
+        departureTime: booking.trip?.departure_time || 'N/A',
+        arrivalDate: booking.trip?.arrival_date || 'N/A',
+        arrivalTime: booking.trip?.arrival_time || 'N/A',
+        busName: booking.bus?.name || 'Bus',
+        seatNumber: booking.seat?.seatName || `Seat ${booking.seatId}`,
+        boardingPoint: booking.boardingPoint?.name || 'N/A',
+        droppingPoint: booking.droppingPoint?.name || 'N/A',
+        totalAmount: booking.totalAmount,
+        paymentMethod: booking.payment?.method || 'Online',
+        transactionId: booking.payment?.transactionId,
+        status: booking.status.charAt(0).toUpperCase() + booking.status.slice(1)
+      };
+
+      await printTicket(ticketData);
+      toast.success('Ticket sent to printer!');
+    } catch (error) {
+      console.error('Print error:', error);
+      toast.error('Failed to print ticket');
+    }
   };
 
   const handleRefresh = () => {
@@ -394,14 +451,24 @@ function MyBookingsContent() {
                     {/* Actions */}
                     {booking.status === 'confirmed' && booking.isPaid && (
                       <div className="mt-4 pt-4 border-t">
-                        <Button 
-                          onClick={() => handleDownloadTicket(booking)}
-                          variant="outline"
-                          size="sm"
-                        >
-                          <Download className="mr-2 h-4 w-4" />
-                          Download Ticket
-                        </Button>
+                        <div className="flex space-x-2">
+                          <Button 
+                            onClick={() => handleDownloadTicket(booking)}
+                            variant="outline"
+                            size="sm"
+                          >
+                            <Download className="mr-2 h-4 w-4" />
+                            Download PDF
+                          </Button>
+                          <Button 
+                            onClick={() => handlePrintTicket(booking)}
+                            variant="outline"
+                            size="sm"
+                          >
+                            <Printer className="mr-2 h-4 w-4" />
+                            Print Ticket
+                          </Button>
+                        </div>
                       </div>
                     )}
                   </CardContent>

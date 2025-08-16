@@ -4,15 +4,40 @@ import React, { useEffect, useState, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { CheckCircle, Download, Eye, Loader2 } from 'lucide-react';
+import { CheckCircle, Download, Eye, Loader2, Printer } from 'lucide-react';
 import { toast } from 'sonner';
 import { apiClient } from '@/lib/api';
+import { generateTicketPDF, printTicket, type TicketData } from '@/lib/ticket-generator';
 
 interface PaymentDetails {
   paymentID: string;
   transactionID?: string;
   amount?: string;
-  bookingDetails?: any;
+  bookingDetails?: {
+    id: number;
+    bookingNumber: string;
+    passengerName: string;
+    passengerPhone: string;
+    passengerEmail: string;
+    totalAmount: string;
+    trip?: {
+      heading: string;
+      departureDateTime: string;
+      arrivalDateTime: string;
+    };
+    bus?: {
+      name: string;
+    };
+    seat?: {
+      seatName: string;
+    };
+    boardingPoint?: {
+      name: string;
+    };
+    droppingPoint?: {
+      name: string;
+    };
+  };
 }
 
 function PaymentSuccessContent() {
@@ -34,14 +59,30 @@ function PaymentSuccessContent() {
 
   const fetchPaymentDetails = async (paymentID: string) => {
     try {
-      const response = await apiClient.get(`/api/payment/status/${paymentID}`);
+      const [paymentResponse, bookingResponse] = await Promise.all([
+        apiClient.get(`/api/payment/status/${paymentID}`),
+        // We need to get booking details separately if available
+        apiClient.get(`/api/payment/status/${paymentID}`).then(res => {
+          if (res.data.success && res.data.data.bookingNumber) {
+            // Try to get detailed booking info
+            return apiClient.get(`/api/booking/${res.data.data.bookingId || 0}`);
+          }
+          return null;
+        }).catch(() => null)
+      ]);
       
-      if (response.data.success) {
+      if (paymentResponse.data.success) {
         setPaymentDetails({
           paymentID,
-          transactionID: response.data.data.trxID,
-          amount: response.data.data.amount,
-          bookingDetails: response.data.data.booking
+          transactionID: paymentResponse.data.data.bkashTransactionID,
+          amount: paymentResponse.data.data.amount,
+          bookingDetails: bookingResponse?.data?.success ? bookingResponse.data.data : {
+            bookingNumber: paymentResponse.data.data.bookingNumber || paymentID,
+            passengerName: 'N/A',
+            passengerPhone: 'N/A',
+            passengerEmail: 'N/A',
+            totalAmount: paymentResponse.data.data.amount || '0'
+          }
         });
       }
     } catch (error) {
@@ -60,9 +101,76 @@ function PaymentSuccessContent() {
     router.push('/ticket');
   };
 
-  const handleDownloadTicket = () => {
-    // TODO: Implement ticket download functionality
-    toast.info('Ticket download will be available soon');
+  const handleDownloadTicket = async () => {
+    if (!paymentDetails?.bookingDetails) {
+      toast.error('Booking details not available');
+      return;
+    }
+
+    try {
+      const booking = paymentDetails.bookingDetails;
+      const ticketData: TicketData = {
+        bookingNumber: booking.bookingNumber,
+        passengerName: booking.passengerName,
+        passengerPhone: booking.passengerPhone,
+        passengerEmail: booking.passengerEmail,
+        tripHeading: booking.trip?.heading || 'Bus Journey',
+        departureDate: booking.trip?.departureDateTime?.split('T')[0] || 'N/A',
+        departureTime: booking.trip?.departureDateTime?.split('T')[1]?.substring(0, 5) || 'N/A',
+        arrivalDate: booking.trip?.arrivalDateTime?.split('T')[0] || 'N/A',
+        arrivalTime: booking.trip?.arrivalDateTime?.split('T')[1]?.substring(0, 5) || 'N/A',
+        busName: booking.bus?.name || 'Bus',
+        seatNumber: booking.seat?.seatName || 'N/A',
+        boardingPoint: booking.boardingPoint?.name || 'N/A',
+        droppingPoint: booking.droppingPoint?.name || 'N/A',
+        totalAmount: booking.totalAmount,
+        paymentMethod: 'bKash',
+        transactionId: paymentDetails.transactionID,
+        status: 'Confirmed'
+      };
+
+      await generateTicketPDF(ticketData);
+      toast.success('Ticket downloaded successfully!');
+    } catch (error) {
+      console.error('Download error:', error);
+      toast.error('Failed to download ticket');
+    }
+  };
+
+  const handlePrintTicket = async () => {
+    if (!paymentDetails?.bookingDetails) {
+      toast.error('Booking details not available');
+      return;
+    }
+
+    try {
+      const booking = paymentDetails.bookingDetails;
+      const ticketData: TicketData = {
+        bookingNumber: booking.bookingNumber,
+        passengerName: booking.passengerName,
+        passengerPhone: booking.passengerPhone,
+        passengerEmail: booking.passengerEmail,
+        tripHeading: booking.trip?.heading || 'Bus Journey',
+        departureDate: booking.trip?.departureDateTime?.split('T')[0] || 'N/A',
+        departureTime: booking.trip?.departureDateTime?.split('T')[1]?.substring(0, 5) || 'N/A',
+        arrivalDate: booking.trip?.arrivalDateTime?.split('T')[0] || 'N/A',
+        arrivalTime: booking.trip?.arrivalDateTime?.split('T')[1]?.substring(0, 5) || 'N/A',
+        busName: booking.bus?.name || 'Bus',
+        seatNumber: booking.seat?.seatName || 'N/A',
+        boardingPoint: booking.boardingPoint?.name || 'N/A',
+        droppingPoint: booking.droppingPoint?.name || 'N/A',
+        totalAmount: booking.totalAmount,
+        paymentMethod: 'bKash',
+        transactionId: paymentDetails.transactionID,
+        status: 'Confirmed'
+      };
+
+      await printTicket(ticketData);
+      toast.success('Ticket sent to printer!');
+    } catch (error) {
+      console.error('Print error:', error);
+      toast.error('Failed to print ticket');
+    }
   };
 
   if (loading) {
@@ -131,13 +239,13 @@ function PaymentSuccessContent() {
           )}
           
           <div className="space-y-3">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <Button 
                 onClick={handleViewBookings}
                 className="w-full bg-green-500 hover:bg-green-600"
               >
                 <Eye className="mr-2 h-4 w-4" />
-                View My Bookings
+                My Bookings
               </Button>
               <Button 
                 onClick={handleDownloadTicket}
@@ -145,7 +253,15 @@ function PaymentSuccessContent() {
                 className="w-full"
               >
                 <Download className="mr-2 h-4 w-4" />
-                Download Ticket
+                Download PDF
+              </Button>
+              <Button 
+                onClick={handlePrintTicket}
+                variant="outline"
+                className="w-full"
+              >
+                <Printer className="mr-2 h-4 w-4" />
+                Print Ticket
               </Button>
             </div>
             
