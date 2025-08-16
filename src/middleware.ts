@@ -5,7 +5,7 @@ export async function middleware(request: NextRequest) {
   try {
     const session = await getCookieCache(request, {
       secret: process.env.BETTER_AUTH_SECRET,
-      isSecure: process.env.NODE_ENV === "production",
+      // isSecure: process.env.NODE_ENV === "production",
     });
     
 
