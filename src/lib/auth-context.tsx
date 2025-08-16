@@ -36,6 +36,7 @@ interface AuthProviderProps {
 export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [apiSyncAttempted, setApiSyncAttempted] = useState(false);
   
   // Use better-auth's useSession hook with correct API
   const { 
@@ -54,15 +55,26 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   }, [sessionError]);
 
-  // Sync user with database when session changes
+  // Sync user with database when session changes (but only once per session)
   useEffect(() => {
     const syncUser = async () => {
       if (!sessionData?.session || !sessionData?.user) {
         setUser(null);
+        setApiSyncAttempted(false);
         return;
       }
 
+      // If we already have a user or already attempted API sync for this session, skip
+      if (user || apiSyncAttempted) {
+        return;
+      }
+
+      setApiSyncAttempted(true);
+
       try {
+        // Small delay to ensure session is fully established in production
+        await new Promise(resolve => setTimeout(resolve, 100));
+        
         // Try to create user if they don't exist in our database
         const userResponse = await userAPI.createIfNotExists();
         
@@ -74,16 +86,29 @@ export function AuthProvider({ children }: AuthProviderProps) {
         }
       } catch (apiError: any) {
         console.warn('Failed to sync user with database, using session user:', apiError);
-        // Use the session user as fallback
+        // Use the session user as fallback to prevent infinite loops
         setUser(sessionData.user);
+        
+        // If it's a 401 error, the session might be invalid, so don't retry
+        if (apiError?.response?.status === 401) {
+          console.warn('Session appears to be invalid on server side, using client session data');
+        }
       }
     };
 
-    syncUser();
-  }, [sessionData?.session?.id]); // Only depend on session ID to avoid unnecessary calls
+    // Debounce the sync to prevent rapid calls during session initialization
+    const timeoutId = setTimeout(syncUser, 50);
+    return () => clearTimeout(timeoutId);
+  }, [sessionData?.session?.id, user, apiSyncAttempted]); // Include user and apiSyncAttempted to prevent unnecessary calls
+
+  // Reset API sync flag when session changes
+  useEffect(() => {
+    setApiSyncAttempted(false);
+  }, [sessionData?.session?.id]);
 
   const refreshSession = async () => {
     try {
+      setApiSyncAttempted(false); // Reset flag on manual refresh
       await refetch();
     } catch (err: any) {
       setError(err.message || 'Failed to refresh session');

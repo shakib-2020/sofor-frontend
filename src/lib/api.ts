@@ -27,8 +27,16 @@ apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      // Handle unauthorized access - redirect to sign in
-      window.location.href = '/sign-in';
+      // Only redirect to sign-in if we're not in an auth sync process
+      // and not on the auth pages already
+      const currentPath = window.location.pathname;
+      const isAuthPage = currentPath.includes('/sign-in') || currentPath.includes('/signup');
+      const isCreateUserCall = error.config?.url?.includes('/user/create-if-not-exists');
+      
+      if (!isAuthPage && !isCreateUserCall) {
+        // Handle unauthorized access - redirect to sign in
+        window.location.href = '/sign-in';
+      }
     }
     return Promise.reject(error);
   }
