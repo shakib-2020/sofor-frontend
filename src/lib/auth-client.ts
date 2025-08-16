@@ -8,9 +8,7 @@ export const client = createAuthClient({
   // Ensure credentials are included in requests for cookie handling
   fetchOptions: {
     credentials: 'include',
-    headers: {
-      'Content-Type': 'application/json',
-    },
+   
   },
   plugins: [adminClient()],
 });
