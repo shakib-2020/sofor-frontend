@@ -1,7 +1,7 @@
 'use client';
 
-import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
-import { getSession } from '@/lib/auth-client';
+import React, { createContext, useContext, useEffect, useState } from 'react';
+import { useSession } from '@/lib/auth-client';
 import { userAPI } from '@/lib/api';
 
 interface AuthUser {
@@ -18,26 +18,13 @@ interface AuthUser {
   banExpires?: Date | null;
 }
 
-interface SessionData {
-  session?: {
-    id: string;
-    userId: string;
-    expiresAt: Date;
-    token: string;
-    ipAddress?: string | null;
-    userAgent?: string | null;
-  };
-  user?: AuthUser;
-}
-
 interface AuthContextType {
   user: AuthUser | null;
-  sessionData: SessionData | null;
+  sessionData: any;
   isLoading: boolean;
   isAuthenticated: boolean;
   error: string | null;
   refreshSession: () => Promise<void>;
-  clearAuth: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -48,75 +35,60 @@ interface AuthProviderProps {
 
 export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<AuthUser | null>(null);
-  const [sessionData, setSessionData] = useState<SessionData | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  
+  // Use better-auth's useSession hook with correct API
+  const { 
+    data: sessionData, 
+    isPending: isLoading, 
+    error: sessionError,
+    refetch 
+  } = useSession();
 
-  const clearAuth = useCallback(() => {
-    setUser(null);
-    setSessionData(null);
-    setError(null);
-  }, []);
-
-  const refreshSession = useCallback(async () => {
-    try {
-      setIsLoading(true);
+  // Combine session error with our error state
+  useEffect(() => {
+    if (sessionError) {
+      setError(sessionError.message || 'Session error');
+    } else {
       setError(null);
+    }
+  }, [sessionError]);
 
-      // Get the current session
-      const response = await getSession();
-      
-      if (!response?.data) {
-        clearAuth();
+  // Sync user with database when session changes
+  useEffect(() => {
+    const syncUser = async () => {
+      if (!sessionData?.session || !sessionData?.user) {
+        setUser(null);
         return;
       }
 
-      setSessionData(response.data);
-
-      // If we have session data but no user, try to create/get user from our database
-      if (response.data.session && response.data.user) {
-        try {
-          // Try to create user if they don't exist in our database
-          const userResponse = await userAPI.createIfNotExists();
-          
-          if (userResponse.data.success) {
-            setUser(userResponse.data.user);
-          } else {
-            // Fallback to session user if API call fails
-            setUser(response.data.user);
-          }
-        } catch (apiError: any) {
-          console.warn('Failed to sync user with database, using session user:', apiError);
-          // Use the session user as fallback
-          setUser(response.data.user);
+      try {
+        // Try to create user if they don't exist in our database
+        const userResponse = await userAPI.createIfNotExists();
+        
+        if (userResponse.data.success) {
+          setUser(userResponse.data.user);
+        } else {
+          // Fallback to session user if API call fails
+          setUser(sessionData.user);
         }
-      } else {
-        setUser(null);
+      } catch (apiError: any) {
+        console.warn('Failed to sync user with database, using session user:', apiError);
+        // Use the session user as fallback
+        setUser(sessionData.user);
       }
-    } catch (sessionError: any) {
-      console.error('Failed to refresh session:', sessionError);
-      setError(sessionError.message || 'Failed to authenticate');
-      clearAuth();
-    } finally {
-      setIsLoading(false);
+    };
+
+    syncUser();
+  }, [sessionData?.session?.id]); // Only depend on session ID to avoid unnecessary calls
+
+  const refreshSession = async () => {
+    try {
+      await refetch();
+    } catch (err: any) {
+      setError(err.message || 'Failed to refresh session');
     }
-  }, [clearAuth]);
-
-  // Initialize auth state on mount
-  useEffect(() => {
-    refreshSession();
-  }, [refreshSession]);
-
-  // Auto-refresh session periodically (every 5 minutes)
-  useEffect(() => {
-    if (!sessionData?.session) return;
-
-    const interval = setInterval(() => {
-      refreshSession();
-    }, 5 * 60 * 1000); // 5 minutes
-
-    return () => clearInterval(interval);
-  }, [sessionData?.session, refreshSession]);
+  };
 
   const contextValue: AuthContextType = {
     user,
@@ -125,7 +97,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
     isAuthenticated: !!user && !!sessionData?.session,
     error,
     refreshSession,
-    clearAuth,
   };
 
   return (
