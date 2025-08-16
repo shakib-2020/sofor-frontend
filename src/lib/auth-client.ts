@@ -2,8 +2,16 @@ import { adminClient } from 'better-auth/client/plugins';
 import { createAuthClient } from 'better-auth/react';
 
 export const client = createAuthClient({
-  /** the base url of the server (optional if you're using the same domain) */
-  // baseURL: process.env.NEXT_PUBLIC_BETTER_SERVER, no need,  use nextjs rewrite as proxy
+  // No baseURL needed - use Next.js proxy rewrite
+  // This ensures all requests go through /api/auth/* which gets proxied to your backend
+  
+  // Ensure credentials are included in requests for cookie handling
+  fetchOptions: {
+    credentials: 'include',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  },
   plugins: [adminClient()],
 });
 
