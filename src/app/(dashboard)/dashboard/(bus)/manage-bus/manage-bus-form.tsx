@@ -45,19 +45,19 @@ export default function ManageBus() {
 
 	// Load buses and owners
 	useEffect(() => {
-		fetch("http://localhost:5000/api/bus")
+		fetch("/api/bus")
 			.then((res) => res.json())
 			.then((data) => setBuses(data))
 			.catch((err) => console.error("Error fetching buses:", err));
 
-		fetch("http://localhost:5000/api/bus-owner")
+		fetch("/api/bus-owner")
 			.then((res) => res.json())
 			.then((data) => setOwners(data))
 			.catch((err) => console.error("Error fetching owners:", err));
 	}, []);
 
 	const handleDelete = async (id: number) => {
-		await fetch(`http://localhost:5000/api/bus/${id}`, { method: "DELETE" });
+		await fetch(`/api/bus/${id}`, { method: "DELETE" });
 		setBuses((prev) => prev.filter((b) => b.id !== id));
 	};
 
@@ -65,7 +65,7 @@ export default function ManageBus() {
 		if (!selectedBus) return;
 		setLoading(true);
 
-		await fetch(`http://localhost:5000/api/bus/${selectedBus.id}`, {
+		await fetch(`/api/bus/${selectedBus.id}`, {
 			method: "PUT",
 			headers: { "Content-Type": "application/json" },
 			body: JSON.stringify(selectedBus),

@@ -79,7 +79,7 @@ function PaymentCallbackContent() {
       console.log('✅ Processing successful payment:', paymentID);
       
       // Call backend to execute the payment
-      const response = await apiClient.post('/payment/bkash/execute', { paymentID });
+      const response = await apiClient.post('/api/payment/bkash/execute', { paymentID });
       
       if (response.data.success) {
         setResult({
@@ -115,7 +115,7 @@ function PaymentCallbackContent() {
       console.log('❌ Processing failed payment:', paymentID);
       
       // Query payment status to get details
-      const response = await apiClient.get(`/payment/status/${paymentID}`);
+      const response = await apiClient.get(`/api/payment/status/${paymentID}`);
       
       setResult({
         status: 'failed',

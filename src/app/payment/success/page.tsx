@@ -34,7 +34,7 @@ function PaymentSuccessContent() {
 
   const fetchPaymentDetails = async (paymentID: string) => {
     try {
-      const response = await apiClient.get(`/payment/status/${paymentID}`);
+      const response = await apiClient.get(`/api/payment/status/${paymentID}`);
       
       if (response.data.success) {
         setPaymentDetails({

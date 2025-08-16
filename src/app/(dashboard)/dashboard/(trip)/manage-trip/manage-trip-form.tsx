@@ -64,10 +64,10 @@ export default function ManageTrip() {
 
 	useEffect(() => {
 		Promise.all([
-			fetch("http://localhost:5000/api/trip").then((res) => res.json()),
-			fetch("http://localhost:5000/api/counter").then((res) => res.json()),
-			fetch("http://localhost:5000/api/route").then((res) => res.json()),
-			fetch("http://localhost:5000/api/bus").then((res) => res.json()),
+			fetch("/api/trip").then((res) => res.json()),
+			fetch("/api/counter").then((res) => res.json()),
+			fetch("/api/route").then((res) => res.json()),
+			fetch("/api/bus").then((res) => res.json()),
 		])
 			.then(([tripData, counterData, routeData, busData]) => {
 				setTrips(tripData);

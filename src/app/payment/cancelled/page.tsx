@@ -32,7 +32,7 @@ function PaymentCancelledContent() {
 
   const fetchCancellationDetails = async (paymentID: string) => {
     try {
-      const response = await apiClient.get(`/payment/status/${paymentID}`);
+      const response = await apiClient.get(`/api/payment/status/${paymentID}`);
       
       setCancellationDetails({
         paymentID,

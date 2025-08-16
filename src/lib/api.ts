@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+const API_BASE_URL = process.env.NEXT_PUBLIC_BETTER_SERVER!;
 
 export const apiClient = axios.create({
   baseURL: API_BASE_URL,
@@ -37,36 +37,36 @@ apiClient.interceptors.response.use(
 // API endpoints
 export const paymentAPI = {
   createBookingWithPayment: (data: any) => 
-    apiClient.post('/payment/booking-with-payment', data),
+    apiClient.post('/api/payment/booking-with-payment', data),
     
   executeBkashPayment: (paymentID: string) => 
-    apiClient.post('/payment/bkash/execute', { paymentID }),
+    apiClient.post('/api/payment/bkash/execute', { paymentID }),
     
   queryPaymentStatus: (paymentID: string) => 
-    apiClient.get(`/payment/status/${paymentID}`),
+    apiClient.get(`/api/payment/status/${paymentID}`),
     
   getUserPayments: (userId: string, page = 1, limit = 10) => 
-    apiClient.get(`/payment/user/${userId}?page=${page}&limit=${limit}`),
+    apiClient.get(`/api/payment/user/${userId}?page=${page}&limit=${limit}`),
 };
 
 export const bookingAPI = {
   getAllBookings: (params?: any) => 
-    apiClient.get('/booking', { params }),
+    apiClient.get('/api/booking', { params }),
     
   getBookingById: (id: number) => 
-    apiClient.get(`/booking/${id}`),
+    apiClient.get(`/api/booking/${id}`),
     
   updateBookingStatus: (id: number, status: string) => 
-    apiClient.put(`/booking/${id}/status`, { status }),
+    apiClient.put(`/api/booking/${id}/status`, { status }),
     
   getUserBookings: (userId: string, page = 1, limit = 10) => 
-    apiClient.get(`/booking/user/${userId}?page=${page}&limit=${limit}`),
+    apiClient.get(`/api/booking/user/${userId}?page=${page}&limit=${limit}`),
     
   cancelBooking: (id: number, reason?: string) => 
-    apiClient.put(`/booking/${id}/cancel`, { reason }),
+    apiClient.put(`/api/booking/${id}/cancel`, { reason }),
 };
 
 export const userAPI = {
-  createIfNotExists: () => apiClient.post('/user/create-if-not-exists'),
-  getCurrentUser: () => apiClient.get('/user/me')
+  createIfNotExists: () => apiClient.post('/api/user/create-if-not-exists'),
+  getCurrentUser: () => apiClient.get('/api/user/me')
 };

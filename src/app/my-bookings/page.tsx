@@ -136,8 +136,8 @@ function MyBookingsContent() {
 
     try {
       const [bookingsResponse, paymentsResponse] = await Promise.all([
-        apiClient.get(`/booking/user/${user.id}`),
-        apiClient.get(`/payment/user/${user.id}`)
+        apiClient.get(`/api/booking/user/${user.id}`),
+        apiClient.get(`/api/payment/user/${user.id}`)
       ]);
 
       console.log('📋 Bookings response:', bookingsResponse.data);

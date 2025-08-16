@@ -34,7 +34,7 @@ function PaymentFailedContent() {
 
   const fetchFailureDetails = async (paymentID: string) => {
     try {
-      const response = await apiClient.get(`/payment/status/${paymentID}`);
+      const response = await apiClient.get(`/api/payment/status/${paymentID}`);
       
       setFailureDetails({
         paymentID,
