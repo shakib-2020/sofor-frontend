@@ -3,8 +3,9 @@
 import Image from "next/image";
 import { useSearchParams } from "next/navigation";
 import React, { useEffect, useState } from "react";
-import SeatPlan from "@/components/seat-plan";
 import TicketSelectionCard from "@/components/ticket-selection-card";
+import { EnhancedSeatPlan } from "@/components/seat-selection/enhanced-seat-plan";
+import { PaymentForm } from "@/components/payment/payment-form";
 import { Button } from "@/components/ui/button";
 import {
 	Sheet,
@@ -14,6 +15,12 @@ import {
 } from "@/components/ui/sheet";
 import { _error, _log } from "@/lib/logs";
 import seatplan from "@/lib/seatplan.json" with { type: "json" };
+import { LoadingCard, LoadingSpinner } from "@/components/ui/loading-spinner";
+import { toast } from "sonner";
+import { ArrowLeft } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useAuthUser } from "@/hooks/use-auth-user";
+import { AuthGuard } from "@/components/auth/auth-guard";
 
 type Trip = {
 	id: number;
@@ -39,11 +46,23 @@ type Trip = {
 	duration?: string;
 };
 
-function TicketPage() {
+interface SelectedSeat {
+	id: number;
+	seatName: string;
+	status: 'available' | 'occupied' | 'booked';
+	row: number;
+	column: number;
+}
+
+function TicketPageContent() {
 	const searchParams = useSearchParams();
+	const router = useRouter();
+	const { user, isLoading: authLoading } = useAuthUser();
 	const [trips, setTrips] = useState<Trip[]>([]);
 	const [loading, setLoading] = useState(false);
 	const [selectedTrip, setSelectedTrip] = useState<Trip | null>(null);
+	const [selectedSeats, setSelectedSeats] = useState<SelectedSeat[]>([]);
+	const [currentStep, setCurrentStep] = useState<'trip-selection' | 'seat-selection' | 'payment'>('trip-selection');
 
 	useEffect(() => {
 		const from = searchParams.get("from");
@@ -62,9 +81,17 @@ function TicketPage() {
 					}`,
 				);
 				const data = await res.json();
-				setTrips(data);
+				
+				// Ensure data is an array and filter valid trips
+				let validTrips = [];
+				if (Array.isArray(data)) {
+					validTrips = data.filter(trip => trip && trip.id && trip.bus_info && trip.route_info);
+				}
+				
+				setTrips(validTrips);
 			} catch (err) {
 				_error("Error fetching trips:", err);
+				setTrips([]); // Reset to empty array on error
 			} finally {
 				setLoading(false);
 			}
@@ -73,123 +100,249 @@ function TicketPage() {
 		fetchTrips();
 	}, [searchParams]);
 
+	const handleTripSelect = (trip: Trip) => {
+		setSelectedTrip(trip);
+		setCurrentStep('seat-selection');
+		setSelectedSeats([]);
+	};
+
+	const handleSeatSelect = (seats: SelectedSeat[]) => {
+		setSelectedSeats(seats);
+	};
+
+	const handleProceedToPayment = () => {
+		if (selectedSeats.length === 0) {
+			toast.error('Please select at least one seat');
+			return;
+		}
+		
+		// Occupy selected seats when payment starts
+		if (typeof window !== 'undefined' && user?.id) {
+			import('@/lib/socket').then(({ getSocket }) => {
+				const socket = getSocket();
+				selectedSeats.forEach(seat => {
+					socket.emit('occupy-seat', { 
+						busId: selectedTrip?.bus_info?.id, 
+						seatName: seat.seatName,
+						userId: user.id
+					});
+				});
+			});
+		}
+		
+		setCurrentStep('payment');
+	};
+
+	const handleBackToTripSelection = () => {
+		setCurrentStep('trip-selection');
+		setSelectedTrip(null);
+		setSelectedSeats([]);
+	};
+
+	const handleBackToSeatSelection = () => {
+		// Release occupied seats when going back from payment
+		if (typeof window !== 'undefined' && selectedSeats.length > 0 && user?.id) {
+			import('@/lib/socket').then(({ getSocket }) => {
+				const socket = getSocket();
+				selectedSeats.forEach(seat => {
+					socket.emit('release-seat', { 
+						busId: selectedTrip?.bus_info?.id, 
+						seatName: seat.seatName,
+						userId: user.id
+					});
+				});
+			});
+		}
+		
+		setCurrentStep('seat-selection');
+	};
+
+	const handlePaymentSuccess = (paymentData: any) => {
+		// Handle successful payment
+		console.log('Payment successful:', paymentData);
+		toast.success('Payment successful! Your booking is confirmed.');
+		
+		// Seats will be automatically marked as "booked" by the backend
+		// Clear local selection state
+		setSelectedSeats([]);
+		
+		// Redirect to my bookings page or success page
+		setTimeout(() => {
+			router.push('/my-bookings');
+		}, 2000);
+	};
+
+	const calculateTotalAmount = () => {
+		const farePerSeat = selectedTrip?.fare || 800;
+		return (farePerSeat * selectedSeats.length).toString();
+	};
+
 	return (
 		<Sheet>
 			<h2 className="my-4 font-semibold text-3xl">Choose Departing Ticket :</h2>
 
 			{/* Trip list */}
-			{loading && <p>Loading trips...</p>}
-			{!loading && trips.length === 0 && <p>No trips found.</p>}
+			{loading && (
+				<div>
+					<div className="flex items-center justify-center mb-4">
+						<LoadingSpinner size="md" />
+						<span className="ml-2 text-gray-600">Loading trips...</span>
+					</div>
+					<LoadingCard />
+					<LoadingCard />
+					<LoadingCard />
+				</div>
+			)}
+			{!loading && trips.length === 0 && (
+				<div className="text-center py-8">
+					<p className="text-gray-500 mb-4">No trips found for your search criteria.</p>
+					<p className="text-sm text-gray-400">Try adjusting your search parameters.</p>
+				</div>
+			)}
 			{!loading &&
 				trips.map((trip) => (
-					<button
+					<div
 						key={`${trip.id}`}
-						type="button"
-						onClick={() => setSelectedTrip(trip)}
-						onKeyDown={(e) => {
-							if (e.key === "Enter" || e.key === " ") {
-								setSelectedTrip(trip);
-							}
-						}}
-						className="w-full text-left bg-transparent border-none p-0 m-0 cursor-pointer"
-						tabIndex={0}
-						aria-label={`Select trip ${trip.trip_number}`}
+						onClick={() => handleTripSelect(trip)}
+						className="cursor-pointer"
 					>
 						<TicketSelectionCard trip={trip} />
-					</button>
+					</div>
 				))}
 
-			{/* Seat plan + details for selected trip */}
-			{selectedTrip && (
-				<SheetContent className="m-0 items-start overflow-x-hidden overflow-y-scroll border-none p-0">
-					<div className="p-4">
-						<SheetHeader className="mb-3">
-							<SheetTitle>
-								Choose your preferred seats for your journey.
-							</SheetTitle>
-						</SheetHeader>
+			{/* Step 2: Seat Selection */}
+			{currentStep === 'seat-selection' && selectedTrip && (
+				<div className="max-w-4xl mx-auto">
+					{/* Header */}
+					<div className="mb-6">
+						<Button 
+							variant="ghost" 
+							onClick={handleBackToTripSelection}
+							className="mb-4"
+						>
+							<ArrowLeft className="mr-2 h-4 w-4" />
+							Back to Trip Selection
+						</Button>
 
-						<div className="mb-4 flex w-auto flex-col items-start">
-							<Image
-								alt="bus company logo"
-								className="h-auto w-16"
-								height={100}
-								src={
-									"https://bus-promotion-bucket.s3-ap-southeast-1.amazonaws.com/production/busowners-logo/hanif.png?v=1.0.0"
-								}
-								width={100}
-							/>
-							<h2 className="font-bold text-lg">
-								{selectedTrip.bus_info.name}
-							</h2>
-							<div className="mb-4 font-semibold text-gray-700 text-xs">
-								<p>Seats: {selectedTrip.bus_info.seatCount}</p>
-								<p>Route: {selectedTrip.route_info.name}</p>
+						<div className="bg-white p-6 rounded-lg shadow-sm border">
+							<div className="flex items-center justify-between mb-4">
+								<div>
+									<h2 className="text-xl font-bold">{selectedTrip.heading}</h2>
+									<p className="text-gray-600">{selectedTrip.trip_number}</p>
+								</div>
+								<div className="text-right">
+									<p className="text-sm text-gray-600">Bus</p>
+									<p className="font-semibold">{selectedTrip.bus_info?.name}</p>
 							</div>
 						</div>
 
-						<div className="mb-4 flex items-center justify-between gap-2">
+							<div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+								<div>
+									<span className="text-gray-600">Departure:</span>
+									<p className="font-medium">
+										{new Date(`${selectedTrip.departure_date}T${selectedTrip.departure_time}`).toLocaleString()}
+									</p>
+									<p className="text-gray-600">{selectedTrip.boarding_points?.[0]?.name}</p>
+								</div>
 							<div>
-								<span className="font-bold text-xl">
-									{new Date(
-										`${selectedTrip.departure_date}T${selectedTrip.departure_time}`,
-									).toLocaleTimeString([], {
-										hour: "2-digit",
-										minute: "2-digit",
-									})}
-								</span>
-								<p className="text-gray-500 text-sm">
-									{new Date(
-										`${selectedTrip.departure_date}T${selectedTrip.departure_time}`,
-									).toDateString()}
-								</p>
-								<span>{selectedTrip.boarding_points[0]?.name}</span>
+									<span className="text-gray-600">Arrival:</span>
+									<p className="font-medium">
+										{new Date(`${selectedTrip.arrival_date}T${selectedTrip.arrival_time}`).toLocaleString()}
+									</p>
+									<p className="text-gray-600">
+										{selectedTrip.dropping_points?.[selectedTrip.dropping_points.length - 1]?.name}
+									</p>
 							</div>
-							<div className="flex flex-col items-center">
-								<span className="text-gray-500">
-									{selectedTrip.duration ?? "N/A"}
-								</span>
 							</div>
-							<div className="text-end">
-								<span className="font-bold text-xl">
-									{new Date(
-										`${selectedTrip.arrival_date}T${selectedTrip.arrival_time}`,
-									).toLocaleTimeString([], {
-										hour: "2-digit",
-										minute: "2-digit",
-									})}
-								</span>
-								<p className="text-gray-500 text-sm">
-									{new Date(
-										`${selectedTrip.arrival_date}T${selectedTrip.arrival_time}`,
-									).toDateString()}
-								</p>
-								<span>
-									{
-										selectedTrip.dropping_points[
-											selectedTrip.dropping_points.length - 1
-										]?.name
-									}
-								</span>
 							</div>
 						</div>
 
-						<SeatPlan layout={seatplan?.data.seats[0].layout} />
+					{/* Seat Selection */}
+					<div className="bg-white p-6 rounded-lg shadow-sm border mb-6">
+						<h3 className="text-lg font-semibold mb-4">Select Your Seats</h3>
+						<EnhancedSeatPlan
+							busId={selectedTrip.bus_info?.id || 1}
+							tripId={selectedTrip.id}
+							onSeatSelect={handleSeatSelect}
+							maxSeats={4}
+						/>
 					</div>
 
-					{/* Confirm Order */}
-					<div className="sticky bottom-0 w-full border-gray-200 border-t bg-white p-4">
-						<div className="mb-2 flex justify-between">
-							<span className="font-medium text-green-600">
-								0 ticket(s) selected
+					{/* Booking Summary & Proceed */}
+					{selectedSeats.length > 0 && (
+						<div className="bg-white p-6 rounded-lg shadow-sm border">
+							<h3 className="text-lg font-semibold mb-4">Booking Summary</h3>
+							
+							<div className="space-y-2 mb-4">
+								<div className="flex justify-between">
+									<span>Selected Seats:</span>
+									<span className="font-medium">
+										{selectedSeats.map(seat => seat.seatName).join(', ')}
 							</span>
-							<span className="font-bold text-green-600">৳0</span>
+								</div>
+								<div className="flex justify-between">
+									<span>Number of Seats:</span>
+									<span className="font-medium">{selectedSeats.length}</span>
+								</div>
+								<div className="flex justify-between">
+									<span>Price per Seat:</span>
+									<span className="font-medium">৳{selectedTrip.fare}</span>
+								</div>
+								<div className="border-t pt-2">
+									<div className="flex justify-between text-lg font-bold">
+										<span>Total Amount:</span>
+										<span className="text-green-600">৳{calculateTotalAmount()}</span>
+									</div>
+								</div>
+							</div>
+
+							<Button 
+								onClick={handleProceedToPayment}
+								className="w-full bg-green-500 hover:bg-green-600"
+								size="lg"
+							>
+								Proceed to Payment (৳{calculateTotalAmount()})
+							</Button>
 						</div>
-						<Button className="w-full bg-green-500">Confirm Order</Button>
+					)}
+						</div>
+			)}
+
+			{/* Step 3: Payment */}
+			{currentStep === 'payment' && selectedTrip && selectedSeats.length > 0 && (
+				<div className="max-w-2xl mx-auto">
+					<Button 
+						variant="ghost" 
+						onClick={handleBackToSeatSelection}
+						className="mb-4"
+					>
+						<ArrowLeft className="mr-2 h-4 w-4" />
+						Back to Seat Selection
+					</Button>
+
+					<PaymentForm
+						bookingData={{
+							tripId: selectedTrip.id,
+							busId: selectedTrip.bus_info?.id || 1,
+							seatId: selectedSeats[0].id, // For now, using first seat ID
+							boardingPointId: selectedTrip.boarding_points?.[0]?.counterId || 1,
+							droppingPointId: selectedTrip.dropping_points?.[selectedTrip.dropping_points.length - 1]?.counterId || 2,
+							totalAmount: calculateTotalAmount(),
+						}}
+						onPaymentSuccess={handlePaymentSuccess}
+						onCancel={handleBackToSeatSelection}
+					/>
 					</div>
-				</SheetContent>
 			)}
 		</Sheet>
+	);
+}
+
+function TicketPage() {
+	return (
+		<AuthGuard>
+			<TicketPageContent />
+		</AuthGuard>
 	);
 }
 

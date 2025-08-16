@@ -1,6 +1,6 @@
 import { BusIcon, MapPin } from "lucide-react";
 import React from "react";
-import { SheetTrigger } from "./ui/sheet";
+import { Button } from "./ui/button";
 
 type TripCardProps = {
 	trip: {
@@ -28,12 +28,23 @@ type TripCardProps = {
 };
 
 function TicketSelectionCard({ trip }: TripCardProps) {
+	// Safety checks for undefined data
+	if (!trip || !trip.bus_info || !trip.route_info) {
+		return (
+			<div className="rounded-lg bg-white p-6 shadow-md mb-4">
+				<div className="text-center text-gray-500">
+					<p>Trip information unavailable</p>
+				</div>
+			</div>
+		);
+	}
+
 	const departure = new Date(`${trip.departure_date}T${trip.departure_time}`);
 	const arrival = new Date(`${trip.arrival_date}T${trip.arrival_time}`);
 
-	const fromCity = trip.boarding_points[0]?.name ?? "N/A";
+	const fromCity = trip.boarding_points?.[0]?.name ?? "N/A";
 	const toCity =
-		trip.dropping_points[trip.dropping_points.length - 1]?.name ?? "N/A";
+		trip.dropping_points?.[trip.dropping_points.length - 1]?.name ?? "N/A";
 
 	return (
 		<div className="rounded-lg bg-white p-6 shadow-md mb-4">
@@ -43,11 +54,11 @@ function TicketSelectionCard({ trip }: TripCardProps) {
 					{/* <div className="h-16 w-16 bg-gray-200 rounded-md flex items-center justify-center text-white"></div> */}
 					<h2 className="font-bold text-lg">
 						<BusIcon />
-						{trip.bus_info.name}
+						{trip.bus_info?.name ?? "Unknown Bus"}
 					</h2>
 					<div className="font-semibold text-gray-700 text-xs">
-						<p>Seats: {trip.bus_info.seatCount}</p>
-						<p>Route: {trip.route_info.name}</p>
+						<p>Seats: {trip.bus_info?.seatCount ?? 0}</p>
+						<p>Route: {trip.route_info?.name ?? "Unknown Route"}</p>
 					</div>
 				</div>
 
@@ -89,11 +100,11 @@ function TicketSelectionCard({ trip }: TripCardProps) {
 
 				{/* part 3 */}
 				<div className="flex flex-col items-end justify-between text-gray-500 text-sm">
-					<span className="font-bold text-blue-600 text-lg">৳{trip.fare}</span>
-					<span>{trip.bus_info.seatCount} Seat(s) Available</span>
-					<SheetTrigger className="rounded-lg bg-green-500 px-4 py-2 text-white hover:bg-green-600">
+					<span className="font-bold text-blue-600 text-lg">৳{trip.fare ?? 0}</span>
+					<span>{trip.bus_info?.seatCount ?? 0} Seat(s) Available</span>
+					<Button className="bg-green-500 hover:bg-green-600">
 						BOOK TICKET
-					</SheetTrigger>
+					</Button>
 				</div>
 			</div>
 
@@ -101,11 +112,11 @@ function TicketSelectionCard({ trip }: TripCardProps) {
 			<div className="flex flex-wrap gap-2 mt-4 text-xs text-gray-600">
 				<div>
 					<span className="font-semibold">Boarding Points: </span>
-					{trip.boarding_points.map((b) => b.name).join(", ")}
+					{trip.boarding_points?.map((b) => b?.name).filter(Boolean).join(", ") || "N/A"}
 				</div>
 				<div>
 					<span className="font-semibold">Dropping Points: </span>
-					{trip.dropping_points.map((d) => d.name).join(", ")}
+					{trip.dropping_points?.map((d) => d?.name).filter(Boolean).join(", ") || "N/A"}
 				</div>
 			</div>
 		</div>

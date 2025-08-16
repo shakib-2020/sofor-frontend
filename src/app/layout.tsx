@@ -28,7 +28,7 @@ export default function RootLayout({
 }>) {
   return (
     <html className="h-full" lang="en">
-      <body className={'h-full bg-white'}>
+      <body className={'h-full bg-white'} suppressHydrationWarning={true}>
         <WrapperWithQuery>
           <NavBar />
           {children}
