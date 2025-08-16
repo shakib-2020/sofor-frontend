@@ -3,9 +3,9 @@ import { headers } from 'next/headers';
 import { type NextRequest, NextResponse } from 'next/server';
 
 export async function middleware(request: NextRequest) {
-  const session = await getCookieCache(request);
-  
-  console.log("================== Session:", session);
+  const session = await getCookieCache(request, {
+	secret: process.env.BETTER_AUTH_SECRET,
+  });
   
 	if (!session) {
 		return NextResponse.redirect(new URL("/sign-in", request.url));
