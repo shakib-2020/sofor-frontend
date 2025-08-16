@@ -32,4 +32,5 @@ export const config = {
     '/profile/:path*',    // Protect all profile routes
     '/my-bookings/:path*' // Protect booking routes
   ],
+  runtime: "nodejs"
 };
