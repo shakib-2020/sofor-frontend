@@ -115,19 +115,9 @@ function TicketPageContent() {
 			return;
 		}
 		
-		// Occupy selected seats when payment starts
-		if (typeof window !== 'undefined' && user?.id) {
-			import('@/lib/socket').then(({ getSocket }) => {
-				const socket = getSocket();
-				selectedSeats.forEach(seat => {
-					socket.emit('occupy-seat', { 
-						busId: selectedTrip?.bus_info?.id, 
-						seatName: seat.seatName,
-						userId: user.id
-					});
-				});
-			});
-		}
+		// 🚫 Socket seat occupation disabled for Vercel deployment
+		// Seats will be reserved during the payment process on the backend
+		// No need for real-time seat occupation via WebSocket
 		
 		setCurrentStep('payment');
 	};
@@ -139,19 +129,9 @@ function TicketPageContent() {
 	};
 
 	const handleBackToSeatSelection = () => {
-		// Release occupied seats when going back from payment
-		if (typeof window !== 'undefined' && selectedSeats.length > 0 && user?.id) {
-			import('@/lib/socket').then(({ getSocket }) => {
-				const socket = getSocket();
-				selectedSeats.forEach(seat => {
-					socket.emit('release-seat', { 
-						busId: selectedTrip?.bus_info?.id, 
-						seatName: seat.seatName,
-						userId: user.id
-					});
-				});
-			});
-		}
+		// 🚫 Socket seat release disabled for Vercel deployment
+		// Seats will be automatically released if payment is not completed within timeout
+		// No need for real-time seat release via WebSocket
 		
 		setCurrentStep('seat-selection');
 	};

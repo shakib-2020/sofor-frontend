@@ -3,8 +3,9 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { getSocket } from '@/lib/socket';
+// import { getSocket } from '@/lib/socket'; // 🚫 Disabled for Vercel deployment
 import { toast } from 'sonner';
+import { RefreshCw, Clock } from 'lucide-react';
 
 interface Seat {
   id: number;
@@ -33,6 +34,7 @@ export function EnhancedSeatPlan({
   const [selectedSeats, setSelectedSeats] = useState<Seat[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [lastRefresh, setLastRefresh] = useState<Date>(new Date());
 
   // Fetch real seat data from API
   useEffect(() => {
@@ -53,6 +55,7 @@ export function EnhancedSeatPlan({
           }));
           
           setSeats(transformedSeats);
+          setLastRefresh(new Date());
         } else {
           console.error('Failed to fetch seats:', data.message);
           // Fallback to empty array
@@ -69,32 +72,31 @@ export function EnhancedSeatPlan({
     fetchSeats();
   }, [busId, refreshKey]);
 
-  // Socket.IO integration for real-time seat updates
+  // 🚫 Socket.IO integration disabled for Vercel deployment
+  // Real-time updates replaced with polling/refresh functionality
   useEffect(() => {
-    if (typeof window === 'undefined') return;
-
-    const socket = getSocket();
-
-    // Listen for seat status updates
-    const handleSeatUpdate = ({ busId: updatedBusId, seatName, status }: any) => {
-      if (updatedBusId === busId) {
-        setSeats(prev => prev.map(seat => 
-          seat.seatName === seatName 
-            ? { ...seat, status }
-            : seat
-        ));
+    // Auto-refresh seats every 30 seconds to check for updates
+    const interval = setInterval(() => {
+      if (selectedSeats.length === 0) { // Only refresh if no seats are selected
+        setRefreshKey(prev => prev + 1);
       }
-    };
+    }, 30000); // 30 seconds
 
-    socket.on('seat-status-updated', handleSeatUpdate);
-
-    return () => {
-      socket.off('seat-status-updated', handleSeatUpdate);
-    };
-  }, [busId]);
+    return () => clearInterval(interval);
+  }, [selectedSeats.length]);
 
   const refreshSeats = () => {
     setRefreshKey(prev => prev + 1);
+    toast.info('Refreshing seat information...');
+  };
+
+  const formatLastRefresh = () => {
+    const now = new Date();
+    const diff = Math.floor((now.getTime() - lastRefresh.getTime()) / 1000);
+    
+    if (diff < 60) return `${diff}s ago`;
+    if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
+    return lastRefresh.toLocaleTimeString();
   };
 
 
@@ -242,15 +244,22 @@ export function EnhancedSeatPlan({
           </div>
         </div>
         
-        {/* Refresh button */}
-        <button
-          onClick={refreshSeats}
-          disabled={loading}
-          className="px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+        {/* Refresh section */}
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1 text-xs text-gray-500">
+            <Clock className="w-3 h-3" />
+            <span>Updated {formatLastRefresh()}</span>
+          </div>
+          <button
+            onClick={refreshSeats}
+            disabled={loading}
+            className="flex items-center gap-1 px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           title="Refresh seat availability"
-        >
-          {loading ? '...' : 'Refresh'}
-        </button>
+          >
+            <RefreshCw className={`w-3 h-3 ${loading ? 'animate-spin' : ''}`} />
+            {loading ? 'Refreshing...' : 'Refresh'}
+          </button>
+        </div>
       </div>
 
       {/* Selection info */}

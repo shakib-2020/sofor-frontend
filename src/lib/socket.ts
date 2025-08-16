@@ -1,12 +1,20 @@
-import { io, type Socket } from 'socket.io-client';
+// 🚫 WebSocket functionality disabled for Vercel deployment compatibility
+// import { io, type Socket } from 'socket.io-client';
 
-let socket: Socket | null = null;
+// let socket: Socket | null = null;
 
-export const getSocket = (): Socket => {
-  if (!socket) {
-    socket = io(process.env.NEXT_PUBLIC_BETTER_SERVER as string, {
-      transports: ['websocket', 'polling'],
-    });
-  }
-  return socket;
+// Fallback mock implementation to prevent import errors
+export const getSocket = (): any => {
+  console.warn('🚫 WebSocket disabled for Vercel deployment. Real-time features unavailable.');
+  
+  // Return a mock socket object with no-op methods
+  return {
+    on: () => {},
+    off: () => {},
+    emit: () => {},
+    disconnect: () => {},
+  };
 };
+
+// Note: For production with WebSocket support, use a different hosting provider
+// that supports persistent connections (like Railway, Render, or self-hosted).
