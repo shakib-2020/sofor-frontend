@@ -1,13 +1,15 @@
 import axios from 'axios';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_BETTER_SERVER!;
-
+// Don't use direct backend URL - use Next.js proxy instead
+// This ensures cookies are properly sent via the same-origin proxy
 export const apiClient = axios.create({
-  baseURL: API_BASE_URL,
+  // No baseURL - use relative URLs to leverage Next.js proxy rewrite
   headers: {
     'Content-Type': 'application/json',
+    'Accept': 'application/json',
   },
   timeout: 30000, // 30 seconds timeout
+  withCredentials: true, // Enable cookies for all requests globally
 });
 
 // Request interceptor to ensure cookies are sent (Better Auth uses cookies)
@@ -15,6 +17,11 @@ apiClient.interceptors.request.use(
   (config) => {
     // Better Auth uses cookies, so make sure credentials are included
     config.withCredentials = true;
+    
+    // Add additional headers for better cookie handling
+    config.headers.set('X-Requested-With', 'XMLHttpRequest');
+    config.headers.set('Cache-Control', 'no-cache');
+
     return config;
   },
   (error) => {
