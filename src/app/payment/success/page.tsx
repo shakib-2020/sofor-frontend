@@ -1,10 +1,10 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { CheckCircle, Download, Eye } from 'lucide-react';
+import { CheckCircle, Download, Eye, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { apiClient } from '@/lib/api';
 
@@ -15,7 +15,7 @@ interface PaymentDetails {
   bookingDetails?: any;
 }
 
-export default function PaymentSuccessPage() {
+function PaymentSuccessContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const [paymentDetails, setPaymentDetails] = useState<PaymentDetails | null>(null);
@@ -169,5 +169,35 @@ export default function PaymentSuccessPage() {
         </CardContent>
       </Card>
     </div>
+  );
+}
+
+// Loading fallback component
+function PaymentSuccessLoading() {
+  return (
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+      <Card className="w-full max-w-md">
+        <CardHeader className="text-center">
+          <div className="flex justify-center mb-4">
+            <Loader2 className="h-16 w-16 text-green-500 animate-spin" />
+          </div>
+          <CardTitle className="text-2xl text-green-600">
+            Loading Payment Details...
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="text-center">
+          <p className="text-gray-600">Please wait while we process your payment details...</p>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+// Main page component with Suspense boundary
+export default function PaymentSuccessPage() {
+  return (
+    <Suspense fallback={<PaymentSuccessLoading />}>
+      <PaymentSuccessContent />
+    </Suspense>
   );
 }

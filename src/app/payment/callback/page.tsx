@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -17,7 +17,7 @@ interface PaymentResult {
   error?: string;
 }
 
-export default function PaymentCallbackPage() {
+function PaymentCallbackContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const [result, setResult] = useState<PaymentResult>({ status: 'processing' });
@@ -279,3 +279,34 @@ export default function PaymentCallbackPage() {
     </div>
   );
 }
+
+// Loading fallback component
+function PaymentCallbackLoading() {
+  return (
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+      <Card className="w-full max-w-md">
+        <CardHeader className="text-center">
+          <div className="flex justify-center mb-4">
+            <Loader2 className="h-16 w-16 text-blue-500 animate-spin" />
+          </div>
+          <CardTitle className="text-2xl text-blue-600">
+            Loading Payment...
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="text-center">
+          <p className="text-gray-600">Please wait while we process your payment callback...</p>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+// Main page component with Suspense boundary
+export default function PaymentCallbackPage() {
+  return (
+    <Suspense fallback={<PaymentCallbackLoading />}>
+      <PaymentCallbackContent />
+    </Suspense>
+  );
+}
+

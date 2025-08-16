@@ -14,7 +14,6 @@ import {
 	SheetTitle,
 } from "@/components/ui/sheet";
 import { _error, _log } from "@/lib/logs";
-import seatplan from "@/lib/seatplan.json" with { type: "json" };
 import { LoadingCard, LoadingSpinner } from "@/components/ui/loading-spinner";
 import { toast } from "sonner";
 import { ArrowLeft } from "lucide-react";

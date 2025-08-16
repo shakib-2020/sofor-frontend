@@ -15,7 +15,7 @@ interface AuthUser {
 }
 
 export function useAuthUser() {
-  const { data: session, isLoading: sessionLoading } = useSession();
+  const { data: session, isPending : sessionLoading } = useSession();
   const [user, setUser] = useState<AuthUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

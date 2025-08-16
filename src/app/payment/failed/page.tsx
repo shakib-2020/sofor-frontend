@@ -1,10 +1,10 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { XCircle, RefreshCw, ArrowLeft, HelpCircle } from 'lucide-react';
+import { XCircle, RefreshCw, ArrowLeft, HelpCircle, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { apiClient } from '@/lib/api';
 
@@ -15,7 +15,7 @@ interface FailureDetails {
   amount?: string;
 }
 
-export default function PaymentFailedPage() {
+function PaymentFailedContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const [failureDetails, setFailureDetails] = useState<FailureDetails | null>(null);
@@ -184,3 +184,35 @@ export default function PaymentFailedPage() {
     </div>
   );
 }
+
+// Loading fallback component
+function PaymentFailedLoading() {
+  return (
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+      <Card className="w-full max-w-md">
+        <CardHeader className="text-center">
+          <div className="flex justify-center mb-4">
+            <Loader2 className="h-16 w-16 text-red-500 animate-spin" />
+          </div>
+          <CardTitle className="text-2xl text-red-600">
+            Loading Failure Details...
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="text-center">
+          <p className="text-gray-600">Please wait while we process your failure details...</p>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+// Main page component with Suspense boundary
+export default function PaymentFailedPage() {
+  return (
+    <Suspense fallback={<PaymentFailedLoading />}>
+      <PaymentFailedContent />
+    </Suspense>
+  );
+}
+
+
