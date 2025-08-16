@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useSearchParams } from "next/navigation";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, Suspense } from "react";
 import TicketSelectionCard from "@/components/ticket-selection-card";
 import { EnhancedSeatPlan } from "@/components/seat-selection/enhanced-seat-plan";
 import { PaymentForm } from "@/components/payment/payment-form";
@@ -317,7 +317,15 @@ function TicketPageContent() {
 }
 
 function TicketPage() {
-	return <TicketPageContent />;
+	return (
+		<Suspense fallback={
+			<div className="flex items-center justify-center min-h-screen">
+				<div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+			</div>
+		}>
+			<TicketPageContent />
+		</Suspense>
+	);
 }
 
 export default TicketPage;

@@ -12,10 +12,10 @@ interface AuthUser {
   image?: string | null;
   createdAt: Date;
   updatedAt: Date;
-  role?: string;
-  banned?: boolean;
-  banReason?: string;
-  banExpires?: Date;
+  role?: string | null;
+  banned?: boolean | null;
+  banReason?: string | null;
+  banExpires?: Date | null;
 }
 
 interface SessionData {
@@ -24,8 +24,8 @@ interface SessionData {
     userId: string;
     expiresAt: Date;
     token: string;
-    ipAddress?: string;
-    userAgent?: string;
+    ipAddress?: string | null;
+    userAgent?: string | null;
   };
   user?: AuthUser;
 }

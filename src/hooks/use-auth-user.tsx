@@ -10,10 +10,10 @@ interface AuthUser {
   image?: string | null;
   createdAt: Date;
   updatedAt: Date;
-  role?: string;
-  banned?: boolean;
-  banReason?: string;
-  banExpires?: Date;
+  role?: string | null;
+  banned?: boolean | null;
+  banReason?: string | null;
+  banExpires?: Date | null;
 }
 
 export function useAuthUser() {
