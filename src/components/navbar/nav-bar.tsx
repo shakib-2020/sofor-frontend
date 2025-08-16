@@ -39,8 +39,15 @@ function NavBar() {
                     asChild
                     className={navigationMenuTriggerStyle()}
                   >
+                    <Link href="/my-bookings">Bookings</Link>
+                  </NavigationMenuLink>
+                  <NavigationMenuLink
+                    asChild
+                    className={navigationMenuTriggerStyle()}
+                  >
                     <Link href="/profile">Profile</Link>
                   </NavigationMenuLink>
+                
 
                   {user?.role === 'admin' && (
                     <Button className="ml-2" type="button" variant="secondary">
