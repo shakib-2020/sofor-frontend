@@ -19,7 +19,6 @@ import { toast } from "sonner";
 import { ArrowLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useAuthUser } from "@/hooks/use-auth-user";
-import { AuthGuard } from "@/components/auth/auth-guard";
 
 type Trip = {
 	id: number;
@@ -318,11 +317,7 @@ function TicketPageContent() {
 }
 
 function TicketPage() {
-	return (
-		<AuthGuard>
-			<TicketPageContent />
-		</AuthGuard>
-	);
+	return <TicketPageContent />;
 }
 
 export default TicketPage;

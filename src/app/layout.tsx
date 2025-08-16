@@ -4,6 +4,7 @@ import { DM_Sans, MuseoModerno } from 'next/font/google';
 import NavBar from '@/components/navbar/nav-bar';
 import { Toaster } from '@/components/ui/sonner';
 import { WrapperWithQuery } from '@/components/wrapper-with-query';
+import { AuthProvider } from '@/lib/auth-context';
 
 const dm_sans = DM_Sans({
   subsets: ['latin'],
@@ -30,9 +31,11 @@ export default function RootLayout({
     <html className="h-full" lang="en">
       <body className={'h-full bg-white'} suppressHydrationWarning={true}>
         <WrapperWithQuery>
-          <NavBar />
-          {children}
-          <Toaster richColors />
+          <AuthProvider>
+            <NavBar />
+            {children}
+            <Toaster richColors />
+          </AuthProvider>
         </WrapperWithQuery>
       </body>
     </html>

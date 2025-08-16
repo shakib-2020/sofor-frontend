@@ -21,7 +21,6 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuthUser } from '@/hooks/use-auth-user';
-import { AuthGuard } from '@/components/auth/auth-guard';
 import { apiClient } from '@/lib/api';
 import { format, isValid, parseISO } from 'date-fns';
 
@@ -81,11 +80,7 @@ interface Payment {
 }
 
 export default function MyBookingsPage() {
-  return (
-    <AuthGuard>
-      <MyBookingsContent />
-    </AuthGuard>
-  );
+  return <MyBookingsContent />;
 }
 
 function MyBookingsContent() {

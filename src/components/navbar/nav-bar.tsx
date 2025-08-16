@@ -8,13 +8,14 @@ import {
   NavigationMenuList,
   navigationMenuTriggerStyle,
 } from '@/components/ui/navigation-menu';
-import { signOut, useSession } from '@/lib/auth-client';
+import { signOut } from '@/lib/auth-client';
 import { Button } from '../ui/button';
+import { useAuth } from '@/lib/auth-context';
 
 function NavBar() {
   const pathname = usePathname();
   const route = useRouter();
-  const { data } = useSession();
+  const { user, isLoading, isAuthenticated } = useAuth();
 
   // Hide Navbar on /dashboard and all its subroutes
   if (pathname.startsWith('/dashboard')) {
@@ -30,7 +31,9 @@ function NavBar() {
         <NavigationMenu>
           <NavigationMenuList>
             <NavigationMenuItem className="">
-              {data?.session ? (
+              {isLoading ? (
+                <div className="animate-pulse h-8 w-24 bg-gray-200 rounded"></div>
+              ) : isAuthenticated ? (
                 <>
                   <NavigationMenuLink
                     asChild
@@ -39,30 +42,26 @@ function NavBar() {
                     <Link href="/profile">Profile</Link>
                   </NavigationMenuLink>
 
-                  {data.user.role === 'admin' && (
+                  {user?.role === 'admin' && (
                     <Button className="ml-2" type="button" variant="secondary">
                       <Link href="/dashboard">Dashboard</Link>
                     </Button>
                   )}
-                  <NavigationMenuLink
-                    asChild
-                    className={navigationMenuTriggerStyle()}
-                  >
-                    <Button
-                      className="ml-2 bg-red-600 hover:bg-red-700 hover:text-white"
-                      onClick={async () => {
-                        await signOut({
-                          fetchOptions: {
-                            onSuccess() {
-                              route.push('/');
-                            },
+                  
+                  <Button
+                    className="ml-2 bg-red-600 hover:bg-red-700 text-white"
+                    onClick={async () => {
+                      await signOut({
+                        fetchOptions: {
+                          onSuccess() {
+                            route.push('/');
                           },
-                        });
-                      }}
-                    >
-                      Sign Out
-                    </Button>
-                  </NavigationMenuLink>
+                        },
+                      });
+                    }}
+                  >
+                    Sign Out
+                  </Button>
                 </>
               ) : (
                 <>
