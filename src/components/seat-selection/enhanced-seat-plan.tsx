@@ -36,6 +36,12 @@ export function EnhancedSeatPlan({
   const [refreshKey, setRefreshKey] = useState(0);
   const [lastRefresh, setLastRefresh] = useState<Date>(new Date());
 
+  // Generate consistent seat name based on row and column (A1, A2, B1, B2, etc.)
+  const generateSeatName = (row: number, column: number): string => {
+    const rowLetter = String.fromCharCode(64 + row); // A=1, B=2, C=3, etc.
+    return `${rowLetter}${column}`;
+  };
+
   // Fetch real seat data from API
   useEffect(() => {
     const fetchSeats = async () => {
@@ -45,14 +51,21 @@ export function EnhancedSeatPlan({
         const data = await response.json();
         
         if (data.success) {
-          // Transform API data to component format
-          const transformedSeats: Seat[] = data.data.map((seat: any, index: number) => ({
-            id: seat.id,
-            seatName: seat.seatName,
-            status: seat.status,
-            row: Math.floor(index / 4) + 1, // Calculate row based on position
-            column: (index % 4) + 1, // Calculate column based on position
-          }));
+          // Transform API data to component format with consistent naming
+          // Bus layout: 2 seats on left + 2 seats on right = 4 seats per row (A1 A2  A3 A4)
+          const seatsPerRow = 4;
+          const transformedSeats: Seat[] = data.data.map((seat: any, index: number) => {
+            const row = Math.floor(index / seatsPerRow) + 1; // Calculate row based on position
+            const column = (index % seatsPerRow) + 1; // Calculate column based on position
+            
+            return {
+              id: seat.id,
+              seatName: generateSeatName(row, column), // Generate consistent seat name (A1, A2, A3, A4, B1, B2, B3, B4, etc.)
+              status: seat.status,
+              row: row,
+              column: column,
+            };
+          });
           
           setSeats(transformedSeats);
           setLastRefresh(new Date());
@@ -168,7 +181,7 @@ export function EnhancedSeatPlan({
                   onClick={() => handleSeatClick(seat)}
                   disabled={seat.status !== 'available' && !selectedSeats.some(s => s.id === seat.id)}
                   className={`
-                    w-10 h-10 rounded border-2 text-sm font-medium transition-colors
+                    w-10 h-10 rounded border-2 text-xs font-medium transition-colors
                     ${getSeatClass(seat)}
                   `}
                   title={`Seat ${seat.seatName} - ${seat.status}`}
@@ -179,9 +192,9 @@ export function EnhancedSeatPlan({
           </div>
 
           {/* Aisle space */}
-          <div className="w-6" />
+          <div className="w-6 border-b border-dashed border-gray-300 h-0 my-5" />
 
-          {/* Right side seats (column 3) */}
+          {/* Right side seats (columns 3-4) */}
           <div className="flex gap-1">
             {rowSeats
               .filter(s => s.column > 2)
@@ -191,7 +204,7 @@ export function EnhancedSeatPlan({
                   onClick={() => handleSeatClick(seat)}
                   disabled={seat.status !== 'available' && !selectedSeats.some(s => s.id === seat.id)}
                   className={`
-                    w-10 h-10 rounded border-2 text-sm font-medium transition-colors
+                    w-10 h-10 rounded border-2 text-xs font-medium transition-colors
                     ${getSeatClass(seat)}
                   `}
                   title={`Seat ${seat.seatName} - ${seat.status}`}
