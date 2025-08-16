@@ -79,7 +79,7 @@ export default function ManageTrip() {
 	}, []);
 
 	const handleDelete = async (id: number) => {
-		await fetch(`http://localhost:5000/api/trip/${id}`, { method: "DELETE" });
+		await fetch(`/api/trip/${id}`, { method: "DELETE" });
 		setTrips((prev) => prev.filter((t) => t.id !== id));
 	};
 
@@ -87,7 +87,7 @@ export default function ManageTrip() {
 		if (!selectedTrip) return;
 
 		setLoading(true);
-		await fetch(`http://localhost:5000/api/trip/${selectedTrip.id}`, {
+		await fetch(`/api/trip/${selectedTrip.id}`, {
 			method: "PUT",
 			headers: { "Content-Type": "application/json" },
 			body: JSON.stringify(selectedTrip),

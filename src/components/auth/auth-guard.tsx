@@ -18,7 +18,7 @@ export function AuthGuard({ children, fallback }: AuthGuardProps) {
     if (!isPending && !session) {
       router.push('/sign-in');
     }
-  }, [session, isPending, router]);
+  }, [session, isPending]);
 
   if (isPending) {
     return (
