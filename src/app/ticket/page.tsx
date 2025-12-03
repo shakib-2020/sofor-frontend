@@ -74,19 +74,18 @@ function TicketPageContent() {
 			setLoading(true);
 			try {
 				const res = await fetch(
-					`/api/trip/search?from=${from}&to=${to}&jDate=${jDate}${
-						rDate ? `&rDate=${rDate}` : ""
+					`/api/trip/search?from=${from}&to=${to}&jDate=${jDate}${rDate ? `&rDate=${rDate}` : ""
 					}`,
 				);
 				const data = await res.json();
-				
+
 				// Ensure data is an array and filter valid trips
 				let validTrips = [];
 				if (Array.isArray(data)) {
 					validTrips = data.filter(trip => trip && trip.id && trip.bus_info && trip.route_info);
 				}
-				
-				setTrips(validTrips);
+
+				setTrips(data);
 			} catch (err) {
 				_error("Error fetching trips:", err);
 				setTrips([]); // Reset to empty array on error
@@ -113,11 +112,11 @@ function TicketPageContent() {
 			toast.error('Please select at least one seat');
 			return;
 		}
-		
+
 		// 🚫 Socket seat occupation disabled for Vercel deployment
 		// Seats will be reserved during the payment process on the backend
 		// No need for real-time seat occupation via WebSocket
-		
+
 		setCurrentStep('payment');
 	};
 
@@ -131,7 +130,7 @@ function TicketPageContent() {
 		// 🚫 Socket seat release disabled for Vercel deployment
 		// Seats will be automatically released if payment is not completed within timeout
 		// No need for real-time seat release via WebSocket
-		
+
 		setCurrentStep('seat-selection');
 	};
 
@@ -139,11 +138,11 @@ function TicketPageContent() {
 		// Handle successful payment
 		console.log('Payment successful:', paymentData);
 		toast.success('Payment successful! Your booking is confirmed.');
-		
+
 		// Seats will be automatically marked as "booked" by the backend
 		// Clear local selection state
 		setSelectedSeats([]);
-		
+
 		// Redirect to my bookings page or success page
 		setTimeout(() => {
 			router.push('/my-bookings');
@@ -193,8 +192,8 @@ function TicketPageContent() {
 				<div className="max-w-4xl mx-auto">
 					{/* Header */}
 					<div className="mb-6">
-						<Button 
-							variant="ghost" 
+						<Button
+							variant="ghost"
 							onClick={handleBackToTripSelection}
 							className="mb-4"
 						>
@@ -211,8 +210,8 @@ function TicketPageContent() {
 								<div className="text-right">
 									<p className="text-sm text-gray-600">Bus</p>
 									<p className="font-semibold">{selectedTrip.bus_info?.name}</p>
+								</div>
 							</div>
-						</div>
 
 							<div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
 								<div>
@@ -222,7 +221,7 @@ function TicketPageContent() {
 									</p>
 									<p className="text-gray-600">{selectedTrip.boarding_points?.[0]?.name}</p>
 								</div>
-							<div>
+								<div>
 									<span className="text-gray-600">Arrival:</span>
 									<p className="font-medium">
 										{new Date(`${selectedTrip.arrival_date}T${selectedTrip.arrival_time}`).toLocaleString()}
@@ -230,10 +229,10 @@ function TicketPageContent() {
 									<p className="text-gray-600">
 										{selectedTrip.dropping_points?.[selectedTrip.dropping_points.length - 1]?.name}
 									</p>
-							</div>
-							</div>
+								</div>
 							</div>
 						</div>
+					</div>
 
 					{/* Seat Selection */}
 					<div className="bg-white p-6 rounded-lg shadow-sm border mb-6">
@@ -250,13 +249,13 @@ function TicketPageContent() {
 					{selectedSeats.length > 0 && (
 						<div className="bg-white p-6 rounded-lg shadow-sm border">
 							<h3 className="text-lg font-semibold mb-4">Booking Summary</h3>
-							
+
 							<div className="space-y-2 mb-4">
 								<div className="flex justify-between">
 									<span>Selected Seats:</span>
 									<span className="font-medium">
 										{selectedSeats.map(seat => seat.seatName).join(', ')}
-							</span>
+									</span>
 								</div>
 								<div className="flex justify-between">
 									<span>Number of Seats:</span>
@@ -274,7 +273,7 @@ function TicketPageContent() {
 								</div>
 							</div>
 
-							<Button 
+							<Button
 								onClick={handleProceedToPayment}
 								className="w-full bg-green-500 hover:bg-green-600"
 								size="lg"
@@ -283,14 +282,14 @@ function TicketPageContent() {
 							</Button>
 						</div>
 					)}
-						</div>
+				</div>
 			)}
 
 			{/* Step 3: Payment */}
 			{currentStep === 'payment' && selectedTrip && selectedSeats.length > 0 && (
 				<div className="max-w-2xl mx-auto">
-					<Button 
-						variant="ghost" 
+					<Button
+						variant="ghost"
 						onClick={handleBackToSeatSelection}
 						className="mb-4"
 					>
@@ -310,7 +309,7 @@ function TicketPageContent() {
 						onPaymentSuccess={handlePaymentSuccess}
 						onCancel={handleBackToSeatSelection}
 					/>
-					</div>
+				</div>
 			)}
 		</Sheet>
 	);

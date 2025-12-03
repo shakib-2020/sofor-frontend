@@ -66,10 +66,10 @@ export default function SearchForm() {
 
 		// Option 2: If you want to fetch trips here and send data via state:
 		/*
-    const res = await fetch(`/api/trip/search?${params.toString()}`);
-    const trips = await res.json();
-    router.push(`/ticket?${params.toString()}`, { state: { trips } });
-    */
+		const res = await fetch(`/api/trip/search?${params.toString()}`);
+		const trips = await res.json();
+		router.push(`/ticket?${params.toString()}`, { state: { trips } });
+		*/
 	};
 
 	return (
@@ -98,7 +98,12 @@ export default function SearchForm() {
 									<DatePicker
 										curretDate={true}
 										onDateSelect={(date: Date) => {
-											const formatted = date.toISOString().split("T")[0];
+											const nextDay = new Date(date);
+											nextDay.setDate(nextDay.getDate() + 1);
+
+											const formatted = nextDay.toISOString().split("T")[0];
+
+											console.log(formatted);
 											setJDate(formatted);
 										}}
 									/>
@@ -107,7 +112,10 @@ export default function SearchForm() {
 									<Label>Return Date</Label>
 									<DatePicker
 										onDateSelect={(date: Date) => {
-											const formatted = date.toISOString().split("T")[0];
+											const nextDay = new Date(date);
+											nextDay.setDate(nextDay.getDate() + 1);
+
+											const formatted = nextDay.toISOString().split("T")[0];
 											setRDate(formatted);
 										}}
 									/>
