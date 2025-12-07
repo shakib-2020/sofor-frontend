@@ -13,6 +13,13 @@ import {
 	SheetHeader,
 	SheetTitle,
 } from "@/components/ui/sheet";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select";
 import { _error, _log } from "@/lib/logs";
 import { LoadingCard, LoadingSpinner } from "@/components/ui/loading-spinner";
 import { toast } from "sonner";
@@ -61,6 +68,14 @@ function TicketPageContent() {
 	const [selectedTrip, setSelectedTrip] = useState<Trip | null>(null);
 	const [selectedSeats, setSelectedSeats] = useState<SelectedSeat[]>([]);
 	const [currentStep, setCurrentStep] = useState<'trip-selection' | 'seat-selection' | 'payment'>('trip-selection');
+	const [selectedBusOperator, setSelectedBusOperator] = useState<string>("all");
+	const [availableBusOperators, setAvailableBusOperators] = useState<string[]>([]);
+
+	// Filter trips based on selected bus operator
+	const filteredTrips = trips.filter((trip) => {
+		if (selectedBusOperator === "all") return true;
+		return trip.bus_info?.name === selectedBusOperator;
+	});
 
 	useEffect(() => {
 		const from = searchParams.get("from");
@@ -86,6 +101,10 @@ function TicketPageContent() {
 				}
 
 				setTrips(data);
+				
+				// Extract unique bus operators
+				const operators = Array.from(new Set(validTrips.map((trip: Trip) => trip.bus_info?.name).filter(Boolean)));
+				setAvailableBusOperators(operators as string[]);
 			} catch (err) {
 				_error("Error fetching trips:", err);
 				setTrips([]); // Reset to empty array on error
@@ -156,7 +175,31 @@ function TicketPageContent() {
 
 	return (
 		<Sheet>
-			<h2 className="my-4 font-semibold text-3xl">Choose Departing Ticket :</h2>
+			<div className="flex items-center justify-between my-4">
+				<h2 className="font-semibold text-3xl">Choose Departing Ticket :</h2>
+				
+				{/* Bus Operator Filter */}
+				{availableBusOperators.length > 0 && (
+					<div className="w-[200px]">
+						<Select
+							value={selectedBusOperator}
+							onValueChange={setSelectedBusOperator}
+						>
+							<SelectTrigger>
+								<SelectValue placeholder="Filter by Bus" />
+							</SelectTrigger>
+							<SelectContent>
+								<SelectItem value="all">All Buses</SelectItem>
+								{availableBusOperators.map((operator) => (
+									<SelectItem key={operator} value={operator}>
+										{operator}
+									</SelectItem>
+								))}
+							</SelectContent>
+						</Select>
+					</div>
+				)}
+			</div>
 
 			{/* Trip list */}
 			{loading && (
@@ -170,14 +213,14 @@ function TicketPageContent() {
 					<LoadingCard />
 				</div>
 			)}
-			{!loading && trips.length === 0 && (
-				<div className="text-center py-8">
+			{!loading && filteredTrips.length === 0 && (
+				<div className="text-center py-8 h-[calc(100vh-20rem)]">
 					<p className="text-gray-500 mb-4">No trips found for your search criteria.</p>
-					<p className="text-sm text-gray-400">Try adjusting your search parameters.</p>
+					<p className="text-sm text-gray-400">Try adjusting your search parameters or filter.</p>
 				</div>
 			)}
 			{!loading &&
-				trips.map((trip) => (
+				filteredTrips.map((trip) => (
 					<div
 						key={`${trip.id}`}
 						onClick={() => handleTripSelect(trip)}

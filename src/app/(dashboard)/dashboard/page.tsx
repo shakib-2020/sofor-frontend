@@ -1,21 +1,108 @@
-import { ChartAreaInteractive } from '@/components/dashboard/chart-area-interactive';
-import { DataTable } from '@/components/dashboard/data-table';
-import { SectionCards } from '@/components/section-cards';
-
-import data from './data.json' with { type: 'json' };
+import { DashboardCard } from '@/components/dashboard/dashboard-card';
+import {
+  Users,
+  Bus,
+  Store,
+  Map,
+  Navigation,
+  Armchair,
+  Ticket,
+  UserCog,
+} from 'lucide-react';
 
 export default function Page() {
   return (
-    <div className="flex flex-1 flex-col">
-      <div className="@container/main flex flex-1 flex-col gap-2">
-        <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
-          <SectionCards />
-          <div className="px-4 lg:px-6">
-            <ChartAreaInteractive />
-          </div>
-          <DataTable data={data} />
-        </div>
+    <div className="flex flex-1 flex-col p-4 md:p-6">
+      <h1 className="mb-6 font-bold text-3xl">Dashboard Overview</h1>
+      
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        {/* User Section */}
+        <DashboardCard
+          title="Users"
+          count="1,234" // Placeholder
+          icon={Users}
+          actions={[
+            { label: 'Manage Users', href: '/dashboard/user', variant: 'outline' },
+          ]}
+        />
+
+        {/* Bus Owner Section */}
+        <DashboardCard
+          title="Bus Owners"
+          count="56" // Placeholder
+          icon={UserCog}
+          actions={[
+            { label: 'Add Owner', href: '/dashboard/add-bus-owner', variant: 'default' },
+            { label: 'Manage Owners', href: '/dashboard/manage-bus-owner', variant: 'outline' },
+          ]}
+        />
+
+        {/* Counter Section */}
+        <DashboardCard
+          title="Counters"
+          count="89" // Placeholder
+          icon={Store}
+          actions={[
+            { label: 'Add Counter', href: '/dashboard/add-counter', variant: 'default' },
+            { label: 'Manage Counters', href: '/dashboard/manage-counter', variant: 'outline' },
+          ]}
+        />
+
+        {/* Bus Section */}
+        <DashboardCard
+          title="Buses"
+          count="120" // Placeholder
+          icon={Bus}
+          actions={[
+            { label: 'Add Bus', href: '/dashboard/add-bus', variant: 'default' },
+            { label: 'Manage Buses', href: '/dashboard/manage-bus', variant: 'outline' },
+          ]}
+        />
+
+        {/* Route Section */}
+        <DashboardCard
+          title="Routes"
+          count="45" // Placeholder
+          icon={Map}
+          actions={[
+            { label: 'Add Route', href: '/dashboard/add-route', variant: 'default' },
+            { label: 'Manage Routes', href: '/dashboard/manage-route', variant: 'outline' },
+          ]}
+        />
+
+        {/* Trip Section */}
+        <DashboardCard
+          title="Trips"
+          count="340" // Placeholder
+          icon={Navigation}
+          actions={[
+            { label: 'Add Trip', href: '/dashboard/add-trip', variant: 'default' },
+            { label: 'Manage Trips', href: '/dashboard/manage-trip', variant: 'outline' },
+          ]}
+        />
+
+        {/* Seat Section */}
+        <DashboardCard
+          title="Seats"
+          count="-" // Placeholder or N/A
+          icon={Armchair}
+          actions={[
+            { label: 'Manage Seats', href: '/dashboard/seat', variant: 'outline' },
+          ]}
+        />
+
+        {/* Booking Section */}
+        <DashboardCard
+          title="Bookings"
+          count="-" // Placeholder
+          icon={Ticket}
+          actions={[
+            // Placeholder for future implementation
+            { label: 'View Bookings', href: '#', variant: 'secondary' },
+          ]}
+        />
       </div>
     </div>
   );
 }
+
