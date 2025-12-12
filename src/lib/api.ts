@@ -40,11 +40,7 @@ apiClient.interceptors.response.use(
       const currentPath = window.location.pathname;
       const isAuthPage =
         currentPath.includes('/sign-in') || currentPath.includes('/signup');
-      const isCreateUserCall = error.config?.url?.includes(
-        '/user/create-if-not-exists'
-      );
-
-      if (!(isAuthPage || isCreateUserCall)) {
+      if (!isAuthPage) {
         // Handle unauthorized access - redirect to sign in
         window.location.href = '/sign-in';
       }
@@ -55,7 +51,7 @@ apiClient.interceptors.response.use(
 
 // API endpoints
 export const paymentAPI = {
-  createBookingWithPayment: (data: any) =>
+  createBookingWithPayment: (data: Record<string, unknown>) =>
     apiClient.post('/api/payment/booking-with-payment', data),
 
   executeBkashPayment: (paymentID: string) =>
@@ -69,7 +65,8 @@ export const paymentAPI = {
 };
 
 export const bookingAPI = {
-  getAllBookings: (params?: any) => apiClient.get('/api/booking', { params }),
+  getAllBookings: (params?: Record<string, unknown>) =>
+    apiClient.get('/api/booking', { params }),
 
   getBookingById: (id: number) => apiClient.get(`/api/booking/${id}`),
 
@@ -84,6 +81,5 @@ export const bookingAPI = {
 };
 
 export const userAPI = {
-  createIfNotExists: () => apiClient.post('/api/user/create-if-not-exists'),
   getCurrentUser: () => apiClient.get('/api/user/me'),
 };
