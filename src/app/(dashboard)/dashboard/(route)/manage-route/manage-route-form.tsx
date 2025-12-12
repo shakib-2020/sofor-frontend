@@ -26,6 +26,7 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { _error } from '@/lib/logs';
+import { apiClient } from '@/lib/api';
 
 type City = { id: number; name: string };
 type RouteStop = { id: number; name: string; serial: number };
@@ -66,8 +67,8 @@ export default function ManageRoute() {
   // Load data
   useEffect(() => {
     Promise.all([
-      fetch('/api/route').then((r) => r.json()),
-      fetch('/api/city').then((r) => r.json()),
+      apiClient.get('/api/route').then((r) => r.data),
+      apiClient.get('/api/city').then((r) => r.data),
     ])
       .then(([routeData, cityData]) => {
         setRoutes(routeData);
@@ -87,9 +88,7 @@ export default function ManageRoute() {
   const totalPages = Math.ceil(routes.length / itemsPerPage);
 
   const handleDelete = async (id: number) => {
-    await fetch(`/api/route/${id}`, {
-      method: 'DELETE',
-    });
+    await apiClient.delete(`/api/route/${id}`);
     setRoutes((prev) => prev.filter((r) => r.id !== id));
     const after = routes.length - 1;
     const newTotalPages = Math.max(1, Math.ceil(after / itemsPerPage));
@@ -176,11 +175,7 @@ export default function ManageRoute() {
       faresPayload[key] = Number.isFinite(num) ? num : 0;
     });
 
-    await fetch(`/api/route/${selectedRoute.id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ route: routePayload, fares: faresPayload }),
-    });
+    await apiClient.put(`/api/route/${selectedRoute.id}`, { route: routePayload, fares: faresPayload });
 
     // Build updated route object
     const newName = routePayload.map((c) => c.name).join(' to ');

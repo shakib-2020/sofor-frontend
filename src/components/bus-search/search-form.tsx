@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardDescription } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { _error } from "@/lib/logs";
+import { apiClient } from "@/lib/api";
 import { CityPicker } from "./city-picker";
 
 type City = {
@@ -39,9 +40,8 @@ export default function SearchForm() {
 
 	const fetchCities = useCallback(async () => {
 		try {
-			const res = await fetch("/api/city");
-			const data = await res.json();
-			setCities(data);
+			const res = await apiClient.get("/api/city");
+			setCities(res.data);
 		} catch (err) {
 			_error("Error fetching cities:", err);
 		}

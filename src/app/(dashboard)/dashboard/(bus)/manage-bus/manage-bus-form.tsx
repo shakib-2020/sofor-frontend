@@ -18,6 +18,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
+import { apiClient } from "@/lib/api";
 
 interface Bus {
 	id: number;
@@ -45,19 +46,19 @@ export default function ManageBus() {
 
 	// Load buses and owners
 	useEffect(() => {
-		fetch("/api/bus")
-			.then((res) => res.json())
+		apiClient.get("/api/bus")
+			.then((res) => res.data)
 			.then((data) => setBuses(data))
 			.catch((err) => console.error("Error fetching buses:", err));
 
-		fetch("/api/bus-owner")
-			.then((res) => res.json())
+		apiClient.get("/api/bus-owner")
+			.then((res) => res.data)
 			.then((data) => setOwners(data))
 			.catch((err) => console.error("Error fetching owners:", err));
 	}, []);
 
 	const handleDelete = async (id: number) => {
-		await fetch(`/api/bus/${id}`, { method: "DELETE" });
+		await apiClient.delete(`/api/bus/${id}`);
 		setBuses((prev) => prev.filter((b) => b.id !== id));
 	};
 
@@ -65,11 +66,7 @@ export default function ManageBus() {
 		if (!selectedBus) return;
 		setLoading(true);
 
-		await fetch(`/api/bus/${selectedBus.id}`, {
-			method: "PUT",
-			headers: { "Content-Type": "application/json" },
-			body: JSON.stringify(selectedBus),
-		});
+		await apiClient.put(`/api/bus/${selectedBus.id}`, selectedBus);
 
 		setBuses((prev) =>
 			prev.map((b) => (b.id === selectedBus.id ? selectedBus : b)),

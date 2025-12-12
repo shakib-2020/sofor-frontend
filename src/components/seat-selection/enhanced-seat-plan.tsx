@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 // import { getSocket } from '@/lib/socket'; // 🚫 Disabled for Vercel deployment
 import { toast } from 'sonner';
 import { RefreshCw, Clock } from 'lucide-react';
+import { apiClient } from '@/lib/api';
 
 interface Seat {
   id: number;
@@ -47,8 +48,8 @@ export function EnhancedSeatPlan({
     const fetchSeats = async () => {
       try {
         setLoading(true);
-        const response = await fetch(`/api/seat/bus/${busId}`);
-        const data = await response.json();
+        const response = await apiClient.get(`/api/seat/bus/${busId}`);
+        const data = response.data;
         
         if (data.success) {
           // Transform API data to component format with consistent naming

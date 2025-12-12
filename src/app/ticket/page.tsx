@@ -26,6 +26,7 @@ import { toast } from "sonner";
 import { ArrowLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useAuthUser } from "@/hooks/use-auth-user";
+import { apiClient } from "@/lib/api";
 
 type Trip = {
 	id: number;
@@ -88,11 +89,11 @@ function TicketPageContent() {
 		const fetchTrips = async () => {
 			setLoading(true);
 			try {
-				const res = await fetch(
+				const res = await apiClient.get(
 					`/api/trip/search?from=${from}&to=${to}&jDate=${jDate}${rDate ? `&rDate=${rDate}` : ""
 					}`,
 				);
-				const data = await res.json();
+				const data = res.data;
 
 				// Ensure data is an array and filter valid trips
 				let validTrips = [];

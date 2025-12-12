@@ -4,7 +4,7 @@ import axios from 'axios';
 // This ensures cookies are properly sent via the same-origin proxy
 export const apiClient = axios.create({
   // No baseURL - use relative URLs to leverage Next.js proxy rewrite
-  baseURL: 'https://sofor-server-hono.biplob-asanibir.workers.dev',
+  baseURL: process.env.NEXT_PUBLIC_BETTER_SERVER,
   headers: {
     'Content-Type': 'application/json',
     Accept: 'application/json',
