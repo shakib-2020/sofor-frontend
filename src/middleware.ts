@@ -1,36 +1,18 @@
-import { getCookieCache, getSessionCookie } from 'better-auth/cookies';
+import { getSessionCookie } from 'better-auth/cookies';
 import { type NextRequest, NextResponse } from 'next/server';
 
-export async function middleware(request: NextRequest) {
-  try {
-    // Get session cookie from request
-    const cookies = getSessionCookie(request);
-    
-    console.log('===========session cookies:', cookies);
 
-    // If no session cookie found, redirect to sign-in
-    if (!cookies) {
-      const signInUrl = new URL("/sign-in", request.url);
-      // Add redirect parameter to handle post-auth navigation
-      signInUrl.searchParams.set('redirect', request.nextUrl.pathname);
-      return NextResponse.redirect(signInUrl);
-    }
-    
-    return NextResponse.next();
-  } catch (error) {
-    console.error('Middleware auth error:', error);
-    // On error, redirect to sign-in
-    const signInUrl = new URL("/sign-in", request.url);
-    signInUrl.searchParams.set('redirect', request.nextUrl.pathname);
-    return NextResponse.redirect(signInUrl);
+export function middleware(request: NextRequest) {
+  const sessionCookie = getSessionCookie(request);
+  // THIS IS NOT SECURE!
+  // This is the recommended approach to optimistically redirect users
+  // We recommend handling auth checks in each page/route
+  if (!sessionCookie) {
+    return NextResponse.redirect(new URL('/', request.url));
   }
+  return NextResponse.next();
 }
 
 export const config = {
-  matcher: [
-    '/dashboard/:path*',  // Protect all dashboard routes
-    '/profile/:path*',    // Protect all profile routes
-    '/my-bookings/:path*' // Protect booking routes
-  ],
-  // runtime: "nodejs"
+  matcher: ['/dashboard/:path*', '/profile/:path*', '/my-bookings/:path*'], // Specify the routes the middleware applies to
 };
