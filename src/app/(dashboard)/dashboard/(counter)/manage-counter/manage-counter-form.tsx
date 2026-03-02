@@ -18,6 +18,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
+import { apiClient } from "@/lib/api";
 
 interface Counter {
 	id: number;
@@ -44,8 +45,8 @@ export default function ManageCounter() {
 
 	useEffect(() => {
 		Promise.all([
-			fetch("/api/counter").then((res) => res.json()),
-			fetch("/api/city").then((res) => res.json()),
+			apiClient.get("/api/counter").then((res) => res.data),
+			apiClient.get("/api/city").then((res) => res.data),
 		])
 			.then(([counterData, cityData]) => {
 				setCounters(counterData);
@@ -55,9 +56,7 @@ export default function ManageCounter() {
 	}, []);
 
 	const handleDelete = async (id: number) => {
-		await fetch(`/api/counter/${id}`, {
-			method: "DELETE",
-		});
+		await apiClient.delete(`/api/counter/${id}`);
 		setCounters((prev) => prev.filter((o) => o.id !== id));
 	};
 
@@ -65,11 +64,7 @@ export default function ManageCounter() {
 		if (!selectedCounter) return;
 
 		setLoading(true);
-		await fetch(`/api/counter/${selectedCounter.id}`, {
-			method: "PUT",
-			headers: { "Content-Type": "application/json" },
-			body: JSON.stringify(selectedCounter),
-		});
+		await apiClient.put(`/api/counter/${selectedCounter.id}`, selectedCounter);
 
 		setCounters((prev) =>
 			prev.map((o) => (o.id === selectedCounter.id ? selectedCounter : o)),

@@ -19,6 +19,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
+import { apiClient } from "@/lib/api";
 
 interface Counter {
 	id: number;
@@ -64,10 +65,10 @@ export default function ManageTrip() {
 
 	useEffect(() => {
 		Promise.all([
-			fetch("/api/trip").then((res) => res.json()),
-			fetch("/api/counter").then((res) => res.json()),
-			fetch("/api/route").then((res) => res.json()),
-			fetch("/api/bus").then((res) => res.json()),
+			apiClient.get("/api/trip").then((res) => res.data),
+			apiClient.get("/api/counter").then((res) => res.data),
+			apiClient.get("/api/route").then((res) => res.data),
+			apiClient.get("/api/bus").then((res) => res.data),
 		])
 			.then(([tripData, counterData, routeData, busData]) => {
 				setTrips(tripData);
@@ -79,7 +80,7 @@ export default function ManageTrip() {
 	}, []);
 
 	const handleDelete = async (id: number) => {
-		await fetch(`/api/trip/${id}`, { method: "DELETE" });
+		await apiClient.delete(`/api/trip/${id}`);
 		setTrips((prev) => prev.filter((t) => t.id !== id));
 	};
 
@@ -87,11 +88,7 @@ export default function ManageTrip() {
 		if (!selectedTrip) return;
 
 		setLoading(true);
-		await fetch(`/api/trip/${selectedTrip.id}`, {
-			method: "PUT",
-			headers: { "Content-Type": "application/json" },
-			body: JSON.stringify(selectedTrip),
-		});
+		await apiClient.put(`/api/trip/${selectedTrip.id}`, selectedTrip);
 
 		setTrips((prev) =>
 			prev.map((t) => (t.id === selectedTrip.id ? selectedTrip : t)),

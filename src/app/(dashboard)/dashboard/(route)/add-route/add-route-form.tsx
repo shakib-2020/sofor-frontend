@@ -19,6 +19,7 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
+import { apiClient } from '@/lib/api';
 
 export default function CreateRouteForm() {
   const [cityList, setCityList] = useState<{ id: number; name: string }[]>([]);
@@ -29,9 +30,8 @@ export default function CreateRouteForm() {
   useEffect(() => {
     const fetchCities = async () => {
       try {
-        const res = await fetch('/api/city');
-        const data = await res.json();
-        setCityList(data);
+        const res = await apiClient.get('/api/city');
+        setCityList(res.data);
       } catch (err) {
         console.error('Error fetching cities:', err);
       }
@@ -73,11 +73,7 @@ export default function CreateRouteForm() {
     console.log('Payload to backend:', payload);
 
     try {
-      await fetch('/api/route', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
+      await apiClient.post('/api/route', payload);
       toast.success('Route has been created.');
       reset();
       setRoute([]);

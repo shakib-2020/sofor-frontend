@@ -32,6 +32,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
+import { apiClient } from "@/lib/api";
 
 const formSchema = z.object({
 	tripNumber: z.string().min(1, "Trip number is required"),
@@ -79,20 +80,18 @@ export function AddTripForm() {
 
 	const fetchBuses = async () => {
 		try {
-			const res = await fetch("/api/bus");
-			const data = await res.json();
-			console.log("bus", data);
-			setBuses(data);
+			const res = await apiClient.get("/api/bus");
+			console.log("bus", res.data);
+			setBuses(res.data);
 		} catch (err) {
 			console.error("Error fetching cities:", err);
 		}
 	};
 	const fetchRoutes = async () => {
 		try {
-			const res = await fetch("/api/route");
-			const data = await res.json();
-			console.log("Route", data);
-			setRoutes(data);
+			const res = await apiClient.get("/api/route");
+			console.log("Route", res.data);
+			setRoutes(res.data);
 		} catch (err) {
 			console.error("Error fetching cities:", err);
 		}
@@ -100,10 +99,9 @@ export function AddTripForm() {
 
 	const fetchCounters = async () => {
 		try {
-			const res = await fetch("/api/counter");
-			const data = await res.json();
-			console.log("Counter", data);
-			setCounters(data);
+			const res = await apiClient.get("/api/counter");
+			console.log("Counter", res.data);
+			setCounters(res.data);
 		} catch (err) {
 			console.error("Error fetching cities:", err);
 		}
@@ -141,11 +139,7 @@ export function AddTripForm() {
 		setLoading(true);
 
 		try {
-			await fetch("/api/trip", {
-				method: "POST",
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify(payload),
-			});
+			await apiClient.post("/api/trip", payload);
 			toast.success("Trip has been created.");
 			// After successful creation
 			form.reset({

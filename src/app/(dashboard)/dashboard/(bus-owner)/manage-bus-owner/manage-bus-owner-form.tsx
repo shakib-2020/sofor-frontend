@@ -11,6 +11,7 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { apiClient } from '@/lib/api';
 
 interface BusOwner {
   id: number;
@@ -29,16 +30,14 @@ export default function ManageBusOwner() {
   const router = useRouter();
 
   useEffect(() => {
-    fetch('/api/bus-owner')
-      .then((res) => res.json())
+    apiClient.get('/api/bus-owner')
+      .then((res) => res.data)
       .then((data) => setOwners(data))
       .catch((err) => console.error('Error fetching owners:', err));
   }, []);
 
   const handleDelete = async (id: number) => {
-    await fetch(`/api/bus-owner/${id}`, {
-      method: 'DELETE',
-    });
+    await apiClient.delete(`/api/bus-owner/${id}`);
     setOwners((prev) => prev.filter((o) => o.id !== id));
   };
 
@@ -48,11 +47,7 @@ export default function ManageBusOwner() {
     }
 
     setLoading(true);
-    await fetch(`/api/bus-owner/${selectedOwner.id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(selectedOwner),
-    });
+    await apiClient.put(`/api/bus-owner/${selectedOwner.id}`, selectedOwner);
 
     setOwners((prev) =>
       prev.map((o) => (o.id === selectedOwner.id ? selectedOwner : o))

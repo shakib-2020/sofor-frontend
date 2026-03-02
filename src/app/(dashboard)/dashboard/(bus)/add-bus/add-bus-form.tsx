@@ -16,6 +16,7 @@ import {
 	FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { apiClient } from "@/lib/api";
 
 // Zod Schema
 const formSchema = z.object({
@@ -43,11 +44,7 @@ export function AddBusForm() {
 			...data,
 		};
 		try {
-			await fetch("/api/bus", {
-				method: "POST",
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify(payload),
-			});
+			await apiClient.post("/api/bus", payload);
 			toast.success("Bus has been added.");
 			form.reset();
 		} catch (err) {

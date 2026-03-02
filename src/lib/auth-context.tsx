@@ -1,8 +1,13 @@
 'use client';
 
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import {
+  createContext,
+  type ReactNode,
+  useContext,
+  useEffect,
+  useState,
+} from 'react';
 import { useSession } from '@/lib/auth-client';
-import { userAPI } from '@/lib/api';
 
 interface AuthUser {
   id: string;
@@ -18,9 +23,17 @@ interface AuthUser {
   banExpires?: Date | null;
 }
 
+interface SessionData {
+  session: {
+    id: string;
+    [key: string]: unknown;
+  } | null;
+  user: AuthUser | null;
+}
+
 interface AuthContextType {
   user: AuthUser | null;
-  sessionData: any;
+  sessionData: SessionData | null;
   isLoading: boolean;
   isAuthenticated: boolean;
   error: string | null;
@@ -30,23 +43,21 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 interface AuthProviderProps {
-  children: React.ReactNode;
+  children: ReactNode;
 }
 
 export function AuthProvider({ children }: AuthProviderProps) {
-  const [user, setUser] = useState<AuthUser | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [apiSyncAttempted, setApiSyncAttempted] = useState(false);
-  
-  // Use better-auth's useSession hook with correct API
-  const { 
-    data: sessionData, 
-    isPending: isLoading, 
+
+  // Use better-auth's useSession hook - this is the source of truth
+  const {
+    data: sessionData,
+    isPending: isLoading,
     error: sessionError,
-    refetch 
+    refetch,
   } = useSession();
 
-  // Combine session error with our error state
+  // Handle session errors
   useEffect(() => {
     if (sessionError) {
       setError(sessionError.message || 'Session error');
@@ -55,79 +66,29 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   }, [sessionError]);
 
-  // Sync user with database when session changes (but only once per session)
-  useEffect(() => {
-    const syncUser = async () => {
-      if (!sessionData?.session || !sessionData?.user) {
-        setUser(null);
-        setApiSyncAttempted(false);
-        return;
-      }
-
-      // If we already have a user or already attempted API sync for this session, skip
-      if (user || apiSyncAttempted) {
-        return;
-      }
-
-      setApiSyncAttempted(true);
-
-      try {
-        // Small delay to ensure session is fully established in production
-        await new Promise(resolve => setTimeout(resolve, 100));
-        
-        // Try to create user if they don't exist in our database
-        const userResponse = await userAPI.createIfNotExists();
-        
-        if (userResponse.data.success) {
-          setUser(userResponse.data.user);
-        } else {
-          // Fallback to session user if API call fails
-          setUser(sessionData.user);
-        }
-      } catch (apiError: any) {
-        console.warn('Failed to sync user with database, using session user:', apiError);
-        // Use the session user as fallback to prevent infinite loops
-        setUser(sessionData.user);
-        
-        // If it's a 401 error, the session might be invalid, so don't retry
-        if (apiError?.response?.status === 401) {
-          console.warn('Session appears to be invalid on server side, using client session data');
-        }
-      }
-    };
-
-    // Debounce the sync to prevent rapid calls during session initialization
-    const timeoutId = setTimeout(syncUser, 50);
-    return () => clearTimeout(timeoutId);
-  }, [sessionData?.session?.id, user, apiSyncAttempted]); // Include user and apiSyncAttempted to prevent unnecessary calls
-
-  // Reset API sync flag when session changes
-  useEffect(() => {
-    setApiSyncAttempted(false);
-  }, [sessionData?.session?.id]);
-
   const refreshSession = async () => {
     try {
-      setApiSyncAttempted(false); // Reset flag on manual refresh
       await refetch();
-    } catch (err: any) {
-      setError(err.message || 'Failed to refresh session');
+    } catch (err: unknown) {
+      const refreshError = err as { message?: string };
+      setError(refreshError.message || 'Failed to refresh session');
     }
   };
 
+  // Authentication status based on Better Auth session data
+  const isAuthenticated = !!sessionData?.session && !!sessionData?.user;
+
   const contextValue: AuthContextType = {
-    user,
-    sessionData,
+    user: sessionData?.user || null,
+    sessionData: sessionData || null,
     isLoading,
-    isAuthenticated: !!user && !!sessionData?.session,
+    isAuthenticated,
     error,
     refreshSession,
   };
 
   return (
-    <AuthContext.Provider value={contextValue}>
-      {children}
-    </AuthContext.Provider>
+    <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>
   );
 }
 

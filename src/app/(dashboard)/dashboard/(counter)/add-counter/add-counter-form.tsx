@@ -22,6 +22,7 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { addCounterSiteText } from "./sitetext";
+import { apiClient } from "@/lib/api";
 
 const formSchema = z.object({
 	name: z.string().min(1, "Counter name is required"),
@@ -56,8 +57,8 @@ export function AddCounterForm() {
 
 	// Load divisions once
 	useEffect(() => {
-		fetch("/api/division")
-			.then((res) => res.json())
+		apiClient.get("/api/division")
+			.then((res) => res.data)
 			.then(setDivisions);
 	}, []);
 
@@ -69,11 +70,10 @@ export function AddCounterForm() {
 		setDistricts([]);
 		setCities([]);
 
-		const res = await fetch(
+		const res = await apiClient.get(
 			`/api/district?divisionId=${value}`,
 		);
-		const data = await res.json();
-		setDistricts(data);
+		setDistricts(res.data);
 	};
 
 	// District change handler
@@ -82,20 +82,15 @@ export function AddCounterForm() {
 		form.setValue("cityId", "");
 		setCities([]);
 
-		const res = await fetch(
+		const res = await apiClient.get(
 			`/api/city?districtId=${value}`,
 		);
-		const data = await res.json();
-		setCities(data);
+		setCities(res.data);
 	};
 
 	const onSubmit = async (data: z.infer<typeof formSchema>) => {
 		setLoading(true);
-		await fetch("/api/counter", {
-			method: "POST",
-			headers: { "Content-Type": "application/json" },
-			body: JSON.stringify(data),
-		});
+		await apiClient.post("/api/counter", data);
 		setLoading(false);
 		toast.success("Counter has been created.");
 		form.reset();
