@@ -69,6 +69,7 @@ function TicketSelectionCard({ trip }: TripCardProps) {
 							{departure.toLocaleTimeString([], {
 								hour: "2-digit",
 								minute: "2-digit",
+								hour12: true,
 							})}
 						</span>
 						<p className="text-gray-500 text-sm">{departure.toDateString()}</p>
@@ -91,6 +92,7 @@ function TicketSelectionCard({ trip }: TripCardProps) {
 							{arrival.toLocaleTimeString([], {
 								hour: "2-digit",
 								minute: "2-digit",
+								hour12: true,
 							})}
 						</span>
 						<p className="text-gray-500 text-sm">{arrival.toDateString()}</p>

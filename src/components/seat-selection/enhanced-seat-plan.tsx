@@ -1,11 +1,10 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-// import { getSocket } from '@/lib/socket'; // 🚫 Disabled for Vercel deployment
 import { toast } from 'sonner';
 import { RefreshCw, Clock } from 'lucide-react';
+import { getPusher } from "@/lib/pusher-client";
 
 interface Seat {
   id: number;
@@ -22,13 +21,11 @@ interface EnhancedSeatPlanProps {
   maxSeats?: number;
 }
 
-
-
-export function EnhancedSeatPlan({ 
-  busId, 
-  tripId, 
-  onSeatSelect, 
-  maxSeats = 4 
+export function EnhancedSeatPlan({
+  busId,
+  tripId,
+  onSeatSelect,
+  maxSeats = 4
 }: EnhancedSeatPlanProps) {
   const [seats, setSeats] = useState<Seat[]>([]);
   const [selectedSeats, setSelectedSeats] = useState<Seat[]>([]);
@@ -49,7 +46,7 @@ export function EnhancedSeatPlan({
         setLoading(true);
         const response = await fetch(`/api/seat/bus/${busId}`);
         const data = await response.json();
-        
+
         if (data.success) {
           // Transform API data to component format with consistent naming
           // Bus layout: 2 seats on left + 2 seats on right = 4 seats per row (A1 A2  A3 A4)
@@ -57,7 +54,7 @@ export function EnhancedSeatPlan({
           const transformedSeats: Seat[] = data.data.map((seat: any, index: number) => {
             const row = Math.floor(index / seatsPerRow) + 1; // Calculate row based on position
             const column = (index % seatsPerRow) + 1; // Calculate column based on position
-            
+
             return {
               id: seat.id,
               seatName: generateSeatName(row, column), // Generate consistent seat name (A1, A2, A3, A4, B1, B2, B3, B4, etc.)
@@ -66,7 +63,7 @@ export function EnhancedSeatPlan({
               column: column,
             };
           });
-          
+
           setSeats(transformedSeats);
           setLastRefresh(new Date());
         } else {
@@ -85,18 +82,35 @@ export function EnhancedSeatPlan({
     fetchSeats();
   }, [busId, refreshKey]);
 
-  // 🚫 Socket.IO integration disabled for Vercel deployment
-  // Real-time updates replaced with polling/refresh functionality
   useEffect(() => {
-    // Auto-refresh seats every 30 seconds to check for updates
-    const interval = setInterval(() => {
-      if (selectedSeats.length === 0) { // Only refresh if no seats are selected
-        setRefreshKey(prev => prev + 1);
-      }
-    }, 30000); // 30 seconds
+    const pusher = getPusher();
+    const channel = pusher.subscribe(`trip-${tripId}`);
 
-    return () => clearInterval(interval);
-  }, [selectedSeats.length]);
+    channel.bind("seat-locked", (data: any) => {
+      setSeats(prev =>
+        prev.map(seat =>
+          seat.id === data.seatId
+            ? { ...seat, status: "occupied" }
+            : seat
+        )
+      );
+    });
+
+
+    channel.bind("seat-released", (data: any) => {
+      setSeats(prev =>
+        prev.map(seat =>
+          seat.id === data.seatId
+            ? { ...seat, status: "available" }
+            : seat
+        )
+      );
+    });
+
+    return () => {
+      pusher.unsubscribe(`trip-${tripId}`);
+    };
+  }, [tripId]);
 
   const refreshSeats = () => {
     setRefreshKey(prev => prev + 1);
@@ -106,7 +120,7 @@ export function EnhancedSeatPlan({
   const formatLastRefresh = () => {
     const now = new Date();
     const diff = Math.floor((now.getTime() - lastRefresh.getTime()) / 1000);
-    
+
     if (diff < 60) return `${diff}s ago`;
     if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
     return lastRefresh.toLocaleTimeString();
@@ -114,42 +128,114 @@ export function EnhancedSeatPlan({
 
 
 
-  const handleSeatClick = (seat: Seat) => {
-    if (seat.status !== 'available') {
-      toast.error('This seat is not available. Refreshing seat data...');
-      // Auto-refresh when seat appears unavailable
-      refreshSeats();
-      return;
-    }
+  // const handleSeatClick = (seat: Seat) => {
+  //   if (seat.status !== 'available') {
+  //     toast.error('This seat is not available. Refreshing seat data...');
+  //     // Auto-refresh when seat appears unavailable
+  //     refreshSeats();
+  //     return;
+  //   }
 
+  //   const isSelected = selectedSeats.some(s => s.id === seat.id);
+
+  //   if (isSelected) {
+  //     // Deselect seat - just remove from local state (no socket emit)
+  //     const newSelection = selectedSeats.filter(s => s.id !== seat.id);
+  //     setSelectedSeats(newSelection);
+  //     onSeatSelect(newSelection);
+  //   } else {
+  //     // Check max seats limit
+  //     if (selectedSeats.length >= maxSeats) {
+  //       toast.error(`You can select maximum ${maxSeats} seats`);
+  //       return;
+  //     }
+
+  //     // Select seat - only update local state (don't mark as occupied in DB yet)
+  //     const newSelection = [...selectedSeats, seat];
+  //     setSelectedSeats(newSelection);
+  //     onSeatSelect(newSelection);
+  //   }
+  // };
+
+  // Inside EnhancedSeatPlan component...
+
+  const handleSeatClick = async (seat: Seat) => {
     const isSelected = selectedSeats.some(s => s.id === seat.id);
 
     if (isSelected) {
-      // Deselect seat - just remove from local state (no socket emit)
-      const newSelection = selectedSeats.filter(s => s.id !== seat.id);
-      setSelectedSeats(newSelection);
-      onSeatSelect(newSelection);
+      // --- RELEASE LOGIC ---
+      const res = await fetch("/api/seat/release", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ tripId, seatId: seat.id }),
+      });
+
+      if (res.ok) {
+        const updated = selectedSeats.filter(s => s.id !== seat.id);
+        setSelectedSeats(updated);
+        onSeatSelect(updated);
+      }
     } else {
-      // Check max seats limit
-      if (selectedSeats.length >= maxSeats) {
-        toast.error(`You can select maximum ${maxSeats} seats`);
+      // --- LOCK LOGIC ---
+      if (seat.status !== "available") {
+        toast.error("Seat already taken");
         return;
       }
 
-      // Select seat - only update local state (don't mark as occupied in DB yet)
-      const newSelection = [...selectedSeats, seat];
-      setSelectedSeats(newSelection);
-      onSeatSelect(newSelection);
+      if (selectedSeats.length >= maxSeats) {
+        toast.error(`Maximum ${maxSeats} seats allowed`);
+        return;
+      }
+
+      const res = await fetch("/api/seat/lock", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ tripId, seatId: seat.id }),
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        const updated = [...selectedSeats, seat];
+        setSelectedSeats(updated);
+        onSeatSelect(updated);
+      } else {
+        toast.error(data.message || "Could not lock seat");
+      }
     }
   };
 
+  useEffect(() => {
+    const pusher = getPusher();
+    const channel = pusher.subscribe(`trip-${tripId}`);
+
+    // When someone else locks a seat
+    channel.bind("seat-locked", (data: { seatId: number }) => {
+      setSeats(prev =>
+        prev.map(s => s.id === data.seatId ? { ...s, status: "occupied" } : s)
+      );
+    });
+
+    // When someone else releases a seat
+    channel.bind("seat-released", (data: { seatId: number }) => {
+      setSeats(prev =>
+        prev.map(s => s.id === data.seatId ? { ...s, status: "available" } : s)
+      );
+    });
+
+    return () => {
+      pusher.unsubscribe(`trip-${tripId}`);
+    };
+  }, [tripId]);
+
+
   const getSeatClass = (seat: Seat) => {
     const isSelected = selectedSeats.some(s => s.id === seat.id);
-    
+
     if (isSelected) {
       return 'bg-green-500 text-white border-green-500 cursor-pointer hover:bg-green-600';
     }
-    
+
     switch (seat.status) {
       case 'available':
         return 'bg-white border-gray-400 cursor-pointer hover:bg-gray-50 hover:border-blue-400';
@@ -168,7 +254,7 @@ export function EnhancedSeatPlan({
 
     for (let row = 1; row <= rows; row++) {
       const rowSeats = seats.filter(s => s.row === row).sort((a, b) => a.column - b.column);
-      
+
       grid.push(
         <div key={row} className="flex items-center gap-2 mb-2">
           {/* Left side seats (columns 1-2) */}
@@ -256,7 +342,7 @@ export function EnhancedSeatPlan({
             <span>Selected</span>
           </div>
         </div>
-        
+
         {/* Refresh section */}
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-1 text-xs text-gray-500">
@@ -267,7 +353,7 @@ export function EnhancedSeatPlan({
             onClick={refreshSeats}
             disabled={loading}
             className="flex items-center gap-1 px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-          title="Refresh seat availability"
+            title="Refresh seat availability"
           >
             <RefreshCw className={`w-3 h-3 ${loading ? 'animate-spin' : ''}`} />
             {loading ? 'Refreshing...' : 'Refresh'}

@@ -23,19 +23,29 @@ const formateDate = (date: Date) => {
 
 export default function SearchForm() {
 	const [to, setTo] = useState<City>({
-		id: 7,
-		name: "Sylhet",
-		districtId: 7,
+		id: 5,
+		name: "Sreemangal", 
+		districtId: 6,
 	});
 	const [from, setFrom] = useState<City>({
-		id: 4,
-		name: "Dhaka",
-		districtId: 4,
+		id: 1,
+		name: "Uttara",
+		districtId: 1,
 	});
-	const [jDate, setJDate] = useState<string>(formateDate(new Date())); // YYYY-MM-DD
-	const [rDate, setRDate] = useState<string>(""); // YYYY-MM-DD
+	const [jDate, setJDate] = useState<string>(formateDate(new Date("2026-02-09"))); // YYYY-MM-DD
+	const [rDate, setRDate] = useState<string>("2026-02-10"); // YYYY-MM-DD
 	const [cities, setCities] = useState<City[]>([]);
 	const router = useRouter();
+
+	useEffect(() => {
+		const socket = new WebSocket('ws://localhost:5000/ws');
+
+
+		socket.onopen = () => console.log('Connected to Hono!');
+		socket.onmessage = (event) => console.log('From server:', event.data);
+
+		return () => socket.close();
+	}, []);
 
 	const fetchCities = useCallback(async () => {
 		try {
@@ -98,24 +108,43 @@ export default function SearchForm() {
 									<DatePicker
 										curretDate={true}
 										onDateSelect={(date: Date) => {
-											const nextDay = new Date(date);
-											nextDay.setDate(nextDay.getDate() + 1);
+											const safeDate = new Date(
+												date.getFullYear(),
+												date.getMonth(),
+												date.getDate(),
+												12 // normalize
+											);
 
-											const formatted = nextDay.toISOString().split("T")[0];
+											const yyyy = safeDate.getFullYear();
+											const mm = String(safeDate.getMonth() + 1).padStart(2, "0");
+											const dd = String(safeDate.getDate()).padStart(2, "0");
+
+											const formatted = `${yyyy}-${mm}-${dd}`;
 
 											console.log(formatted);
 											setJDate(formatted);
 										}}
+
 									/>
 								</div>
 								<div className="space-y-2">
 									<Label>Return Date</Label>
 									<DatePicker
 										onDateSelect={(date: Date) => {
-											const nextDay = new Date(date);
-											nextDay.setDate(nextDay.getDate() + 1);
+											const safeDate = new Date(
+												date.getFullYear(),
+												date.getMonth(),
+												date.getDate(),
+												12 // normalize
+											);
 
-											const formatted = nextDay.toISOString().split("T")[0];
+											const yyyy = safeDate.getFullYear();
+											const mm = String(safeDate.getMonth() + 1).padStart(2, "0");
+											const dd = String(safeDate.getDate()).padStart(2, "0");
+
+											const formatted = `${yyyy}-${mm}-${dd}`;
+
+											console.log(formatted);
 											setRDate(formatted);
 										}}
 									/>

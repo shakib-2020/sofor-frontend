@@ -101,7 +101,7 @@ function TicketPageContent() {
 				}
 
 				setTrips(data);
-				
+
 				// Extract unique bus operators
 				const operators = Array.from(new Set(validTrips.map((trip: Trip) => trip.bus_info?.name).filter(Boolean)));
 				setAvailableBusOperators(operators as string[]);
@@ -177,7 +177,7 @@ function TicketPageContent() {
 		<Sheet>
 			<div className="flex items-center justify-between my-4">
 				<h2 className="font-semibold text-3xl">Choose Departing Ticket :</h2>
-				
+
 				{/* Bus Operator Filter */}
 				{availableBusOperators.length > 0 && (
 					<div className="w-[200px]">
@@ -256,18 +256,28 @@ function TicketPageContent() {
 								</div>
 							</div>
 
+							{/* {arrival.toLocaleTimeString()} */}
+
 							<div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
 								<div>
 									<span className="text-gray-600">Departure:</span>
 									<p className="font-medium">
-										{new Date(`${selectedTrip.departure_date}T${selectedTrip.departure_time}`).toLocaleString()}
+										{new Date(`${selectedTrip.departure_date}T${selectedTrip.departure_time}`).toLocaleTimeString([], {
+											hour: "2-digit",
+											minute: "2-digit",
+											hour12: true,
+										})}
 									</p>
 									<p className="text-gray-600">{selectedTrip.boarding_points?.[0]?.name}</p>
 								</div>
 								<div>
 									<span className="text-gray-600">Arrival:</span>
 									<p className="font-medium">
-										{new Date(`${selectedTrip.arrival_date}T${selectedTrip.arrival_time}`).toLocaleString()}
+										{new Date(`${selectedTrip.arrival_date}T${selectedTrip.arrival_time}`).toLocaleTimeString([], {
+											hour: "2-digit",
+											minute: "2-digit",
+											hour12: true,
+										})}
 									</p>
 									<p className="text-gray-600">
 										{selectedTrip.dropping_points?.[selectedTrip.dropping_points.length - 1]?.name}

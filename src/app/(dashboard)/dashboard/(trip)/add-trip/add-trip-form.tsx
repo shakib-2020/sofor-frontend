@@ -283,7 +283,16 @@ export function AddTripForm() {
 												captionLayout="dropdown"
 												mode="single"
 												onSelect={(date) => {
-													field.onChange(date);
+													if (!date) return;
+
+													const safeDate = new Date(
+														date.getFullYear(),
+														date.getMonth(),
+														date.getDate(),
+														12 // noon
+													);
+
+													field.onChange(safeDate);
 													setOpenDeparture(false);
 												}}
 												selected={field.value}
@@ -335,7 +344,16 @@ export function AddTripForm() {
 												captionLayout="dropdown"
 												mode="single"
 												onSelect={(date) => {
-													field.onChange(date);
+													if (!date) return;
+
+													const safeDate = new Date(
+														date.getFullYear(),
+														date.getMonth(),
+														date.getDate(),
+														12 // noon
+													);
+
+													field.onChange(safeDate);
 													setOpenArrival(false);
 												}}
 												selected={field.value}
