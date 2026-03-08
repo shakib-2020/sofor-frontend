@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { RefreshCw, Clock } from 'lucide-react';
 import { getPusher } from "@/lib/pusher-client";
+import { apiClient } from '@/lib/api';
 
 interface Seat {
   id: number;
@@ -44,8 +45,8 @@ export function EnhancedSeatPlan({
     const fetchSeats = async () => {
       try {
         setLoading(true);
-        const response = await fetch(`/api/seat/bus/${busId}`);
-        const data = await response.json();
+        const response = await apiClient.get(`/api/seat/bus/${busId}`);
+        const data = response.data;
 
         if (data.success) {
           // Transform API data to component format with consistent naming
@@ -126,51 +127,15 @@ export function EnhancedSeatPlan({
     return lastRefresh.toLocaleTimeString();
   };
 
-
-
-  // const handleSeatClick = (seat: Seat) => {
-  //   if (seat.status !== 'available') {
-  //     toast.error('This seat is not available. Refreshing seat data...');
-  //     // Auto-refresh when seat appears unavailable
-  //     refreshSeats();
-  //     return;
-  //   }
-
-  //   const isSelected = selectedSeats.some(s => s.id === seat.id);
-
-  //   if (isSelected) {
-  //     // Deselect seat - just remove from local state (no socket emit)
-  //     const newSelection = selectedSeats.filter(s => s.id !== seat.id);
-  //     setSelectedSeats(newSelection);
-  //     onSeatSelect(newSelection);
-  //   } else {
-  //     // Check max seats limit
-  //     if (selectedSeats.length >= maxSeats) {
-  //       toast.error(`You can select maximum ${maxSeats} seats`);
-  //       return;
-  //     }
-
-  //     // Select seat - only update local state (don't mark as occupied in DB yet)
-  //     const newSelection = [...selectedSeats, seat];
-  //     setSelectedSeats(newSelection);
-  //     onSeatSelect(newSelection);
-  //   }
-  // };
-
-  // Inside EnhancedSeatPlan component...
-
+  
   const handleSeatClick = async (seat: Seat) => {
     const isSelected = selectedSeats.some(s => s.id === seat.id);
 
     if (isSelected) {
       // --- RELEASE LOGIC ---
-      const res = await fetch("/api/seat/release", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ tripId, seatId: seat.id }),
-      });
+      const res = await apiClient.post("/api/seat/release", { tripId, seatId: seat.id });
 
-      if (res.ok) {
+      if (res.status >= 200 && res.status < 300) {
         const updated = selectedSeats.filter(s => s.id !== seat.id);
         setSelectedSeats(updated);
         onSeatSelect(updated);
@@ -187,13 +152,8 @@ export function EnhancedSeatPlan({
         return;
       }
 
-      const res = await fetch("/api/seat/lock", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ tripId, seatId: seat.id }),
-      });
-
-      const data = await res.json();
+      const res = await apiClient.post("/api/seat/lock", { tripId, seatId: seat.id });
+      const data = res.data;
 
       if (data.success) {
         const updated = [...selectedSeats, seat];
