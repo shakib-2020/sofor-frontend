@@ -38,7 +38,8 @@ interface PaymentFormProps {
   bookingData: {
     tripId: number;
     busId: number;
-    seatId: number;
+    seatIds: number[];
+    seatNames?: string[];
     boardingPointId: number;
     droppingPointId: number;
     totalAmount: string;
@@ -61,7 +62,7 @@ export function PaymentForm({ bookingData, onPaymentSuccess, onCancel }: Payment
 
   const onSubmit = async (values: z.infer<typeof paymentFormSchema>) => {
     setIsLoading(true);
-    
+
     try {
       const paymentRequest = {
         ...bookingData,
@@ -69,22 +70,22 @@ export function PaymentForm({ bookingData, onPaymentSuccess, onCancel }: Payment
       };
 
       const response = await paymentAPI.createBookingWithPayment(paymentRequest);
-      
+
       if (response.data.success) {
         toast.success('Booking created! Redirecting to payment...');
-        
+
         // Redirect to Bkash payment URL
         const { bkashURL, paymentId } = response.data.data;
-        
+
         // Store payment info for callback handling
         localStorage.setItem('pendingPayment', JSON.stringify({
           paymentId,
           bookingData: response.data.data
         }));
-        
+
         // Open Bkash payment URL
         window.open(bkashURL, '_self');
-        
+
       } else {
         toast.error('Failed to create booking');
       }
@@ -143,10 +144,10 @@ export function PaymentForm({ bookingData, onPaymentSuccess, onCancel }: Payment
                 <FormItem>
                   <FormLabel>Email Address *</FormLabel>
                   <FormControl>
-                    <Input 
-                      type="email" 
-                      placeholder="ahmed@example.com" 
-                      {...field} 
+                    <Input
+                      type="email"
+                      placeholder="ahmed@example.com"
+                      {...field}
                     />
                   </FormControl>
                   <FormMessage />
@@ -157,6 +158,25 @@ export function PaymentForm({ bookingData, onPaymentSuccess, onCancel }: Payment
 
             <div className="bg-gray-50 p-4 rounded-lg">
               <h3 className="font-semibold text-lg mb-2">Payment Summary</h3>
+              <div className="flex justify-between items-center mb-2">
+                <span>Seats:</span>
+                <span className="font-medium">{bookingData.seatIds.length}</span>
+              </div>
+              {bookingData.seatNames?.length ? (
+                <div className="mb-3">
+                  <p className="text-sm text-gray-600 mb-2">Selected seats</p>
+                  <div className="flex flex-wrap gap-2">
+                    {bookingData.seatNames.map((seatName) => (
+                      <span
+                        key={seatName}
+                        className="inline-flex items-center rounded-full bg-green-100 px-3 py-1 text-xs font-medium text-green-800"
+                      >
+                        {seatName}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              ) : null}
               <div className="flex justify-between items-center">
                 <span>Total Amount:</span>
                 <span className="font-bold text-xl">৳{bookingData.totalAmount}</span>

@@ -31,6 +31,10 @@ interface PaymentDetails {
     seat?: {
       seatName: string;
     };
+    seats?: Array<{
+      id: number;
+      seatName: string;
+    }>;
     boardingPoint?: {
       name: string;
     };
@@ -48,7 +52,7 @@ function PaymentSuccessContent() {
 
   useEffect(() => {
     const paymentID = searchParams.get('paymentID');
-    
+
     if (paymentID) {
       fetchPaymentDetails(paymentID);
     } else {
@@ -70,7 +74,7 @@ function PaymentSuccessContent() {
           return null;
         }).catch(() => null)
       ]);
-      
+
       if (paymentResponse.data.success) {
         setPaymentDetails({
           paymentID,
@@ -101,6 +105,30 @@ function PaymentSuccessContent() {
     router.push('/ticket');
   };
 
+  const getSeatNames = () => {
+    const booking = paymentDetails?.bookingDetails;
+
+    if (!booking) {
+      return [] as string[];
+    }
+
+    if (booking.seats?.length) {
+      return booking.seats.map((seat) => seat.seatName);
+    }
+
+    if (booking.seat?.seatName) {
+      return [booking.seat.seatName];
+    }
+
+    return [] as string[];
+  };
+
+  const getFarePerSeat = () => {
+    const totalAmount = Number.parseFloat(paymentDetails?.bookingDetails?.totalAmount || paymentDetails?.amount || '0');
+    const seatCount = Math.max(getSeatNames().length, 1);
+    return (totalAmount / seatCount).toFixed(2);
+  };
+
   const handleDownloadTicket = async () => {
     if (!paymentDetails?.bookingDetails) {
       toast.error('Booking details not available');
@@ -109,6 +137,9 @@ function PaymentSuccessContent() {
 
     try {
       const booking = paymentDetails.bookingDetails;
+      const seatNames = getSeatNames();
+      const seatLabel = seatNames.length > 0 ? seatNames.join(', ') : 'N/A';
+
       const ticketData: TicketData = {
         bookingNumber: booking.bookingNumber,
         passengerName: booking.passengerName,
@@ -120,7 +151,9 @@ function PaymentSuccessContent() {
         arrivalDate: booking.trip?.arrivalDateTime?.split('T')[0] || 'N/A',
         arrivalTime: booking.trip?.arrivalDateTime?.split('T')[1]?.substring(0, 5) || 'N/A',
         busName: booking.bus?.name || 'Bus',
-        seatNumber: booking.seat?.seatName || 'N/A',
+        seatNumber: seatLabel,
+        seatNumbers: seatNames,
+        farePerSeat: getFarePerSeat(),
         boardingPoint: booking.boardingPoint?.name || 'N/A',
         droppingPoint: booking.droppingPoint?.name || 'N/A',
         totalAmount: booking.totalAmount,
@@ -145,6 +178,9 @@ function PaymentSuccessContent() {
 
     try {
       const booking = paymentDetails.bookingDetails;
+      const seatNames = getSeatNames();
+      const seatLabel = seatNames.length > 0 ? seatNames.join(', ') : 'N/A';
+
       const ticketData: TicketData = {
         bookingNumber: booking.bookingNumber,
         passengerName: booking.passengerName,
@@ -156,7 +192,9 @@ function PaymentSuccessContent() {
         arrivalDate: booking.trip?.arrivalDateTime?.split('T')[0] || 'N/A',
         arrivalTime: booking.trip?.arrivalDateTime?.split('T')[1]?.substring(0, 5) || 'N/A',
         busName: booking.bus?.name || 'Bus',
-        seatNumber: booking.seat?.seatName || 'N/A',
+        seatNumber: seatLabel,
+        seatNumbers: seatNames,
+        farePerSeat: getFarePerSeat(),
         boardingPoint: booking.boardingPoint?.name || 'N/A',
         droppingPoint: booking.droppingPoint?.name || 'N/A',
         totalAmount: booking.totalAmount,
@@ -195,7 +233,7 @@ function PaymentSuccessContent() {
             Payment Successful!
           </CardTitle>
         </CardHeader>
-        
+
         <CardContent className="text-center space-y-6">
           <div className="bg-green-50 border border-green-200 rounded-lg p-4">
             <h3 className="text-lg font-semibold text-green-800 mb-2">
@@ -205,49 +243,116 @@ function PaymentSuccessContent() {
               Thank you for choosing our service. Your ticket has been booked successfully.
             </p>
           </div>
-          
+
           {paymentDetails && (
-            <div className="bg-gray-100 p-4 rounded-lg text-left">
-              <h4 className="font-semibold mb-3">Payment Details:</h4>
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Payment ID:</span>
-                  <span className="font-mono">{paymentDetails.paymentID}</span>
-                </div>
-                {paymentDetails.transactionID && (
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Transaction ID:</span>
-                    <span className="font-mono">{paymentDetails.transactionID}</span>
+            <div className="space-y-4 text-left">
+              <div className="bg-gray-100 p-4 rounded-lg">
+                <h4 className="font-semibold mb-3">Payment Details</h4>
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between gap-4">
+                    <span className="text-gray-600">Payment ID:</span>
+                    <span className="font-mono text-right break-all">{paymentDetails.paymentID}</span>
                   </div>
-                )}
-                {paymentDetails.amount && (
+                  {paymentDetails.transactionID && (
+                    <div className="flex justify-between gap-4">
+                      <span className="text-gray-600">Transaction ID:</span>
+                      <span className="font-mono text-right break-all">{paymentDetails.transactionID}</span>
+                    </div>
+                  )}
+                  {paymentDetails.amount && (
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Amount Paid:</span>
+                      <span className="font-semibold">৳{paymentDetails.amount}</span>
+                    </div>
+                  )}
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Amount Paid:</span>
-                    <span className="font-semibold">৳{paymentDetails.amount}</span>
+                    <span className="text-gray-600">Payment Method:</span>
+                    <span>bKash</span>
                   </div>
-                )}
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Payment Method:</span>
-                  <span>bKash</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Status:</span>
-                  <span className="text-green-600 font-semibold">Completed</span>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Status:</span>
+                    <span className="text-green-600 font-semibold">Completed</span>
+                  </div>
                 </div>
               </div>
+
+              {paymentDetails.bookingDetails && (
+                <div className="bg-white border rounded-lg p-4">
+                  <div className="flex items-start justify-between gap-4 mb-3">
+                    <div>
+                      <h4 className="font-semibold">Booking Summary</h4>
+                      <p className="text-sm text-gray-600">Booking #{paymentDetails.bookingDetails.bookingNumber}</p>
+                    </div>
+                    <div className="flex flex-wrap justify-end gap-2">
+                      {getSeatNames().length > 1 ? (
+                        <div className="rounded-full bg-slate-900 px-3 py-1 text-xs font-medium text-white">
+                          Group Booking
+                        </div>
+                      ) : null}
+                      <div className="rounded-full bg-green-50 px-3 py-1 text-xs font-medium text-green-700">
+                        {getSeatNames().length || 1} {(getSeatNames().length || 1) > 1 ? 'Seats' : 'Seat'}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="mb-4 flex flex-wrap gap-2">
+                    {(getSeatNames().length > 0 ? getSeatNames() : ['Seat unavailable']).map((seatName) => (
+                      <span
+                        key={seatName}
+                        className="inline-flex items-center rounded-full bg-green-100 px-3 py-1 text-xs font-medium text-green-800"
+                      >
+                        {seatName}
+                      </span>
+                    ))}
+                  </div>
+
+                  <div className="grid grid-cols-1 gap-2 text-sm text-gray-700 sm:grid-cols-2">
+                    <div>
+                      <span className="text-gray-500">Passenger:</span> {paymentDetails.bookingDetails.passengerName}
+                    </div>
+                    <div>
+                      <span className="text-gray-500">Bus:</span> {paymentDetails.bookingDetails.bus?.name || 'N/A'}
+                    </div>
+                    <div>
+                      <span className="text-gray-500">Route:</span> {paymentDetails.bookingDetails.trip?.heading || 'N/A'}
+                    </div>
+                    <div>
+                      <span className="text-gray-500">Total:</span> ৳{paymentDetails.bookingDetails.totalAmount}
+                    </div>
+                    <div>
+                      <span className="text-gray-500">Fare / Seat:</span> ৳{getFarePerSeat()}
+                    </div>
+                  </div>
+
+                  <div className="mt-4 rounded-lg border border-slate-200 bg-slate-50 p-3">
+                    <div className="mb-2 flex items-center justify-between">
+                      <p className="text-sm font-semibold text-slate-800">Per-seat fare breakdown</p>
+                      <p className="text-xs text-slate-500">For receipt and conductor reference</p>
+                    </div>
+                    <div className="space-y-2">
+                      {(getSeatNames().length > 0 ? getSeatNames() : ['Seat unavailable']).map((seatName) => (
+                        <div key={seatName} className="flex items-center justify-between rounded-md bg-white px-3 py-2 text-sm text-slate-700">
+                          <span>{seatName}</span>
+                          <span className="font-medium">৳{getFarePerSeat()}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           )}
-          
+
           <div className="space-y-3">
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              <Button 
+              <Button
                 onClick={handleViewBookings}
                 className="w-full bg-green-500 hover:bg-green-600"
               >
                 <Eye className="mr-2 h-4 w-4" />
                 My Bookings
               </Button>
-              <Button 
+              <Button
                 onClick={handleDownloadTicket}
                 variant="outline"
                 className="w-full"
@@ -255,7 +360,7 @@ function PaymentSuccessContent() {
                 <Download className="mr-2 h-4 w-4" />
                 Download PDF
               </Button>
-              <Button 
+              <Button
                 onClick={handlePrintTicket}
                 variant="outline"
                 className="w-full"
@@ -264,8 +369,8 @@ function PaymentSuccessContent() {
                 Print Ticket
               </Button>
             </div>
-            
-            <Button 
+
+            <Button
               onClick={handleNewBooking}
               variant="ghost"
               className="w-full"
@@ -273,7 +378,7 @@ function PaymentSuccessContent() {
               Book Another Ticket
             </Button>
           </div>
-          
+
           <div className="text-sm text-gray-500 border-t pt-4">
             <p>
               📧 A confirmation email has been sent to your registered email address.
