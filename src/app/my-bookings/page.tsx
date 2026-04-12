@@ -6,12 +6,12 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Separator } from '@/components/ui/separator';
-import { 
-  Calendar, 
-  MapPin, 
-  Clock, 
-  Users, 
-  CreditCard, 
+import {
+  Calendar,
+  MapPin,
+  Clock,
+  Users,
+  CreditCard,
   Download,
   RefreshCw,
   AlertCircle,
@@ -32,6 +32,7 @@ interface Booking {
   tripId: number;
   busId: number;
   seatId: number;
+  seatIds: number[];
   bookingDate: string;
   totalAmount: string;
   status: 'pending' | 'confirmed' | 'cancelled' | 'failed';
@@ -54,6 +55,10 @@ interface Booking {
   seat?: {
     seatName: string;
   };
+  seats?: Array<{
+    id: number;
+    seatName: string;
+  }>;
   boardingPoint?: {
     name: string;
   };
@@ -96,22 +101,22 @@ function MyBookingsContent() {
   // Helper function to safely format dates
   const safeFormatDate = (dateString: string | null | undefined, formatString: string): string => {
     if (!dateString) return 'N/A';
-    
+
     try {
       let date: Date;
-      
+
       // Try parsing as ISO string first
       if (typeof dateString === 'string') {
         date = parseISO(dateString);
       } else {
         date = new Date(dateString);
       }
-      
+
       // Check if the date is valid
       if (!isValid(date)) {
         return 'Invalid Date';
       }
-      
+
       return format(date, formatString);
     } catch (error) {
       console.warn('Date formatting error:', error, 'for date:', dateString);
@@ -190,8 +195,23 @@ function MyBookingsContent() {
     }
   };
 
+  const getSeatNames = (booking: Booking) =>
+    booking.seats?.length
+      ? booking.seats.map((seat) => seat.seatName)
+      : booking.seat?.seatName
+        ? [booking.seat.seatName]
+        : [`Seat ${booking.seatId}`];
+
+  const getFarePerSeat = (booking: Booking) => {
+    const seatCount = Math.max(getSeatNames(booking).length, 1);
+    return (Number.parseFloat(booking.totalAmount) / seatCount).toFixed(2);
+  };
+
   const handleDownloadTicket = async (booking: Booking) => {
     try {
+      const seatNames = getSeatNames(booking);
+      const seatLabel = seatNames.join(', ');
+
       const ticketData: TicketData = {
         bookingNumber: booking.bookingNumber,
         passengerName: booking.passengerName,
@@ -203,7 +223,9 @@ function MyBookingsContent() {
         arrivalDate: booking.trip?.arrival_date || 'N/A',
         arrivalTime: booking.trip?.arrival_time || 'N/A',
         busName: booking.bus?.name || 'Bus',
-        seatNumber: booking.seat?.seatName || `Seat ${booking.seatId}`,
+        seatNumber: seatLabel,
+        seatNumbers: seatNames,
+        farePerSeat: getFarePerSeat(booking),
         boardingPoint: booking.boardingPoint?.name || 'N/A',
         droppingPoint: booking.droppingPoint?.name || 'N/A',
         totalAmount: booking.totalAmount,
@@ -222,6 +244,9 @@ function MyBookingsContent() {
 
   const handlePrintTicket = async (booking: Booking) => {
     try {
+      const seatNames = getSeatNames(booking);
+      const seatLabel = seatNames.join(', ');
+
       const ticketData: TicketData = {
         bookingNumber: booking.bookingNumber,
         passengerName: booking.passengerName,
@@ -233,7 +258,9 @@ function MyBookingsContent() {
         arrivalDate: booking.trip?.arrival_date || 'N/A',
         arrivalTime: booking.trip?.arrival_time || 'N/A',
         busName: booking.bus?.name || 'Bus',
-        seatNumber: booking.seat?.seatName || `Seat ${booking.seatId}`,
+        seatNumber: seatLabel,
+        seatNumbers: seatNames,
+        farePerSeat: getFarePerSeat(booking),
         boardingPoint: booking.boardingPoint?.name || 'N/A',
         droppingPoint: booking.droppingPoint?.name || 'N/A',
         totalAmount: booking.totalAmount,
@@ -319,21 +346,19 @@ function MyBookingsContent() {
         <div className="flex space-x-1 bg-gray-100 p-1 rounded-lg w-fit">
           <button
             onClick={() => setActiveTab('bookings')}
-            className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-              activeTab === 'bookings'
-                ? 'bg-white text-gray-900 shadow-sm'
-                : 'text-gray-600 hover:text-gray-900'
-            }`}
+            className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${activeTab === 'bookings'
+              ? 'bg-white text-gray-900 shadow-sm'
+              : 'text-gray-600 hover:text-gray-900'
+              }`}
           >
             My Bookings ({bookings.length})
           </button>
           <button
             onClick={() => setActiveTab('payments')}
-            className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-              activeTab === 'payments'
-                ? 'bg-white text-gray-900 shadow-sm'
-                : 'text-gray-600 hover:text-gray-900'
-            }`}
+            className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${activeTab === 'payments'
+              ? 'bg-white text-gray-900 shadow-sm'
+              : 'text-gray-600 hover:text-gray-900'
+              }`}
           >
             Payment History ({payments.length})
           </button>
@@ -365,6 +390,17 @@ function MyBookingsContent() {
                         <p className="text-sm text-gray-600">
                           Booking #{booking.bookingNumber}
                         </p>
+                        <div className="mt-2 flex flex-wrap gap-2">
+                          {getSeatNames(booking).length > 1 ? (
+                            <Badge className="bg-slate-900 text-white hover:bg-slate-900">Group Booking</Badge>
+                          ) : null}
+                          <Badge variant="outline">{getSeatNames(booking).length} {getSeatNames(booking).length > 1 ? 'Seats' : 'Seat'}</Badge>
+                          {getSeatNames(booking).map((seatName) => (
+                            <Badge key={`${booking.id}-${seatName}`} variant="secondary" className="bg-green-50 text-green-700">
+                              {seatName}
+                            </Badge>
+                          ))}
+                        </div>
                       </div>
                       <div className="flex items-center space-x-2">
                         <Badge className={getStatusColor(booking.status)}>
@@ -380,13 +416,13 @@ function MyBookingsContent() {
                       </div>
                     </div>
                   </CardHeader>
-                  
+
                   <CardContent>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       {/* Trip Details */}
                       <div className="space-y-3">
                         <h4 className="font-semibold text-sm text-gray-700">Trip Details</h4>
-                        
+
                         {booking.trip && (
                           <div className="space-y-2 text-sm">
                             <div className="flex items-center text-gray-600">
@@ -399,7 +435,7 @@ function MyBookingsContent() {
                             </div>
                           </div>
                         )}
-                        
+
                         <div className="space-y-2 text-sm">
                           {booking.boardingPoint && (
                             <div className="flex items-center text-gray-600">
@@ -415,7 +451,7 @@ function MyBookingsContent() {
                           )}
                           <div className="flex items-center text-gray-600">
                             <Users className="h-4 w-4 mr-2" />
-                            Seat: {booking.seat?.seatName || booking.seatId}
+                            Seats: {getSeatNames(booking).join(', ')}
                           </div>
                         </div>
                       </div>
@@ -441,6 +477,10 @@ function MyBookingsContent() {
                             <span className="ml-2 font-semibold text-green-600">৳{booking.totalAmount}</span>
                           </div>
                           <div>
+                            <span className="text-gray-600">Fare / Seat:</span>
+                            <span className="ml-2">৳{getFarePerSeat(booking)}</span>
+                          </div>
+                          <div>
                             <span className="text-gray-600">Booked on:</span>
                             <span className="ml-2">{safeFormatDate(booking.createdAt, 'MMM dd, yyyy HH:mm')}</span>
                           </div>
@@ -452,7 +492,7 @@ function MyBookingsContent() {
                     {booking.status === 'confirmed' && booking.isPaid && (
                       <div className="mt-4 pt-4 border-t">
                         <div className="flex space-x-2">
-                          <Button 
+                          <Button
                             onClick={() => handleDownloadTicket(booking)}
                             variant="outline"
                             size="sm"
@@ -460,7 +500,7 @@ function MyBookingsContent() {
                             <Download className="mr-2 h-4 w-4" />
                             Download PDF
                           </Button>
-                          <Button 
+                          <Button
                             onClick={() => handlePrintTicket(booking)}
                             variant="outline"
                             size="sm"
@@ -509,7 +549,7 @@ function MyBookingsContent() {
                           {safeFormatDate(payment.createdAt, 'MMM dd, yyyy HH:mm')}
                         </p>
                       </div>
-                      
+
                       <div className="text-right">
                         <div className="text-lg font-semibold text-green-600">
                           ৳{payment.amount}

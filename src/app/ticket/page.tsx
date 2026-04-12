@@ -55,7 +55,7 @@ type Trip = {
 interface SelectedSeat {
 	id: number;
 	seatName: string;
-	status: 'available' | 'occupied' | 'booked';
+	status: 'available' | 'pending' | 'booked';
 	row: number;
 	column: number;
 }
@@ -68,6 +68,7 @@ function TicketPageContent() {
 	const [loading, setLoading] = useState(false);
 	const [selectedTrip, setSelectedTrip] = useState<Trip | null>(null);
 	const [selectedSeats, setSelectedSeats] = useState<SelectedSeat[]>([]);
+	const [seatSyncPending, setSeatSyncPending] = useState(false);
 	const [currentStep, setCurrentStep] = useState<'trip-selection' | 'seat-selection' | 'payment'>('trip-selection');
 	const [selectedBusOperator, setSelectedBusOperator] = useState<string>("all");
 	const [availableBusOperators, setAvailableBusOperators] = useState<string[]>([]);
@@ -121,6 +122,7 @@ function TicketPageContent() {
 		setSelectedTrip(trip);
 		setCurrentStep('seat-selection');
 		setSelectedSeats([]);
+		setSeatSyncPending(false);
 	};
 
 	const handleSeatSelect = (seats: SelectedSeat[]) => {
@@ -133,9 +135,10 @@ function TicketPageContent() {
 			return;
 		}
 
-		// 🚫 Socket seat occupation disabled for Vercel deployment
-		// Seats will be reserved during the payment process on the backend
-		// No need for real-time seat occupation via WebSocket
+		if (seatSyncPending) {
+			toast.error('Please wait. Your selected seats are still being confirmed.');
+			return;
+		}
 
 		setCurrentStep('payment');
 	};
@@ -144,13 +147,10 @@ function TicketPageContent() {
 		setCurrentStep('trip-selection');
 		setSelectedTrip(null);
 		setSelectedSeats([]);
+		setSeatSyncPending(false);
 	};
 
 	const handleBackToSeatSelection = () => {
-		// 🚫 Socket seat release disabled for Vercel deployment
-		// Seats will be automatically released if payment is not completed within timeout
-		// No need for real-time seat release via WebSocket
-
 		setCurrentStep('seat-selection');
 	};
 
@@ -291,10 +291,14 @@ function TicketPageContent() {
 					{/* Seat Selection */}
 					<div className="bg-white p-6 rounded-lg shadow-sm border mb-6">
 						<h3 className="text-lg font-semibold mb-4">Select Your Seats</h3>
+						<p className="mb-4 text-sm text-gray-600">
+							Select up to 4 seats. Holds last 10 minutes and stay synced across your active tabs.
+						</p>
 						<EnhancedSeatPlan
 							busId={selectedTrip.bus_info?.id || 1}
 							tripId={selectedTrip.id}
 							onSeatSelect={handleSeatSelect}
+							onPendingChange={setSeatSyncPending}
 							maxSeats={4}
 						/>
 					</div>
@@ -316,6 +320,12 @@ function TicketPageContent() {
 									<span className="font-medium">{selectedSeats.length}</span>
 								</div>
 								<div className="flex justify-between">
+									<span>Seat Hold Status:</span>
+									<span className={`font-medium ${seatSyncPending ? 'text-amber-600' : 'text-green-600'}`}>
+										{seatSyncPending ? 'Confirming seats...' : 'Confirmed'}
+									</span>
+								</div>
+								<div className="flex justify-between">
 									<span>Price per Seat:</span>
 									<span className="font-medium">৳{selectedTrip.fare}</span>
 								</div>
@@ -329,10 +339,11 @@ function TicketPageContent() {
 
 							<Button
 								onClick={handleProceedToPayment}
+								disabled={seatSyncPending}
 								className="w-full bg-green-500 hover:bg-green-600"
 								size="lg"
 							>
-								Proceed to Payment (৳{calculateTotalAmount()})
+								{seatSyncPending ? 'Confirming Seat Holds...' : `Proceed to Payment (৳${calculateTotalAmount()})`}
 							</Button>
 						</div>
 					)}
@@ -355,7 +366,8 @@ function TicketPageContent() {
 						bookingData={{
 							tripId: selectedTrip.id,
 							busId: selectedTrip.bus_info?.id || 1,
-							seatId: selectedSeats[0].id, // For now, using first seat ID
+							seatIds: selectedSeats.map((seat) => seat.id),
+							seatNames: selectedSeats.map((seat) => seat.seatName),
 							boardingPointId: selectedTrip.boarding_points?.[0]?.counterId || 1,
 							droppingPointId: selectedTrip.dropping_points?.[selectedTrip.dropping_points.length - 1]?.counterId || 2,
 							totalAmount: calculateTotalAmount(),
