@@ -4,6 +4,7 @@ import { DM_Sans, MuseoModerno } from 'next/font/google';
 import NavBar from '@/components/navbar/nav-bar';
 import { Toaster } from '@/components/ui/sonner';
 import { WrapperWithQuery } from '@/components/wrapper-with-query';
+import { PusherPresenceProvider } from '@/components/providers/pusher-presence-provider';
 import { AuthProvider } from '@/lib/auth-context';
 import Footer from '@/components/footer/footer';
 
@@ -37,10 +38,12 @@ export default function RootLayout({
       <body className={'h-full bg-white'} suppressHydrationWarning={true}>
         <WrapperWithQuery>
           <AuthProvider>
-            <NavBar />
-            {children}
-            <Footer />
-            <Toaster richColors />
+            <PusherPresenceProvider>
+              <NavBar />
+              {children}
+              <Footer />
+              <Toaster richColors />
+            </PusherPresenceProvider>
           </AuthProvider>
         </WrapperWithQuery>
       </body>
