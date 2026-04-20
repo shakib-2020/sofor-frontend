@@ -25,7 +25,7 @@ const formateDate = (date: Date) => {
 export default function SearchForm() {
 	const [to, setTo] = useState<City>({
 		id: 5,
-		name: "Sreemangal", 
+		name: "Sreemangal",
 		districtId: 6,
 	});
 	const [from, setFrom] = useState<City>({
@@ -38,15 +38,15 @@ export default function SearchForm() {
 	const [cities, setCities] = useState<City[]>([]);
 	const router = useRouter();
 
-	useEffect(() => {
-		const socket = new WebSocket('ws://localhost:5000/ws');
+	// useEffect(() => {
+	// 	const socket = new WebSocket('ws://localhost:5000/ws');
 
 
-		socket.onopen = () => console.log('Connected to Hono!');
-		socket.onmessage = (event) => console.log('From server:', event.data);
+	// 	socket.onopen = () => console.log('Connected to Hono!');
+	// 	socket.onmessage = (event) => console.log('From server:', event.data);
 
-		return () => socket.close();
-	}, []);
+	// 	return () => socket.close();
+	// }, []);
 
 	const fetchCities = useCallback(async () => {
 		try {

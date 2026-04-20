@@ -1,10 +1,7 @@
 import axios from 'axios';
 
-// Don't use direct backend URL - use Next.js proxy instead
-// This ensures cookies are properly sent via the same-origin proxy
+// Route browser API traffic through Next.js so auth cookies stay same-origin.
 export const apiClient = axios.create({
-  // No baseURL - use relative URLs to leverage Next.js proxy rewrite
-  baseURL: process.env.NEXT_PUBLIC_BETTER_SERVER,
   headers: {
     'Content-Type': 'application/json',
     Accept: 'application/json',

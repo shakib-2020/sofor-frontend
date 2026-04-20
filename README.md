@@ -1,5 +1,11 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
+## Environment
+
+Set `BETTER_SERVER_URL` to the deployed backend origin. The frontend now proxies
+`/api/auth/*` and `/api/*` requests through local Next route handlers so Better
+Auth cookies remain same-origin with the frontend domain.
+
 ## Getting Started
 
 First, run the development server:

@@ -1,5 +1,4 @@
 import { betterFetch } from '@better-fetch/fetch';
-import { headers } from 'next/headers';
 import { type NextRequest, NextResponse } from 'next/server';
 import type { client } from '@/lib/auth-client';
 
@@ -15,7 +14,6 @@ export async function middleware(request: NextRequest) {
     }
   );
 
-  console.log('session in middleware', (await headers()).get('cookie'));
   if (!session) {
     return NextResponse.redirect(new URL('/sign-in', request.url));
   }
