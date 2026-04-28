@@ -67,8 +67,16 @@ const getRequestBody = async (request: Request) => {
 const buildResponseHeaders = (upstreamHeaders: Headers) => {
   const responseHeaders = new Headers();
 
+  // Headers that should NOT be forwarded from upstream to client
+  const headersToSkip = new Set([
+    'set-cookie',
+    'content-encoding', // Remove encoding headers - body is already decompressed by fetch
+    'transfer-encoding',
+    'content-length', // Let Next.js calculate this
+  ]);
+
   upstreamHeaders.forEach((value, key) => {
-    if (key.toLowerCase() === 'set-cookie') {
+    if (headersToSkip.has(key.toLowerCase())) {
       return;
     }
 
