@@ -223,8 +223,7 @@ export function EnhancedSeatPlan({
       return;
     }
 
-    const releaseUrl = `${process.env.NEXT_PUBLIC_BETTER_SERVER ?? ''}/api/seat/release-all`;
-    void fetch(releaseUrl, {
+    void fetch('/api/seat/release-all', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
