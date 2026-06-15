@@ -35,7 +35,7 @@ export default function RootLayout({
       <head>
         <link rel="icon" href="/icon.jpg" />
       </head>
-      <body className={'h-full bg-white'} suppressHydrationWarning={true}>
+      <body className={'min-h-screen bg-white'} suppressHydrationWarning={true}>
         <WrapperWithQuery>
           <AuthProvider>
             <PusherPresenceProvider>

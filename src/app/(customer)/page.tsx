@@ -11,7 +11,6 @@ import {
   ArrowRight,
   Bus,
   ChevronDown,
-  ChevronUp,
   Copy,
   Check,
   Percent,
@@ -471,25 +470,38 @@ export default function Home() {
             return (
               <div
                 key={index}
-                className="overflow-hidden rounded-xl border border-gray-100 bg-white transition-all shadow-xs"
+                className={`overflow-hidden rounded-2xl border transition-all duration-300 ${
+                  isOpen
+                    ? "border-emerald-500 bg-white shadow-md ring-1 ring-emerald-500/20"
+                    : "border-gray-100 bg-white hover:border-emerald-500/20 shadow-xs hover:shadow-sm"
+                }`}
               >
                 <button
                   type="button"
                   onClick={() => toggleFaq(index)}
-                  className="flex w-full items-center justify-between px-6 py-4.5 text-left font-semibold text-gray-900 hover:text-emerald-700 transition-colors"
+                  className="flex w-full items-center justify-between gap-4 px-6 py-5 text-left font-bold text-gray-900 transition-colors"
                 >
-                  <span>{faq.q}</span>
-                  {isOpen ? (
-                    <ChevronUp className="h-5 w-5 text-gray-400 shrink-0" />
-                  ) : (
-                    <ChevronDown className="h-5 w-5 text-gray-400 shrink-0" />
-                  )}
-                </button>
-                {isOpen && (
-                  <div className="border-t border-gray-100 px-6 py-4 text-sm text-gray-600 leading-relaxed bg-slate-50/50">
-                    {faq.a}
+                  <div className="flex items-center gap-4">
+                    <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-xl text-xs font-bold transition-all duration-300 ${
+                      isOpen ? "bg-emerald-600 text-white shadow-md" : "bg-emerald-50 text-emerald-700"
+                    }`}>
+                      {(index + 1).toString().padStart(2, '0')}
+                    </span>
+                    <span className={`text-sm sm:text-base transition-colors duration-300 ${isOpen ? "text-emerald-950" : "text-gray-900"}`}>
+                      {faq.q}
+                    </span>
                   </div>
-                )}
+                  <ChevronDown className={`h-5 w-5 text-gray-400 shrink-0 transition-transform duration-300 ${isOpen ? "rotate-180 text-emerald-600" : ""}`} />
+                </button>
+                <div className={`grid transition-all duration-300 ease-in-out ${
+                  isOpen ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"
+                }`}>
+                  <div className="overflow-hidden">
+                    <div className="border-t border-gray-100 px-6 py-4.5 text-sm text-gray-600 leading-relaxed bg-slate-50/40 pl-6 sm:pl-[3.5rem]">
+                      {faq.a}
+                    </div>
+                  </div>
+                </div>
               </div>
             );
           })}
