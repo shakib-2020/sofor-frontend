@@ -14,6 +14,8 @@ interface AuthUser {
   banned?: boolean | null;
   banReason?: string | null;
   banExpires?: Date | null;
+  operatorId?: number | null;
+  counterId?: number | null;
 }
 
 export function useAuthUser() {

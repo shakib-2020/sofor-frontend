@@ -68,7 +68,7 @@ export default function ProfilePage() {
     );
   }
 
-  const userData = user || session?.user;
+  const userData = (user || session?.user) as any;
   const sessionData = session?.session;
 
   if (!userData) {
