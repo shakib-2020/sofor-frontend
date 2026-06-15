@@ -24,34 +24,12 @@ function NavBar() {
   }
 
   return (
-    <nav className="sticky top-0 flex justify-between border-b-2 bg-white px-16 py-4">
+    <nav className="sticky top-0 z-50 flex justify-between border-b-2 bg-white px-16 py-4">
       <Link href={'/'}>
         <Logo className="h-10 w-auto" />
       </Link>
       <div>
         <NavigationMenu>
-          <NavigationMenuList>
-            <NavigationMenuItem>
-              <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
-                <Link href="/">Home</Link>
-              </NavigationMenuLink>
-            </NavigationMenuItem>
-            <NavigationMenuItem>
-              <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
-                <Link href="/#about">About Us</Link>
-              </NavigationMenuLink>
-            </NavigationMenuItem>
-            <NavigationMenuItem>
-              <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
-                <Link href="/#services">Services</Link>
-              </NavigationMenuLink>
-            </NavigationMenuItem>
-            <NavigationMenuItem>
-              <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
-                <Link href="/#contact">Contact</Link>
-              </NavigationMenuLink>
-            </NavigationMenuItem>
-          </NavigationMenuList>
           <NavigationMenuList>
             <NavigationMenuItem className="">
               {isLoading ? (
