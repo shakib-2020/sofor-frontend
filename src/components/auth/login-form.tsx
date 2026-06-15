@@ -19,6 +19,20 @@ export default function LoginForm() {
   const [rememberMe, setRememberMe] = useState(false);
   const router = useRouter();
 
+
+  const signInWithGoogle = async () => {
+    const data = await signIn.social({
+      provider: "google",
+    });
+    if (data.error) {
+      toast.error(data.error.message);
+    }
+    else {
+      toast.success("Logged in successfully");
+      router.push("/");
+    }
+  };
+
   const handleLogin = () => {
     if (!(email && password)) {
       toast.error('Please fill in all fields');
@@ -51,7 +65,7 @@ export default function LoginForm() {
         </div>
 
         <div className="mt-6 grid grid-cols-1 gap-3">
-          <Button type="button" variant="outline">
+          <Button onClick={signInWithGoogle} type="button" variant="outline">
             <svg
               height="1em"
               viewBox="0 0 256 262"
