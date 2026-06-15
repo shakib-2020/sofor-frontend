@@ -12,6 +12,7 @@ import { Label } from '@/components/ui/label';
 import { signUp, signIn } from '@/lib/auth-client';
 // import { _log } from '@/lib/logs';
 import { convertImageToBase64 } from '@/lib/utils';
+import { Logo } from '@/components/ui/logo';
 
 export default function RegisterForm() {
   const [firstName, setFirstName] = useState('');
@@ -81,12 +82,14 @@ export default function RegisterForm() {
       <div className="p-8 pb-6">
         <div>
           <Link aria-label="go home" href="/">
-            Sofor-🚌
+            <div className="flex flex-col items-center mb-6">
+              <Logo className="h-10 w-auto mb-4" />
+              <h1 className="font-semibold text-xl text-center">
+                Sign Up for Sofor
+              </h1>
+              <p className="text-sm text-center">Create an account to get started</p>
+            </div>
           </Link>
-          <h1 className="mt-4 mb-1 font-semibold text-title text-xl">
-            Create a Account
-          </h1>
-          <p className="text-sm">Welcome! Create an account to get started</p>
         </div>
 
         <div className="mt-6 grid grid-cols-1 gap-3">

@@ -11,6 +11,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { signIn } from '@/lib/auth-client';
 import { _log } from '@/lib/logs';
+import { Logo } from '@/components/ui/logo';
 
 export default function LoginForm() {
   const [email, setEmail] = useState('');
@@ -57,11 +58,12 @@ export default function LoginForm() {
   return (
     <div className="m-auto h-fit w-full max-w-sm rounded-[calc(var(--radius)+.125rem)] border bg-card p-0.5 shadow-md dark:[--color-muted:var(--color-zinc-900)]">
       <div className="p-8 pb-6">
-        <div>
-          <h1 className="mt-4 mb-1 font-semibold text-xl">
-            Sign In to Sofor-🚌
+        <div className="flex flex-col items-center mb-6">
+          <Logo className="h-10 w-auto mb-4" />
+          <h1 className="font-semibold text-xl text-center">
+            Sign In to Sofor
           </h1>
-          <p className="text-sm">Welcome back! Sign in to continue</p>
+          <p className="text-sm text-center">Welcome back! Sign in to continue</p>
         </div>
 
         <div className="mt-6 grid grid-cols-1 gap-3">

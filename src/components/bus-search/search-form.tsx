@@ -6,7 +6,6 @@ import type React from "react";
 import { useCallback, useEffect, useState } from "react";
 import { DatePicker } from "@/components/bus-search/date-picker";
 import { Button } from "@/components/ui/button";
-import { Card, CardDescription } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { _error } from "@/lib/logs";
 import { apiClient } from "@/lib/api";
@@ -38,16 +37,6 @@ export default function SearchForm() {
 	const [cities, setCities] = useState<City[]>([]);
 	const router = useRouter();
 
-	// useEffect(() => {
-	// 	const socket = new WebSocket('ws://localhost:5000/ws');
-
-
-	// 	socket.onopen = () => console.log('Connected to Hono!');
-	// 	socket.onmessage = (event) => console.log('From server:', event.data);
-
-	// 	return () => socket.close();
-	// }, []);
-
 	const fetchCities = useCallback(async () => {
 		try {
 			const res = await apiClient.get("/api/city");
@@ -61,6 +50,12 @@ export default function SearchForm() {
 		fetchCities();
 	}, [fetchCities]);
 
+	const handleSwap = () => {
+		const temp = from;
+		setFrom(to);
+		setTo(temp);
+	};
+
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
 
@@ -71,94 +66,114 @@ export default function SearchForm() {
 			...(rDate && { rDate }),
 		});
 
-		// Option 1: Navigate with query params so /ticket can fetch
 		router.push(`/ticket?${params.toString()}`);
-
-		// Option 2: If you want to fetch trips here and send data via state:
-		/*
-		const res = await fetch(`/api/trip/search?${params.toString()}`);
-		const trips = await res.json();
-		router.push(`/ticket?${params.toString()}`, { state: { trips } });
-		*/
 	};
 
 	return (
-		<Card className="h-fit max-w-[1024px]">
-			<CardDescription>
-				<form onSubmit={handleSubmit}>
-					<div className="flex flex-col items-center gap-4 px-6 py-3">
-						<div className="grid items-center gap-4 lg:grid-cols-2">
-							<div className="flex items-center justify-between gap-4">
-								<div className="w-[45.25%] space-y-2">
-									<Label htmlFor="from">From</Label>
-									<CityPicker cities={cities} setValue={setFrom} value={from} />
-								</div>
-								<div className="mt-6 flex h-full w-[5%] items-end justify-center">
-									<ArrowLeftRight />
-								</div>
-								<div className="w-[45.25%] space-y-2">
-									<Label htmlFor="to">To</Label>
-									<CityPicker cities={cities} setValue={setTo} value={to} />
-								</div>
-							</div>
+		<div className="w-full bg-white rounded-[32px] p-6 sm:p-8 shadow-2xl border border-slate-100/60">
+			<h3 className="text-center font-black text-xl sm:text-2xl text-[#107050] tracking-tight mb-6 uppercase">
+				Plan Your Journey
+			</h3>
+			
+			<form onSubmit={handleSubmit} className="space-y-6">
+				<div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+					{/* From & To Container */}
+					<div className="relative grid grid-cols-2 gap-4 col-span-2">
+						<CityPicker
+							label="From"
+							cities={cities}
+							setValue={setFrom}
+							value={from}
+							className="w-full h-28"
+						/>
 
-							<div className="grid gap-4 lg:grid-cols-2">
-								<div className="space-y-2">
-									<Label>Journey Date</Label>
-									<DatePicker
-										curretDate={true}
-										onDateSelect={(date: Date) => {
-											const safeDate = new Date(
-												date.getFullYear(),
-												date.getMonth(),
-												date.getDate(),
-												12 // normalize
-											);
+						{/* Swap Button */}
+						<button
+							type="button"
+							onClick={handleSwap}
+							className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-white border border-slate-100 text-emerald-600 hover:bg-emerald-600 hover:text-white hover:rotate-180 transition-all duration-300 shadow-md cursor-pointer"
+							title="Swap cities"
+						>
+							<ArrowLeftRight className="h-4 w-4" />
+						</button>
 
-											const yyyy = safeDate.getFullYear();
-											const mm = String(safeDate.getMonth() + 1).padStart(2, "0");
-											const dd = String(safeDate.getDate()).padStart(2, "0");
-
-											const formatted = `${yyyy}-${mm}-${dd}`;
-
-											console.log(formatted);
-											setJDate(formatted);
-										}}
-
-									/>
-								</div>
-								<div className="space-y-2">
-									<Label>Return Date</Label>
-									<DatePicker
-										onDateSelect={(date: Date) => {
-											const safeDate = new Date(
-												date.getFullYear(),
-												date.getMonth(),
-												date.getDate(),
-												12 // normalize
-											);
-
-											const yyyy = safeDate.getFullYear();
-											const mm = String(safeDate.getMonth() + 1).padStart(2, "0");
-											const dd = String(safeDate.getDate()).padStart(2, "0");
-
-											const formatted = `${yyyy}-${mm}-${dd}`;
-
-											console.log(formatted);
-											setRDate(formatted);
-										}}
-									/>
-								</div>
-							</div>
-						</div>
-						<div>
-							<Button className="h-full w-full bg-green-500" type="submit">
-								Search Buses
-							</Button>
-						</div>
+						<CityPicker
+							label="To"
+							cities={cities}
+							setValue={setTo}
+							value={to}
+							className="w-full h-28"
+						/>
 					</div>
-				</form>
-			</CardDescription>
-		</Card>
+
+					{/* Departure Date */}
+					<DatePicker
+						label="Departure"
+						curretDate={true}
+						variant="ghost"
+						className="w-full h-28"
+						onDateSelect={(date: Date) => {
+							const safeDate = new Date(
+								date.getFullYear(),
+								date.getMonth(),
+								date.getDate(),
+								12 // normalize
+							);
+
+							const yyyy = safeDate.getFullYear();
+							const mm = String(safeDate.getMonth() + 1).padStart(2, "0");
+							const dd = String(safeDate.getDate()).padStart(2, "0");
+
+							const formatted = `${yyyy}-${mm}-${dd}`;
+							setJDate(formatted);
+						}}
+					/>
+
+					{/* Return Date */}
+					<DatePicker
+						label="Return Date"
+						variant="ghost"
+						className="w-full h-28"
+						onDateSelect={(date: Date) => {
+							const safeDate = new Date(
+								date.getFullYear(),
+								date.getMonth(),
+								date.getDate(),
+								12 // normalize
+							);
+
+							const yyyy = safeDate.getFullYear();
+							const mm = String(safeDate.getMonth() + 1).padStart(2, "0");
+							const dd = String(safeDate.getDate()).padStart(2, "0");
+
+							const formatted = `${yyyy}-${mm}-${dd}`;
+							setRDate(formatted);
+						}}
+					/>
+				</div>
+
+				{/* Search Button */}
+				<div className="pt-2 flex justify-center">
+					<Button 
+						className="w-full max-w-md bg-[#107050] hover:bg-[#0e5c42] text-white font-extrabold text-lg py-6 rounded-2xl shadow-md shadow-emerald-700/10 hover:shadow-lg hover:shadow-emerald-700/20 transition-all flex items-center justify-center gap-2 h-14" 
+						type="submit"
+					>
+						Search Buses
+					</Button>
+				</div>
+
+				{/* Footer Info inside Card */}
+				<div className="pt-2 text-center space-y-2">
+					<div className="flex justify-center gap-1.5 text-emerald-500">
+						<span className="h-2 w-2 rounded-full bg-emerald-500/80 animate-pulse" />
+						<span className="h-2 w-2 rounded-full bg-emerald-500/80 animate-pulse delay-75" />
+						<span className="h-2 w-2 rounded-full bg-emerald-500/80 animate-pulse delay-150" />
+					</div>
+					<p className="text-[11px] font-semibold text-slate-400 uppercase tracking-widest">
+						47 buses available today
+					</p>
+				</div>
+			</form>
+		</div>
 	);
 }

@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Facebook, Twitter, Instagram, Linkedin, Mail, Phone, MapPin } from 'lucide-react';
+import { Logo } from '@/components/ui/logo';
 
 export default function Footer() {
   const pathname = usePathname();
@@ -18,8 +19,8 @@ export default function Footer() {
         <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4">
           {/* Column 1: Logo and Description */}
           <div className="mb-8 lg:mb-0">
-            <Link href="/" className="mb-4 inline-block">
-              <h2 className="text-2xl font-bold text-white">Sofor 🚌</h2>
+            <Link href="/" className="mb-4 inline-block p-2 rounded-lg">
+              <Logo className="h-8 w-auto" />
             </Link>
             <p className="text-slate-400">
               Your reliable partner for comfortable and safe bus journeys. Book your tickets with ease and travel with confidence.
@@ -56,11 +57,6 @@ export default function Footer() {
               <li>
                 <Link href="/about" className="text-slate-400 transition-colors hover:text-white">
                   About Us
-                </Link>
-              </li>
-              <li>
-                <Link href="/services" className="text-slate-400 transition-colors hover:text-white">
-                  Services
                 </Link>
               </li>
               <li>

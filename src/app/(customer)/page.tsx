@@ -1,77 +1,694 @@
-import SearchForm from '@/components/bus-search/search-form';
+"use client";
+
+import SearchForm from "@/components/bus-search/search-form";
+import {
+  Ticket,
+  ShieldCheck,
+  Clock,
+  Headset,
+  MapPin,
+  Star,
+  ArrowRight,
+  Bus,
+  ChevronDown,
+  Copy,
+  Check,
+  Percent,
+  Award,
+  Users,
+  Search,
+  Phone,
+  Mail,
+  ThumbsUp,
+  ThumbsDown,
+  X,
+  HelpCircle
+} from "lucide-react";
+import { useState } from "react";
+import Link from "next/link";
 
 export default function Home() {
+  // Coupon copying micro-interaction state
+  const [copiedCoupon, setCopiedCoupon] = useState<string | null>(null);
+
+  // FAQ accordion state
+  const [expandedFaq, setExpandedFaq] = useState<number | null>(null);
+
+  // FAQ categories and search states
+  const [activeCategory, setActiveCategory] = useState<string>("all");
+  const [searchQuery, setSearchQuery] = useState<string>("");
+  const [helpfulStatus, setHelpfulStatus] = useState<Record<number, "yes" | "no">>({});
+
+  const handleCopyCoupon = (code: string) => {
+    navigator.clipboard.writeText(code);
+    setCopiedCoupon(code);
+    setTimeout(() => setCopiedCoupon(null), 2000);
+  };
+
+  const toggleFaq = (index: number) => {
+    setExpandedFaq(expandedFaq === index ? null : index);
+  };
+
+  const handleHelpful = (index: number, status: "yes" | "no") => {
+    setHelpfulStatus((prev) => ({ ...prev, [index]: status }));
+  };
+
+  // Static Data
+  const promotions = [
+    {
+      code: "SOFORFIRST",
+      discount: "15% OFF",
+      title: "First Trip Discount",
+      desc: "Get 15% off on your very first booking with Sofor.",
+      bgColor: "from-emerald-500 to-teal-600"
+    },
+    {
+      code: "BKASH20",
+      discount: "10% CASHBACK",
+      title: "bKash Payment Special",
+      desc: "Enjoy up to 10% instant cashback when paying via bKash.",
+      bgColor: "from-pink-500 to-rose-600"
+    },
+    {
+      code: "WKNDJOY",
+      discount: "BDT 150 OFF",
+      title: "Weekend Getaways",
+      desc: "Flat discount on all weekend departures booked by Thursday.",
+      bgColor: "from-amber-500 to-orange-600"
+    }
+  ];
+
+  const popularRoutes = [
+    {
+      from: "Dhaka",
+      to: "Cox's Bazar",
+      price: "1,200",
+      duration: "8-9 hours",
+      tag: "Best Seller",
+      operators: "Hanif, Green Line, Shyamoli",
+      gradient: "from-amber-500/20 via-orange-600/30 to-slate-900"
+    },
+    {
+      from: "Dhaka",
+      to: "Sylhet",
+      price: "650",
+      duration: "5-6 hours",
+      tag: "Scenic Route",
+      operators: "Ena, Shyamoli, Green Line",
+      gradient: "from-emerald-500/20 via-teal-700/30 to-slate-900"
+    },
+    {
+      from: "Dhaka",
+      to: "Chittagong",
+      price: "700",
+      duration: "5 hours",
+      tag: "Business Route",
+      operators: "Hanif, Shohagh, Saintmartin",
+      gradient: "from-blue-500/20 via-indigo-700/30 to-slate-900"
+    },
+    {
+      from: "Dhaka",
+      to: "Sreemangal",
+      price: "550",
+      duration: "4.5 hours",
+      tag: "Popular Getaway",
+      operators: "Ena Transport, Hanif Enterprise",
+      gradient: "from-lime-500/20 via-emerald-800/30 to-slate-900"
+    }
+  ];
+
+  const services = [
+    {
+      icon: <Ticket className="h-6 w-6 text-emerald-600" />,
+      title: "Super Easy Booking",
+      desc: "Search, compare, and book bus tickets in just three simple clicks. Our interface is optimized for speed and simplicity."
+    },
+    {
+      icon: <ShieldCheck className="h-6 w-6 text-emerald-600" />,
+      title: "100% Secure Payments",
+      desc: "Your transactions are protected. We support bKash, Nagad, local debit/credit cards, and internet banking gateways."
+    },
+    {
+      icon: <Clock className="h-6 w-6 text-emerald-600" />,
+      title: "Real-time Seat Selection",
+      desc: "See live, up-to-the-minute seat availability. Select your preferred seat and board with complete peace of mind."
+    },
+    {
+      icon: <Headset className="h-6 w-6 text-emerald-600" />,
+      title: "24/7 Helpline Support",
+      desc: "Have a question or need a cancellation refund? Our dedicated helpdesk operates round the clock to support your journey."
+    }
+  ];
+
+  const stats = [
+    { value: "100K+", label: "Tickets Sold", icon: <Ticket className="h-5 w-5 text-emerald-400" /> },
+    { value: "64", label: "Districts Covered", icon: <MapPin className="h-5 w-5 text-emerald-400" /> },
+    { value: "500+", label: "Buses Active", icon: <Bus className="h-5 w-5 text-emerald-400" /> },
+    { value: "25+", label: "Partner Operators", icon: <Award className="h-5 w-5 text-emerald-400" /> }
+  ];
+
+  const testimonials = [
+    {
+      name: "Rakibul Hasan",
+      route: "Dhaka to Sylhet",
+      rating: 5,
+      comment: "Booking on Sofor was incredibly fast! I bought my ticket in 2 minutes and selected my preferred window seat. The digital SMS ticket was accepted seamlessly at the boarding counter.",
+      avatarBg: "bg-emerald-100 text-emerald-800"
+    },
+    {
+      name: "Nusrat Jahan",
+      route: "Dhaka to Cox's Bazar",
+      rating: 5,
+      comment: "Highly impressed by their support team. My plans changed, and they assisted me in rescheduling my trip within minutes. The secure payment checkout is very reliable.",
+      avatarBg: "bg-teal-100 text-teal-800"
+    },
+    {
+      name: "Adnan Chowdhury",
+      route: "Dhaka to Sreemangal",
+      rating: 4,
+      comment: "Wonderful interface. I like how simple it is compared to other platforms. Clean design, clear prices, no hidden booking charges. Definitely booking here from now on.",
+      avatarBg: "bg-cyan-100 text-cyan-800"
+    }
+  ];
+
+  const faqs = [
+    {
+      q: "How do I book a bus ticket on Sofor?",
+      a: "Simply select your starting city in 'From', your destination city in 'To', choose your travel date, and click 'Search Buses'. You'll see a list of available buses, operators, and seat layouts. Pick your seats, enter traveler details, complete the payment, and you're good to go!",
+      category: "booking"
+    },
+    {
+      q: "Is payment secure on Sofor?",
+      a: "Absolutely. We use industry-standard encryption for all transactions. You can safely pay using popular local mobile wallets (bKash, Nagad, Rocket), cards (Visa, Mastercard), or net banking.",
+      category: "payment"
+    },
+    {
+      q: "Will I receive a physical ticket?",
+      a: "No physical ticket is needed. Once payment is successful, you will receive a digital ticket via SMS and Email. Show this digital ticket at the counter before boarding to claim your boarding pass.",
+      category: "booking"
+    },
+    {
+      q: "Can I cancel my ticket or request a refund?",
+      a: "Yes, ticket cancellation policies depend on the respective operator. You can initiate a cancellation from your Profile/My Bookings tab or by contacting our 24/7 customer support team at least 6 hours before departure.",
+      category: "refunds"
+    },
+    {
+      q: "What if my booking fails but the money was deducted?",
+      a: "Do not worry. If the amount is deducted but the ticket is not issued, our system automatically processes a refund back to your payment source. Typically, it takes 24-48 hours depending on your banking provider.",
+      category: "payment"
+    }
+  ];
+
+  // Filter FAQs based on active category and search query
+  const filteredFaqs = faqs.filter((faq) => {
+    const matchesCategory = activeCategory === "all" || faq.category === activeCategory;
+    const matchesSearch = faq.q.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      faq.a.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchesCategory && matchesSearch;
+  });
+
+  const operators = [
+    "Green Line Paribahan",
+    "Hanif Enterprise",
+    "Shyamoli S.P.",
+    "Ena Transport",
+    "Saintmartin Travels",
+    "Shohagh Paribahan",
+    "Silk Line"
+  ];
+
   return (
-    <main className="min-h-screen w-full bg-gray-50 py-12">
-      <div className="flex flex-col items-center">
-        <h1 className="mb-8 text-center font-bold text-4xl text-gray-800">
-          Bus Ticket Booking
-        </h1>
+    <main className="min-h-screen w-full bg-slate-50/50">
+      {/* 1. Hero Section */}
+      <section className="relative overflow-hidden bg-gradient-to-b from-[#0e5c42] to-[#083b2a] pt-20 pb-24 text-white lg:pt-28 lg:pb-32">
+        {/* Subtle decorative grid/glow pattern */}
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#0c573e_1px,transparent_1px),linear-gradient(to_bottom,#0c573e_1px,transparent_1px)] bg-[size:4rem_4rem] opacity-20" />
 
-        <SearchForm />
+        {/* Ticket SVG background watermark */}
+        <div className="absolute inset-0 flex items-center justify-center opacity-[0.06] pointer-events-none select-none">
+          <img src="/sofor_ticket_logo.svg" alt="Ticket Backdrop" className="w-full max-w-6xl h-auto object-contain scale-110 lg:scale-125" />
+        </div>
 
-        {/* About Us Section */}
-        <section id="about" className="mt-24 w-full max-w-6xl px-6">
-          <div className="rounded-2xl bg-white p-8 shadow-sm md:p-12">
-            <h2 className="mb-6 text-center font-bold text-3xl text-gray-900">About Us</h2>
-            <p className="mx-auto max-w-3xl text-center text-gray-600 text-lg leading-relaxed">
-              Sofor is your premier bus ticket booking platform, dedicated to making your travel experience seamless and comfortable. 
-              We connect you with top-rated bus operators across the country, ensuring safe and reliable journeys. 
-              Whether you're planning a quick getaway or a long-distance trip, Sofor simplifies the booking process so you can focus on the journey ahead.
-            </p>
-          </div>
-        </section>
-
-        {/* Services Section */}
-        <section id="services" className="mt-16 w-full max-w-6xl px-6 pb-16">
-          <h2 className="mb-10 text-center font-bold text-3xl text-gray-900">Our Services</h2>
-          <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4">
-            {/* Service 1 */}
-            <div className="rounded-xl bg-white p-6 shadow-sm transition-shadow hover:shadow-md">
-              <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-blue-100 text-blue-600">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-ticket"><path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/><path d="M13 5v2"/><path d="M13 17v2"/><path d="M13 11v2"/></svg>
-              </div>
-              <h3 className="mb-2 font-semibold text-xl text-gray-900">Easy Booking</h3>
-              <p className="text-gray-600">
-                Search, compare, and book bus tickets in just a few clicks. Our user-friendly interface makes booking a breeze.
-              </p>
+        <div className="relative mx-auto max-w-6xl px-6">
+          <div className="flex flex-col items-center text-center max-w-5xl mx-auto space-y-10">
+            {/* Header pill with blinking dot */}
+            <div className="inline-flex items-center gap-2.5 rounded-full bg-emerald-950/40 backdrop-blur-md px-5 py-2 text-xs font-semibold text-emerald-300 border border-emerald-500/20 shadow-inner">
+              <span className="relative flex h-2.5 w-2.5">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-400"></span>
+              </span>
+              Bangladesh's Smart Bus Platform
             </div>
 
-            {/* Service 2 */}
-            <div className="rounded-xl bg-white p-6 shadow-sm transition-shadow hover:shadow-md">
-              <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-green-100 text-green-600">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-shield-check"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/><path d="m9 12 2 2 4-4"/></svg>
-              </div>
-              <h3 className="mb-2 font-semibold text-xl text-gray-900">Secure Payments</h3>
-              <p className="text-gray-600">
-                Your transactions are safe with us. We use industry-standard encryption to ensure secure and reliable payments.
-              </p>
+            {/* Main Headline */}
+            <div className="space-y-4 max-w-3xl">
+              <h1 className="font-black text-4xl sm:text-5xl lg:text-6xl tracking-tight leading-[1.15]">
+                Book Your Bus Ticket <br className="hidden sm:inline" />
+                in <span className="text-[#a7f3d0]">Seconds</span>
+              </h1>
             </div>
 
-            {/* Service 3 */}
-            <div className="rounded-xl bg-white p-6 shadow-sm transition-shadow hover:shadow-md">
-              <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-purple-100 text-purple-600">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-clock"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-              </div>
-              <h3 className="mb-2 font-semibold text-xl text-gray-900">Real-time Availability</h3>
-              <p className="text-gray-600">
-                Get up-to-the-minute updates on seat availability. Choose your preferred seats and travel with peace of mind.
-              </p>
-            </div>
-
-            {/* Service 4 */}
-            <div className="rounded-xl bg-white p-6 shadow-sm transition-shadow hover:shadow-md">
-              <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-orange-100 text-orange-600">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-headset"><path d="M3 11v3a8 8 0 0 0 16 0v-3"/><path d="M14 6a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/><path d="M18 11.5V9a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v2.5"/><path d="M6 11.5V9a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v2.5"/><path d="M22 11v3a10.6 10.6 0 0 1-1.6 5.5"/><path d="M2 11v3a10.6 10.6 0 0 0 1.6 5.5"/><path d="M12 22a7 7 0 0 0 7-7h-2a5 5 0 0 1-5 5 5 5 0 0 1-5-5H5a7 7 0 0 0 7 7Z"/></svg>
-              </div>
-              <h3 className="mb-2 font-semibold text-xl text-gray-900">24/7 Support</h3>
-              <p className="text-gray-600">
-                Our dedicated customer support team is available round the clock to assist you with any queries or issues.
-              </p>
+            {/* Centered Search Card */}
+            <div className="w-full max-w-5xl mx-auto">
+              <SearchForm />
             </div>
           </div>
-        </section>
-      </div>
+        </div>
+      </section>
+
+      {/* 2. Lower Highlights Banner */}
+      <section className="bg-[#0c5c42] py-4.5 border-t border-[#0b543c] text-white">
+        <div className="mx-auto max-w-6xl px-6">
+          <div className="flex flex-wrap justify-between items-center gap-4 text-center text-xs sm:text-sm font-semibold text-emerald-100/90">
+            <span className="flex-1 min-w-[120px]">Secure Payment</span>
+            <span className="hidden sm:inline text-emerald-500/50">•</span>
+            <span className="flex-1 min-w-[120px]">Instant Confirmation</span>
+            <span className="hidden sm:inline text-emerald-500/50">•</span>
+            <span className="flex-1 min-w-[120px]">Easy Cancellation</span>
+            <span className="hidden sm:inline text-emerald-500/50">•</span>
+            <span className="flex-1 min-w-[120px]">24/7 Support</span>
+          </div>
+        </div>
+      </section>
+
+      {/* 3. Promotional Offers Carousel */}
+      <section className="mx-auto mt-20 max-w-6xl px-6">
+        <div className="mb-10 text-center">
+          <h2 className="font-bold text-3xl text-gray-900">Exclusive Offers For You</h2>
+          <p className="mt-2 text-gray-600">Save big on your next journey with these special coupon codes</p>
+        </div>
+
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+          {promotions.map((promo) => (
+            <div
+              key={promo.code}
+              className={`relative overflow-hidden rounded-2xl bg-gradient-to-br ${promo.bgColor} p-6 text-white shadow-md transition-all duration-300 hover:-translate-y-1 hover:shadow-lg`}
+            >
+              {/* Decorative Card Circle */}
+              <div className="absolute -right-8 -top-8 h-24 w-24 rounded-full bg-white/10" />
+
+              <div className="flex items-center justify-between">
+                <span className="inline-block rounded-full bg-white/20 px-3 py-1 text-xs font-semibold uppercase backdrop-blur-sm">
+                  {promo.discount}
+                </span>
+                <Percent className="h-5 w-5 text-white/80" />
+              </div>
+
+              <h3 className="mt-4 font-bold text-xl">{promo.title}</h3>
+              <p className="mt-2 text-sm text-white/90 leading-relaxed min-h-[48px]">{promo.desc}</p>
+
+              <div className="mt-6 flex items-center justify-between rounded-lg bg-black/15 p-3 backdrop-blur-xs">
+                <code className="font-mono font-bold text-sm tracking-wider">{promo.code}</code>
+                <button
+                  type="button"
+                  onClick={() => handleCopyCoupon(promo.code)}
+                  className="flex items-center gap-1 text-xs font-semibold uppercase tracking-wider text-white hover:text-white/80 transition-colors"
+                >
+                  {copiedCoupon === promo.code ? (
+                    <>
+                      <Check className="h-3.5 w-3.5" />
+                      Copied
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="h-3.5 w-3.5" />
+                      Copy Code
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* 4. Popular Routes */}
+      <section className="mx-auto mt-24 max-w-6xl px-6">
+        <div className="mb-10 flex flex-col items-center justify-between gap-4 sm:flex-row sm:items-end">
+          <div className="text-center sm:text-left">
+            <h2 className="font-bold text-3xl text-gray-900">Popular Bus Routes</h2>
+            <p className="mt-2 text-gray-600">Quickly book tickets for our most requested destinations</p>
+          </div>
+          <Link
+            href="/ticket"
+            className="group flex items-center gap-1.5 text-sm font-semibold text-emerald-600 hover:text-emerald-700 transition-colors"
+          >
+            View All Routes
+            <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+          </Link>
+        </div>
+
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          {popularRoutes.map((route, index) => (
+            <div
+              key={`${route.from}-${route.to}-${index}`}
+              className="group relative overflow-hidden rounded-2xl border border-gray-100 bg-white p-6 shadow-xs transition-all duration-300 hover:-translate-y-1 hover:shadow-md"
+            >
+              {/* Styled background abstract gradient */}
+              <div className={`absolute inset-0 bg-gradient-to-b ${route.gradient} opacity-5 transition-opacity group-hover:opacity-10`} />
+
+              <span className="inline-block rounded-md bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700">
+                {route.tag}
+              </span>
+
+              <h3 className="mt-4 flex items-center gap-2 font-bold text-lg text-gray-900">
+                {route.from}
+                <ArrowRight className="h-4 w-4 text-gray-400 group-hover:text-emerald-600 transition-colors" />
+                {route.to}
+              </h3>
+
+              <div className="mt-3 flex items-baseline gap-1">
+                <span className="text-xs text-gray-500">Starts from</span>
+                <span className="font-extrabold text-emerald-600 text-xl">৳{route.price}</span>
+              </div>
+
+              <div className="mt-4 border-t border-gray-100 pt-4 text-xs text-gray-500 space-y-1">
+                <div className="flex justify-between">
+                  <span>Duration:</span>
+                  <span className="font-medium text-gray-700">{route.duration}</span>
+                </div>
+                <div className="truncate flex justify-between gap-2">
+                  <span>Operators:</span>
+                  <span className="font-medium text-gray-700 truncate max-w-[120px]">{route.operators}</span>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* 5. Features Section / Why Choose Us */}
+      <section id="services" className="mx-auto mt-24 max-w-6xl px-6">
+        <div className="mb-14 text-center">
+          <h2 className="font-bold text-3xl text-gray-900">Why Choose Sofor?</h2>
+          <p className="mt-2 text-gray-600">We make long-distance travel planning completely hassle-free</p>
+        </div>
+
+        <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4">
+          {services.map((item, index) => (
+            <div
+              key={index}
+              className="group rounded-2xl border border-gray-100 bg-white p-6 shadow-xs transition-all duration-300 hover:-translate-y-1 hover:shadow-md"
+            >
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 transition-all duration-300 group-hover:bg-emerald-600 group-hover:text-white">
+                {item.icon}
+              </div>
+              <h3 className="mt-5 font-bold text-lg text-gray-900 group-hover:text-emerald-700 transition-colors">
+                {item.title}
+              </h3>
+              <p className="mt-3 text-sm text-gray-600 leading-relaxed">
+                {item.desc}
+              </p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* 6. Stats Section */}
+      <section className="mt-24 bg-gradient-to-r from-emerald-950 via-emerald-900 to-teal-950 py-16 text-white shadow-inner relative overflow-hidden">
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#022c22_1px,transparent_1px),linear-gradient(to_bottom,#022c22_1px,transparent_1px)] bg-[size:4rem_4rem] opacity-25" />
+        <div className="relative mx-auto max-w-6xl px-6">
+          <div className="grid grid-cols-2 gap-8 md:grid-cols-4 text-center">
+            {stats.map((stat, index) => (
+              <div key={index} className="flex flex-col items-center">
+                <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-emerald-500/10 border border-emerald-500/20">
+                  {stat.icon}
+                </div>
+                <span className="font-black text-3xl sm:text-4xl text-emerald-400">
+                  {stat.value}
+                </span>
+                <span className="mt-2 text-xs sm:text-sm font-medium text-slate-300 uppercase tracking-wider">
+                  {stat.label}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* 7. Operators Cloud Showcase */}
+      <section className="mx-auto mt-24 max-w-6xl px-6">
+        <div className="mb-8 text-center">
+          <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+            Partnered with leading transport providers
+          </h3>
+        </div>
+        <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6 md:gap-8 opacity-60 hover:opacity-80 transition-opacity">
+          {operators.map((op, idx) => (
+            <div
+              key={idx}
+              className="rounded-lg border border-gray-200/60 bg-white px-5 py-2.5 font-bold text-sm text-gray-700 tracking-wide shadow-xs hover:border-emerald-300 hover:text-emerald-700 transition-all cursor-default"
+            >
+              {op}
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* 8. Testimonials Section */}
+      <section className="mx-auto mt-24 max-w-6xl px-6">
+        <div className="mb-14 text-center">
+          <h2 className="font-bold text-3xl text-gray-900">What Our Travelers Say</h2>
+          <p className="mt-2 text-gray-600">Read verified reviews from passengers who booked with us</p>
+        </div>
+
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+          {testimonials.map((t, idx) => (
+            <div
+              key={idx}
+              className="flex flex-col justify-between rounded-2xl border border-gray-100 bg-white p-6 shadow-xs hover:shadow-md transition-shadow"
+            >
+              <div>
+                <div className="flex gap-0.5">
+                  {Array.from({ length: 5 }).map((_, i) => (
+                    <Star
+                      key={i}
+                      className={`h-4.5 w-4.5 ${i < t.rating ? "fill-amber-400 text-amber-400" : "text-gray-200"}`}
+                    />
+                  ))}
+                </div>
+                <p className="mt-4 text-sm text-gray-600 leading-relaxed italic">
+                  "{t.comment}"
+                </p>
+              </div>
+
+              <div className="mt-6 flex items-center gap-3 border-t border-gray-100 pt-4">
+                <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full font-bold text-sm ${t.avatarBg}`}>
+                  {t.name.split(" ").map(w => w[0]).join("")}
+                </div>
+                <div>
+                  <h4 className="font-bold text-sm text-gray-900">{t.name}</h4>
+                  <span className="text-xs text-gray-500">Traveler ({t.route})</span>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* 9. FAQs Section */}
+      <section id="about" className="mx-auto my-24 max-w-6xl px-6">
+        <div className="mb-14 text-center max-w-3xl mx-auto">
+          <span className="inline-block rounded-full bg-emerald-50 px-3.5 py-1 text-xs font-semibold text-emerald-700 mb-3 uppercase tracking-wider">
+            Help Center
+          </span>
+          <h2 className="font-extrabold text-3xl sm:text-4xl text-gray-900 tracking-tight">Frequently Asked Questions</h2>
+          <p className="mt-3 text-base sm:text-lg text-gray-600 leading-relaxed">
+            Find answers to common questions about bookings, payments, and cancellations. Need more help? Our team is available 24/7.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+          {/* Left Column: Categories and Support Card */}
+          <div className="lg:col-span-4 space-y-6">
+            {/* Category selection */}
+            <div className="bg-white rounded-2xl border border-gray-100 p-4 shadow-sm space-y-1">
+              <h3 className="px-3 py-2 text-xs font-semibold uppercase tracking-wider text-gray-400">
+                Categories
+              </h3>
+              {[
+                { id: "all", label: "All Topics" },
+                { id: "booking", label: "Booking & Tickets" },
+                { id: "payment", label: "Payments & Security" },
+                { id: "refunds", label: "Cancellations & Refunds" },
+              ].map((category) => (
+                <button
+                  key={category.id}
+                  type="button"
+                  onClick={() => {
+                    setActiveCategory(category.id);
+                    setExpandedFaq(null);
+                  }}
+                  className={`flex w-full items-center justify-between px-3 py-2.5 rounded-xl text-sm font-semibold transition-all ${activeCategory === category.id
+                    ? "bg-emerald-50 text-emerald-800 shadow-inner"
+                    : "text-gray-600 hover:bg-slate-50/50 hover:text-gray-900"
+                    }`}
+                >
+                  <span>{category.label}</span>
+                  <span className={`h-2 w-2 rounded-full transition-all ${activeCategory === category.id ? "bg-emerald-600 scale-125" : "bg-transparent"
+                    }`} />
+                </button>
+              ))}
+            </div>
+
+            {/* Premium Support Card */}
+            <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#0e5c42] to-[#083b2a] p-6 text-white shadow-md">
+              <div className="absolute -right-10 -bottom-10 h-32 w-32 rounded-full bg-emerald-500/10 blur-2xl" />
+
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/10 text-emerald-300 mb-4 border border-white/10">
+                <Headset className="h-5 w-5" />
+              </div>
+              <h4 className="font-bold text-lg">Still need support?</h4>
+              <p className="mt-2 text-xs text-emerald-100/80 leading-relaxed">
+                If you couldn't find the answers you're looking for, please don't hesitate to reach out. Our support agent will assist you instantly.
+              </p>
+
+              <div className="mt-5 space-y-3">
+                <a
+                  href="tel:+8809612345678"
+                  className="flex items-center gap-3 rounded-xl bg-white/10 px-4 py-2.5 text-xs font-semibold hover:bg-white/15 transition-all border border-white/5"
+                >
+                  <Phone className="h-4 w-4 text-emerald-300" />
+                  <span>Call +880 9612-345678</span>
+                </a>
+                <a
+                  href="mailto:support@sofor.com"
+                  className="flex items-center gap-3 rounded-xl bg-white/10 px-4 py-2.5 text-xs font-semibold hover:bg-white/15 transition-all border border-white/5"
+                >
+                  <Mail className="h-4 w-4 text-emerald-300" />
+                  <span>support@sofor.com</span>
+                </a>
+              </div>
+            </div>
+          </div>
+
+          {/* Right Column: Search + Accordion */}
+          <div className="lg:col-span-8 space-y-6">
+            {/* Search input with premium styling */}
+            <div className="relative">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Search for questions..."
+                value={searchQuery}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  setExpandedFaq(null);
+                  setActiveCategory("all"); // Reset category on search for broader results
+                }}
+                className="w-full pl-12 pr-10 py-3.5 bg-white border border-gray-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all shadow-sm placeholder:text-gray-400"
+              />
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={() => setSearchQuery("")}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 p-1 rounded-full hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              )}
+            </div>
+
+            {/* Accordion list */}
+            <div className="space-y-4">
+              {filteredFaqs.length > 0 ? (
+                filteredFaqs.map((faq) => {
+                  const globalIndex = faqs.findIndex(f => f.q === faq.q);
+                  const isOpen = expandedFaq === globalIndex;
+                  return (
+                    <div
+                      key={globalIndex}
+                      className={`overflow-hidden rounded-2xl border transition-all duration-300 ${isOpen
+                        ? "border-emerald-500 bg-white shadow-md ring-1 ring-emerald-500/20"
+                        : "border-gray-100 bg-white hover:border-emerald-500/20 shadow-sm hover:shadow-md"
+                        }`}
+                    >
+                      <button
+                        type="button"
+                        onClick={() => toggleFaq(globalIndex)}
+                        className="flex w-full items-center justify-between gap-4 px-6 py-5 text-left font-bold text-gray-900 transition-colors"
+                      >
+                        <div className="flex items-center gap-4">
+                          <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-xl text-xs font-bold transition-all duration-300 ${isOpen ? "bg-emerald-600 text-white shadow-md" : "bg-emerald-50 text-emerald-700"
+                            }`}>
+                            <HelpCircle className="h-4 w-4" />
+                          </span>
+                          <span className={`text-sm sm:text-base transition-colors duration-300 ${isOpen ? "text-emerald-950" : "text-gray-900"}`}>
+                            {faq.q}
+                          </span>
+                        </div>
+                        <ChevronDown className={`h-5 w-5 text-gray-400 shrink-0 transition-transform duration-300 ${isOpen ? "rotate-180 text-emerald-600" : ""}`} />
+                      </button>
+                      <div className={`grid transition-all duration-300 ease-in-out ${isOpen ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"
+                        }`}>
+                        <div className="overflow-hidden">
+                          <div className="border-t border-gray-100 px-6 py-4.5 bg-slate-50/40 pl-6 sm:pl-[3.5rem] space-y-4">
+                            <p className="text-sm text-gray-600 leading-relaxed m-2">
+                              {faq.a}
+                            </p>
+
+                            {/* Helpfulness Rating Widget */}
+                            <div className="flex flex-wrap items-center justify-between gap-3 pt-3.5 border-t border-gray-100 text-xs text-gray-400">
+                              <span>Was this answer helpful?</span>
+                              <div className="flex items-center gap-2 mb-2">
+                                {helpfulStatus[globalIndex] === undefined ? (
+                                  <>
+                                    <button
+                                      type="button"
+                                      onClick={() => handleHelpful(globalIndex, "yes")}
+                                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-200 hover:border-emerald-500 hover:text-emerald-600 transition-colors bg-white font-medium animate-fade-in"
+                                    >
+                                      <ThumbsUp className="h-3.5 w-3.5" />
+                                      Yes
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() => handleHelpful(globalIndex, "no")}
+                                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-200 hover:border-rose-500 hover:text-rose-600 transition-colors bg-white font-medium animate-fade-in"
+                                    >
+                                      <ThumbsDown className="h-3.5 w-3.5" />
+                                      No
+                                    </button>
+                                  </>
+                                ) : (
+                                  <span className="text-emerald-600 font-semibold flex items-center gap-1">
+                                    <Check className="h-3.5 w-3.5 animate-bounce" />
+                                    Thank you for your feedback!
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })
+              ) : (
+                <div className="flex flex-col items-center justify-center text-center p-10 bg-white border border-gray-100 rounded-2xl shadow-sm space-y-3">
+                  <div className="h-12 w-12 rounded-xl bg-slate-50 text-gray-400 flex items-center justify-center">
+                    <Search className="h-6 w-6" />
+                  </div>
+                  <h4 className="font-bold text-gray-700">No results found</h4>
+                  <p className="text-xs text-gray-500 max-w-xs">
+                    We couldn't find any questions matching "{searchQuery}". Try using different terms or contact support.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSearchQuery("");
+                      setActiveCategory("all");
+                    }}
+                    className="text-xs font-semibold text-emerald-600 hover:text-emerald-700 transition-colors"
+                  >
+                    Clear Search
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </section>
     </main>
   );
 }
