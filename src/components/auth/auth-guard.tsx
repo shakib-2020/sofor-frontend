@@ -26,13 +26,24 @@ export function AuthGuard({ children, redirectTo = '/sign-in', allowedRoles, req
       // Check roles requirement
       if (allowedRoles && allowedRoles.length > 0) {
         const userRole = user?.role || 'CUSTOMER';
-        if (!allowedRoles.includes(userRole)) {
+        const effectiveAllowedRoles = [...allowedRoles];
+        if (allowedRoles.includes('superAdmin') || allowedRoles.includes('SUPER_ADMIN')) {
+          effectiveAllowedRoles.push('superAdmin', 'SUPER_ADMIN', 'admin', 'ADMIN');
+        }
+        if (allowedRoles.includes('admin') || allowedRoles.includes('ADMIN')) {
+          effectiveAllowedRoles.push('superAdmin', 'SUPER_ADMIN', 'admin', 'ADMIN');
+        }
+
+        if (!effectiveAllowedRoles.includes(userRole)) {
           router.push('/'); // Redirect to home if role not allowed
           return;
         }
-      } else if (requireAdmin && user?.role !== 'SUPER_ADMIN') {
-        router.push('/'); // Redirect to home if admin required but not super admin
-        return;
+      } else if (requireAdmin) {
+        const userRole = user?.role || 'CUSTOMER';
+        if (userRole !== 'SUPER_ADMIN' && userRole !== 'superAdmin' && userRole !== 'ADMIN' && userRole !== 'admin') {
+          router.push('/'); // Redirect to home if admin required but not admin/superAdmin
+          return;
+        }
       }
     }
   }, [isLoading, isAuthenticated, user, router, redirectTo, allowedRoles, requireAdmin]);
@@ -54,11 +65,21 @@ export function AuthGuard({ children, redirectTo = '/sign-in', allowedRoles, req
   // Check role eligibility for render check
   if (allowedRoles && allowedRoles.length > 0) {
     const userRole = user?.role || 'CUSTOMER';
-    if (!allowedRoles.includes(userRole)) {
+    const effectiveAllowedRoles = [...allowedRoles];
+    if (allowedRoles.includes('superAdmin') || allowedRoles.includes('SUPER_ADMIN')) {
+      effectiveAllowedRoles.push('superAdmin', 'SUPER_ADMIN', 'admin', 'ADMIN');
+    }
+    if (allowedRoles.includes('admin') || allowedRoles.includes('ADMIN')) {
+      effectiveAllowedRoles.push('superAdmin', 'SUPER_ADMIN', 'admin', 'ADMIN');
+    }
+    if (!effectiveAllowedRoles.includes(userRole)) {
       return null;
     }
-  } else if (requireAdmin && user?.role !== 'SUPER_ADMIN') {
-    return null;
+  } else if (requireAdmin) {
+    const userRole = user?.role || 'CUSTOMER';
+    if (userRole !== 'SUPER_ADMIN' && userRole !== 'superAdmin' && userRole !== 'ADMIN' && userRole !== 'admin') {
+      return null;
+    }
   }
 
   return <>{children}</>;

@@ -76,6 +76,7 @@ export const counterStaff = orgAc.newRole({
 // Role string constants for type-safety throughout the app
 export const ROLES = {
   SUPER_ADMIN: 'superAdmin',
+  ADMIN: 'admin',
   OPERATOR_ADMIN: 'operatorAdmin',
   OPERATOR_MANAGER: 'operatorManager',
   OPERATOR_STAFF: 'operatorStaff',
