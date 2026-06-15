@@ -152,7 +152,7 @@ export default function SearchForm() {
 							</div>
 						</div>
 						<div>
-							<Button className="h-full w-full bg-green-500" type="submit">
+							<Button className="h-full w-full bg-primary" type="submit">
 								Search Buses
 							</Button>
 						</div>
