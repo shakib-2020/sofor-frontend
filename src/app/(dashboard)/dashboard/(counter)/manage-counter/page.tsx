@@ -1,9 +1,9 @@
 import ManageCounter from "./manage-counter-form";
-import { OperatorAdminOrAboveRoute } from "@/components/auth/route-guards";
+import { CounterStaffOrAboveRoute } from "@/components/auth/route-guards";
 
 function page() {
 	return (
-		<OperatorAdminOrAboveRoute>
+		<CounterStaffOrAboveRoute>
 			<div>
 				<div>
 					<h2 className="mb-2 font-bold text-2xl">Manage Counter</h2>
@@ -14,7 +14,7 @@ function page() {
 				{/* form */}
 				<ManageCounter />
 			</div>
-		</OperatorAdminOrAboveRoute>
+		</CounterStaffOrAboveRoute>
 	);
 }
 
