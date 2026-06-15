@@ -31,6 +31,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from '@/components/ui/sidebar';
+import { Logo } from '@/components/ui/logo';
 
 const data = {
   user: {
@@ -268,9 +269,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               asChild
               className="data-[slot=sidebar-menu-button]:!p-1.5"
             >
-              <a href="/dashboard">
-                <ArrowUpCircleIcon className="h-5 w-5" />
-                <span className="font-semibold text-base">Sofor Panel</span>
+              <a href="/dashboard" className="flex items-center gap-2">
+                <Logo className="h-6 w-auto" />
+                <span className="font-semibold text-base truncate">Panel</span>
               </a>
             </SidebarMenuButton>
           </SidebarMenuItem>

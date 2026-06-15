@@ -1,5 +1,6 @@
 'use client';
 import Link from 'next/link';
+import { Logo } from '@/components/ui/logo';
 import { usePathname, useRouter } from 'next/navigation';
 import {
   NavigationMenu,
@@ -25,11 +26,11 @@ function NavBar() {
   return (
     <nav className="sticky top-0 flex justify-between border-b-2 bg-white px-16 py-4">
       <Link href={'/'}>
-        <h1 className="text-center font-bold text-black text-lg">Sofor 🚌</h1>
+        <Logo className="h-10 w-auto" />
       </Link>
       <div>
         <NavigationMenu>
-                    <NavigationMenuList>
+          <NavigationMenuList>
             <NavigationMenuItem>
               <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
                 <Link href="/">Home</Link>
@@ -69,14 +70,14 @@ function NavBar() {
                   >
                     <Link href="/profile">Profile</Link>
                   </NavigationMenuLink>
-                
+
 
                   {user?.role === 'admin' && (
                     <Button className="ml-2" type="button" variant="secondary">
                       <Link href="/dashboard">Dashboard</Link>
                     </Button>
                   )}
-                  
+
                   <Button
                     className="ml-2 bg-red-600 hover:bg-red-700 text-white"
                     onClick={async () => {
