@@ -39,9 +39,7 @@ export default function RootLayout({
         <WrapperWithQuery>
           <AuthProvider>
             <PusherPresenceProvider>
-              <NavBar />
               {children}
-              <Footer />
               <Toaster richColors />
             </PusherPresenceProvider>
           </AuthProvider>

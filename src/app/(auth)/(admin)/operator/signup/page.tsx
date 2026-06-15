@@ -46,8 +46,8 @@ export default function BusOwnerSignupPage() {
 
           <div className="mt-6 text-center text-xs text-muted-foreground border-t border-border/50 pt-4">
             Authorized admin?{' '}
-            <Link className="underline hover:text-foreground text-emerald-400" href="/admin/login">
-              Admin Portal
+            <Link className="underline hover:text-foreground text-emerald-400" href="/operator/login">
+              Operator Portal
             </Link>
           </div>
         </div>
