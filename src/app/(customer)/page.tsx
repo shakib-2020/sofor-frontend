@@ -15,7 +15,14 @@ import {
   Check,
   Percent,
   Award,
-  Users
+  Users,
+  Search,
+  Phone,
+  Mail,
+  ThumbsUp,
+  ThumbsDown,
+  X,
+  HelpCircle
 } from "lucide-react";
 import { useState } from "react";
 import Link from "next/link";
@@ -27,6 +34,11 @@ export default function Home() {
   // FAQ accordion state
   const [expandedFaq, setExpandedFaq] = useState<number | null>(null);
 
+  // FAQ categories and search states
+  const [activeCategory, setActiveCategory] = useState<string>("all");
+  const [searchQuery, setSearchQuery] = useState<string>("");
+  const [helpfulStatus, setHelpfulStatus] = useState<Record<number, "yes" | "no">>({});
+
   const handleCopyCoupon = (code: string) => {
     navigator.clipboard.writeText(code);
     setCopiedCoupon(code);
@@ -35,6 +47,10 @@ export default function Home() {
 
   const toggleFaq = (index: number) => {
     setExpandedFaq(expandedFaq === index ? null : index);
+  };
+
+  const handleHelpful = (index: number, status: "yes" | "no") => {
+    setHelpfulStatus((prev) => ({ ...prev, [index]: status }));
   };
 
   // Static Data
@@ -158,25 +174,38 @@ export default function Home() {
   const faqs = [
     {
       q: "How do I book a bus ticket on Sofor?",
-      a: "Simply select your starting city in 'From', your destination city in 'To', choose your travel date, and click 'Search Buses'. You'll see a list of available buses, operators, and seat layouts. Pick your seats, enter traveler details, complete the payment, and you're good to go!"
+      a: "Simply select your starting city in 'From', your destination city in 'To', choose your travel date, and click 'Search Buses'. You'll see a list of available buses, operators, and seat layouts. Pick your seats, enter traveler details, complete the payment, and you're good to go!",
+      category: "booking"
     },
     {
       q: "Is payment secure on Sofor?",
-      a: "Absolutely. We use industry-standard encryption for all transactions. You can safely pay using popular local mobile wallets (bKash, Nagad, Rocket), cards (Visa, Mastercard), or net banking."
+      a: "Absolutely. We use industry-standard encryption for all transactions. You can safely pay using popular local mobile wallets (bKash, Nagad, Rocket), cards (Visa, Mastercard), or net banking.",
+      category: "payment"
     },
     {
       q: "Will I receive a physical ticket?",
-      a: "No physical ticket is needed. Once payment is successful, you will receive a digital ticket via SMS and Email. Show this digital ticket at the counter before boarding to claim your boarding pass."
+      a: "No physical ticket is needed. Once payment is successful, you will receive a digital ticket via SMS and Email. Show this digital ticket at the counter before boarding to claim your boarding pass.",
+      category: "booking"
     },
     {
       q: "Can I cancel my ticket or request a refund?",
-      a: "Yes, ticket cancellation policies depend on the respective operator. You can initiate a cancellation from your Profile/My Bookings tab or by contacting our 24/7 customer support team at least 6 hours before departure."
+      a: "Yes, ticket cancellation policies depend on the respective operator. You can initiate a cancellation from your Profile/My Bookings tab or by contacting our 24/7 customer support team at least 6 hours before departure.",
+      category: "refunds"
     },
     {
       q: "What if my booking fails but the money was deducted?",
-      a: "Do not worry. If the amount is deducted but the ticket is not issued, our system automatically processes a refund back to your payment source. Typically, it takes 24-48 hours depending on your banking provider."
+      a: "Do not worry. If the amount is deducted but the ticket is not issued, our system automatically processes a refund back to your payment source. Typically, it takes 24-48 hours depending on your banking provider.",
+      category: "payment"
     }
   ];
+
+  // Filter FAQs based on active category and search query
+  const filteredFaqs = faqs.filter((faq) => {
+    const matchesCategory = activeCategory === "all" || faq.category === activeCategory;
+    const matchesSearch = faq.q.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      faq.a.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchesCategory && matchesSearch;
+  });
 
   const operators = [
     "Green Line Paribahan",
@@ -194,7 +223,7 @@ export default function Home() {
       <section className="relative overflow-hidden bg-gradient-to-b from-[#0e5c42] to-[#083b2a] pt-20 pb-24 text-white lg:pt-28 lg:pb-32">
         {/* Subtle decorative grid/glow pattern */}
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#0c573e_1px,transparent_1px),linear-gradient(to_bottom,#0c573e_1px,transparent_1px)] bg-[size:4rem_4rem] opacity-20" />
-        
+
         {/* Ticket SVG background watermark */}
         <div className="absolute inset-0 flex items-center justify-center opacity-[0.06] pointer-events-none select-none">
           <img src="/sofor_ticket_logo.svg" alt="Ticket Backdrop" className="w-full max-w-6xl h-auto object-contain scale-110 lg:scale-125" />
@@ -210,7 +239,7 @@ export default function Home() {
               </span>
               Bangladesh's Smart Bus Platform
             </div>
-            
+
             {/* Main Headline */}
             <div className="space-y-4 max-w-3xl">
               <h1 className="font-black text-4xl sm:text-5xl lg:text-6xl tracking-tight leading-[1.15]">
@@ -264,10 +293,10 @@ export default function Home() {
                 </span>
                 <Percent className="h-5 w-5 text-white/80" />
               </div>
-              
+
               <h3 className="mt-4 font-bold text-xl">{promo.title}</h3>
               <p className="mt-2 text-sm text-white/90 leading-relaxed min-h-[48px]">{promo.desc}</p>
-              
+
               <div className="mt-6 flex items-center justify-between rounded-lg bg-black/15 p-3 backdrop-blur-xs">
                 <code className="font-mono font-bold text-sm tracking-wider">{promo.code}</code>
                 <button
@@ -321,13 +350,13 @@ export default function Home() {
               <span className="inline-block rounded-md bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700">
                 {route.tag}
               </span>
-              
+
               <h3 className="mt-4 flex items-center gap-2 font-bold text-lg text-gray-900">
                 {route.from}
                 <ArrowRight className="h-4 w-4 text-gray-400 group-hover:text-emerald-600 transition-colors" />
                 {route.to}
               </h3>
-              
+
               <div className="mt-3 flex items-baseline gap-1">
                 <span className="text-xs text-gray-500">Starts from</span>
                 <span className="font-extrabold text-emerald-600 text-xl">৳{route.price}</span>
@@ -442,7 +471,7 @@ export default function Home() {
                   "{t.comment}"
                 </p>
               </div>
-              
+
               <div className="mt-6 flex items-center gap-3 border-t border-gray-100 pt-4">
                 <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full font-bold text-sm ${t.avatarBg}`}>
                   {t.name.split(" ").map(w => w[0]).join("")}
@@ -458,53 +487,206 @@ export default function Home() {
       </section>
 
       {/* 9. FAQs Section */}
-      <section id="about" className="mx-auto my-24 max-w-4xl px-6">
-        <div className="mb-12 text-center">
-          <h2 className="font-bold text-3xl text-gray-900">Frequently Asked Questions</h2>
-          <p className="mt-2 text-gray-600">Quick answers to common questions about booking and cancellations</p>
+      <section id="about" className="mx-auto my-24 max-w-6xl px-6">
+        <div className="mb-14 text-center max-w-3xl mx-auto">
+          <span className="inline-block rounded-full bg-emerald-50 px-3.5 py-1 text-xs font-semibold text-emerald-700 mb-3 uppercase tracking-wider">
+            Help Center
+          </span>
+          <h2 className="font-extrabold text-3xl sm:text-4xl text-gray-900 tracking-tight">Frequently Asked Questions</h2>
+          <p className="mt-3 text-base sm:text-lg text-gray-600 leading-relaxed">
+            Find answers to common questions about bookings, payments, and cancellations. Need more help? Our team is available 24/7.
+          </p>
         </div>
 
-        <div className="space-y-4">
-          {faqs.map((faq, index) => {
-            const isOpen = expandedFaq === index;
-            return (
-              <div
-                key={index}
-                className={`overflow-hidden rounded-2xl border transition-all duration-300 ${
-                  isOpen
-                    ? "border-emerald-500 bg-white shadow-md ring-1 ring-emerald-500/20"
-                    : "border-gray-100 bg-white hover:border-emerald-500/20 shadow-xs hover:shadow-sm"
-                }`}
-              >
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+          {/* Left Column: Categories and Support Card */}
+          <div className="lg:col-span-4 space-y-6">
+            {/* Category selection */}
+            <div className="bg-white rounded-2xl border border-gray-100 p-4 shadow-sm space-y-1">
+              <h3 className="px-3 py-2 text-xs font-semibold uppercase tracking-wider text-gray-400">
+                Categories
+              </h3>
+              {[
+                { id: "all", label: "All Topics" },
+                { id: "booking", label: "Booking & Tickets" },
+                { id: "payment", label: "Payments & Security" },
+                { id: "refunds", label: "Cancellations & Refunds" },
+              ].map((category) => (
+                <button
+                  key={category.id}
+                  type="button"
+                  onClick={() => {
+                    setActiveCategory(category.id);
+                    setExpandedFaq(null);
+                  }}
+                  className={`flex w-full items-center justify-between px-3 py-2.5 rounded-xl text-sm font-semibold transition-all ${activeCategory === category.id
+                    ? "bg-emerald-50 text-emerald-800 shadow-inner"
+                    : "text-gray-600 hover:bg-slate-50/50 hover:text-gray-900"
+                    }`}
+                >
+                  <span>{category.label}</span>
+                  <span className={`h-2 w-2 rounded-full transition-all ${activeCategory === category.id ? "bg-emerald-600 scale-125" : "bg-transparent"
+                    }`} />
+                </button>
+              ))}
+            </div>
+
+            {/* Premium Support Card */}
+            <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#0e5c42] to-[#083b2a] p-6 text-white shadow-md">
+              <div className="absolute -right-10 -bottom-10 h-32 w-32 rounded-full bg-emerald-500/10 blur-2xl" />
+
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/10 text-emerald-300 mb-4 border border-white/10">
+                <Headset className="h-5 w-5" />
+              </div>
+              <h4 className="font-bold text-lg">Still need support?</h4>
+              <p className="mt-2 text-xs text-emerald-100/80 leading-relaxed">
+                If you couldn't find the answers you're looking for, please don't hesitate to reach out. Our support agent will assist you instantly.
+              </p>
+
+              <div className="mt-5 space-y-3">
+                <a
+                  href="tel:+8809612345678"
+                  className="flex items-center gap-3 rounded-xl bg-white/10 px-4 py-2.5 text-xs font-semibold hover:bg-white/15 transition-all border border-white/5"
+                >
+                  <Phone className="h-4 w-4 text-emerald-300" />
+                  <span>Call +880 9612-345678</span>
+                </a>
+                <a
+                  href="mailto:support@sofor.com"
+                  className="flex items-center gap-3 rounded-xl bg-white/10 px-4 py-2.5 text-xs font-semibold hover:bg-white/15 transition-all border border-white/5"
+                >
+                  <Mail className="h-4 w-4 text-emerald-300" />
+                  <span>support@sofor.com</span>
+                </a>
+              </div>
+            </div>
+          </div>
+
+          {/* Right Column: Search + Accordion */}
+          <div className="lg:col-span-8 space-y-6">
+            {/* Search input with premium styling */}
+            <div className="relative">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Search for questions..."
+                value={searchQuery}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  setExpandedFaq(null);
+                  setActiveCategory("all"); // Reset category on search for broader results
+                }}
+                className="w-full pl-12 pr-10 py-3.5 bg-white border border-gray-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all shadow-sm placeholder:text-gray-400"
+              />
+              {searchQuery && (
                 <button
                   type="button"
-                  onClick={() => toggleFaq(index)}
-                  className="flex w-full items-center justify-between gap-4 px-6 py-5 text-left font-bold text-gray-900 transition-colors"
+                  onClick={() => setSearchQuery("")}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 p-1 rounded-full hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors"
                 >
-                  <div className="flex items-center gap-4">
-                    <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-xl text-xs font-bold transition-all duration-300 ${
-                      isOpen ? "bg-emerald-600 text-white shadow-md" : "bg-emerald-50 text-emerald-700"
-                    }`}>
-                      {(index + 1).toString().padStart(2, '0')}
-                    </span>
-                    <span className={`text-sm sm:text-base transition-colors duration-300 ${isOpen ? "text-emerald-950" : "text-gray-900"}`}>
-                      {faq.q}
-                    </span>
-                  </div>
-                  <ChevronDown className={`h-5 w-5 text-gray-400 shrink-0 transition-transform duration-300 ${isOpen ? "rotate-180 text-emerald-600" : ""}`} />
+                  <X className="h-4 w-4" />
                 </button>
-                <div className={`grid transition-all duration-300 ease-in-out ${
-                  isOpen ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"
-                }`}>
-                  <div className="overflow-hidden">
-                    <div className="border-t border-gray-100 px-6 py-4.5 text-sm text-gray-600 leading-relaxed bg-slate-50/40 pl-6 sm:pl-[3.5rem]">
-                      {faq.a}
+              )}
+            </div>
+
+            {/* Accordion list */}
+            <div className="space-y-4">
+              {filteredFaqs.length > 0 ? (
+                filteredFaqs.map((faq) => {
+                  const globalIndex = faqs.findIndex(f => f.q === faq.q);
+                  const isOpen = expandedFaq === globalIndex;
+                  return (
+                    <div
+                      key={globalIndex}
+                      className={`overflow-hidden rounded-2xl border transition-all duration-300 ${isOpen
+                        ? "border-emerald-500 bg-white shadow-md ring-1 ring-emerald-500/20"
+                        : "border-gray-100 bg-white hover:border-emerald-500/20 shadow-sm hover:shadow-md"
+                        }`}
+                    >
+                      <button
+                        type="button"
+                        onClick={() => toggleFaq(globalIndex)}
+                        className="flex w-full items-center justify-between gap-4 px-6 py-5 text-left font-bold text-gray-900 transition-colors"
+                      >
+                        <div className="flex items-center gap-4">
+                          <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-xl text-xs font-bold transition-all duration-300 ${isOpen ? "bg-emerald-600 text-white shadow-md" : "bg-emerald-50 text-emerald-700"
+                            }`}>
+                            <HelpCircle className="h-4 w-4" />
+                          </span>
+                          <span className={`text-sm sm:text-base transition-colors duration-300 ${isOpen ? "text-emerald-950" : "text-gray-900"}`}>
+                            {faq.q}
+                          </span>
+                        </div>
+                        <ChevronDown className={`h-5 w-5 text-gray-400 shrink-0 transition-transform duration-300 ${isOpen ? "rotate-180 text-emerald-600" : ""}`} />
+                      </button>
+                      <div className={`grid transition-all duration-300 ease-in-out ${isOpen ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"
+                        }`}>
+                        <div className="overflow-hidden">
+                          <div className="border-t border-gray-100 px-6 py-4.5 bg-slate-50/40 pl-6 sm:pl-[3.5rem] space-y-4">
+                            <p className="text-sm text-gray-600 leading-relaxed m-2">
+                              {faq.a}
+                            </p>
+
+                            {/* Helpfulness Rating Widget */}
+                            <div className="flex flex-wrap items-center justify-between gap-3 pt-3.5 border-t border-gray-100 text-xs text-gray-400">
+                              <span>Was this answer helpful?</span>
+                              <div className="flex items-center gap-2 mb-2">
+                                {helpfulStatus[globalIndex] === undefined ? (
+                                  <>
+                                    <button
+                                      type="button"
+                                      onClick={() => handleHelpful(globalIndex, "yes")}
+                                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-200 hover:border-emerald-500 hover:text-emerald-600 transition-colors bg-white font-medium animate-fade-in"
+                                    >
+                                      <ThumbsUp className="h-3.5 w-3.5" />
+                                      Yes
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() => handleHelpful(globalIndex, "no")}
+                                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-200 hover:border-rose-500 hover:text-rose-600 transition-colors bg-white font-medium animate-fade-in"
+                                    >
+                                      <ThumbsDown className="h-3.5 w-3.5" />
+                                      No
+                                    </button>
+                                  </>
+                                ) : (
+                                  <span className="text-emerald-600 font-semibold flex items-center gap-1">
+                                    <Check className="h-3.5 w-3.5 animate-bounce" />
+                                    Thank you for your feedback!
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
                     </div>
+                  );
+                })
+              ) : (
+                <div className="flex flex-col items-center justify-center text-center p-10 bg-white border border-gray-100 rounded-2xl shadow-sm space-y-3">
+                  <div className="h-12 w-12 rounded-xl bg-slate-50 text-gray-400 flex items-center justify-center">
+                    <Search className="h-6 w-6" />
                   </div>
+                  <h4 className="font-bold text-gray-700">No results found</h4>
+                  <p className="text-xs text-gray-500 max-w-xs">
+                    We couldn't find any questions matching "{searchQuery}". Try using different terms or contact support.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSearchQuery("");
+                      setActiveCategory("all");
+                    }}
+                    className="text-xs font-semibold text-emerald-600 hover:text-emerald-700 transition-colors"
+                  >
+                    Clear Search
+                  </button>
                 </div>
-              </div>
-            );
-          })}
+              )}
+            </div>
+          </div>
         </div>
       </section>
     </main>
