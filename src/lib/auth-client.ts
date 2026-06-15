@@ -1,5 +1,15 @@
-import { adminClient } from 'better-auth/client/plugins';
+import { adminClient, organizationClient } from 'better-auth/client/plugins';
 import { createAuthClient } from 'better-auth/react';
+import {
+  adminAc,
+  superAdmin,
+  orgAc,
+  operatorAdmin,
+  operatorManager,
+  operatorStaff,
+  counterOwner,
+  counterStaff,
+} from './permissions';
 
 /**
  * Better Auth Client Configuration
@@ -14,7 +24,23 @@ export const client = createAuthClient({
   baseURL: typeof window !== 'undefined' 
     ? `${window.location.origin}/api/auth`
     : undefined,
-  plugins: [adminClient()],
+  plugins: [
+    adminClient({
+      ac: adminAc,
+      roles: { superAdmin },
+    }) as any,
+    organizationClient({
+      ac: orgAc,
+      roles: {
+        operatorAdmin,
+        operatorManager,
+        operatorStaff,
+        counterOwner,
+        counterStaff,
+      },
+      dynamicAccessControl: { enabled: true },
+    }) as any,
+  ],
 });
 
 export const { signIn, signUp, signOut, useSession, getSession } = client;

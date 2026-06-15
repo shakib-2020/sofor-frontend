@@ -2,6 +2,7 @@
 
 import { useAuth } from '@/lib/auth-context';
 import { AuthGuard } from './auth-guard';
+import { ROLES } from '@/lib/permissions';
 
 // Component to protect routes that require authentication
 export function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -10,7 +11,42 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
 // Component to protect admin-only routes
 export function AdminOnlyRoute({ children }: { children: React.ReactNode }) {
-  return <AuthGuard requireAdmin>{children}</AuthGuard>;
+  return <AuthGuard allowedRoles={[ROLES.SUPER_ADMIN]}>{children}</AuthGuard>;
+}
+
+// Component to protect Super Admin routes
+export function SuperAdminOnlyRoute({ children }: { children: React.ReactNode }) {
+  return <AuthGuard allowedRoles={[ROLES.SUPER_ADMIN]}>{children}</AuthGuard>;
+}
+
+// Component to protect Operator-level management (Super Admin, Operator Admin, Operator Manager)
+export function OperatorAdminOrAboveRoute({ children }: { children: React.ReactNode }) {
+  return <AuthGuard allowedRoles={[ROLES.SUPER_ADMIN, ROLES.OPERATOR_ADMIN, ROLES.OPERATOR_MANAGER]}>{children}</AuthGuard>;
+}
+
+// Component to protect Operator Staff roles (Super Admin, Operator Admin, Operator Manager, Operator Staff)
+export function OperatorStaffOrAboveRoute({ children }: { children: React.ReactNode }) {
+  return <AuthGuard allowedRoles={[ROLES.SUPER_ADMIN, ROLES.OPERATOR_ADMIN, ROLES.OPERATOR_MANAGER, ROLES.OPERATOR_STAFF]}>{children}</AuthGuard>;
+}
+
+// Component to protect Counter Owner roles (Super Admin, Operator Admin, Operator Manager, Counter Owner)
+export function CounterOwnerOrAboveRoute({ children }: { children: React.ReactNode }) {
+  return <AuthGuard allowedRoles={[ROLES.SUPER_ADMIN, ROLES.OPERATOR_ADMIN, ROLES.OPERATOR_MANAGER, ROLES.COUNTER_OWNER]}>{children}</AuthGuard>;
+}
+
+// Component to protect Counter Staff roles (Super Admin, Operator Admin, Operator Manager, Counter Owner, Counter Staff)
+export function CounterStaffOrAboveRoute({ children }: { children: React.ReactNode }) {
+  return <AuthGuard allowedRoles={[ROLES.SUPER_ADMIN, ROLES.OPERATOR_ADMIN, ROLES.OPERATOR_MANAGER, ROLES.COUNTER_OWNER, ROLES.COUNTER_STAFF]}>{children}</AuthGuard>;
+}
+
+// Component to protect Operator routes
+export function OperatorOnlyRoute({ children }: { children: React.ReactNode }) {
+  return <AuthGuard allowedRoles={[ROLES.OPERATOR_ADMIN, ROLES.OPERATOR_MANAGER, ROLES.OPERATOR_STAFF]}>{children}</AuthGuard>;
+}
+
+// Component to protect Counter routes
+export function CounterOnlyRoute({ children }: { children: React.ReactNode }) {
+  return <AuthGuard allowedRoles={[ROLES.COUNTER_OWNER, ROLES.COUNTER_STAFF]}>{children}</AuthGuard>;
 }
 
 // Component to redirect authenticated users away from auth pages
@@ -55,7 +91,7 @@ export function ConditionalAuth({
   }
 
   const hasAccess = requireAuth 
-    ? isAuthenticated && (!requireAdmin || user?.role === 'admin')
+    ? isAuthenticated && (!requireAdmin || ['admin', 'SUPER_ADMIN', 'ADMIN'].includes(user?.role || ''))
     : !requireAuth || !isAuthenticated;
 
   return hasAccess ? <>{children}</> : <>{fallback}</>;

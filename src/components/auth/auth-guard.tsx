@@ -8,10 +8,11 @@ import { useAuth } from '@/lib/auth-context';
 interface AuthGuardProps {
   children: React.ReactNode;
   redirectTo?: string;
+  allowedRoles?: string[];
   requireAdmin?: boolean;
 }
 
-export function AuthGuard({ children, redirectTo = '/sign-in', requireAdmin = false }: AuthGuardProps) {
+export function AuthGuard({ children, redirectTo = '/sign-in', allowedRoles, requireAdmin = false }: AuthGuardProps) {
   const { user, isLoading, isAuthenticated } = useAuth();
   const router = useRouter();
 
@@ -22,13 +23,19 @@ export function AuthGuard({ children, redirectTo = '/sign-in', requireAdmin = fa
         return;
       }
 
-      // Check admin requirement
-      if (requireAdmin && user?.role !== 'admin') {
-        router.push('/'); // Redirect to home if not admin
+      // Check roles requirement
+      if (allowedRoles && allowedRoles.length > 0) {
+        const userRole = user?.role || 'CUSTOMER';
+        if (!allowedRoles.includes(userRole)) {
+          router.push('/'); // Redirect to home if role not allowed
+          return;
+        }
+      } else if (requireAdmin && user?.role !== 'SUPER_ADMIN') {
+        router.push('/'); // Redirect to home if admin required but not super admin
         return;
       }
     }
-  }, [isLoading, isAuthenticated, user, router, redirectTo, requireAdmin]);
+  }, [isLoading, isAuthenticated, user, router, redirectTo, allowedRoles, requireAdmin]);
 
   // Show loading spinner while checking authentication
   if (isLoading) {
@@ -44,8 +51,13 @@ export function AuthGuard({ children, redirectTo = '/sign-in', requireAdmin = fa
     return null;
   }
 
-  // Don't render if admin is required but user is not admin
-  if (requireAdmin && user?.role !== 'admin') {
+  // Check role eligibility for render check
+  if (allowedRoles && allowedRoles.length > 0) {
+    const userRole = user?.role || 'CUSTOMER';
+    if (!allowedRoles.includes(userRole)) {
+      return null;
+    }
+  } else if (requireAdmin && user?.role !== 'SUPER_ADMIN') {
     return null;
   }
 

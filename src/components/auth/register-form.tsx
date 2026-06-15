@@ -9,7 +9,7 @@ import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { signUp } from '@/lib/auth-client';
+import { signUp, signIn } from '@/lib/auth-client';
 // import { _log } from '@/lib/logs';
 import { convertImageToBase64 } from '@/lib/utils';
 
@@ -33,6 +33,19 @@ export default function RegisterForm() {
         setImagePreview(reader.result as string);
       };
       reader.readAsDataURL(file);
+    }
+  };
+
+  const signInWithGoogle = async () => {
+    const data = await signIn.social({
+      provider: "google",
+    });
+    if (data.error) {
+      toast.error(data.error.message);
+    }
+    else {
+      toast.success("Logged in successfully");
+      router.push("/");
     }
   };
 
@@ -77,7 +90,7 @@ export default function RegisterForm() {
         </div>
 
         <div className="mt-6 grid grid-cols-1 gap-3">
-          <Button type="button" variant="outline">
+          <Button onClick={signInWithGoogle} type="button" variant="outline">
             <svg
               height="1em"
               viewBox="0 0 256 262"

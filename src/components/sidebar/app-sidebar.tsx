@@ -184,7 +184,81 @@ const data = {
   // ],
 };
 
+import { useAuth } from '@/lib/auth-context';
+import { ROLES } from '@/lib/permissions';
+
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const { user } = useAuth();
+  const role = user?.role || 'customer';
+
+  const filteredNavMain = data.navMain.filter((item) => {
+    // Super admin sees everything
+    if (role === ROLES.SUPER_ADMIN || role === 'admin') return true;
+
+    // Operator admin/manager
+    if ([ROLES.OPERATOR_ADMIN, ROLES.OPERATOR_MANAGER].includes(role as any)) {
+      if (item.title === 'Bus Owner') return false;
+      return true;
+    }
+
+    // Operator staff
+    if (role === ROLES.OPERATOR_STAFF) {
+      if (item.title === 'Bus Owner' || item.title === 'User') return false;
+      return true;
+    }
+
+    // Counter owner
+    if (role === ROLES.COUNTER_OWNER) {
+      if (['Dashboard', 'Counter', 'Seat', 'Trip', 'User'].includes(item.title)) {
+        return true;
+      }
+      return false;
+    }
+
+    // Counter staff
+    if (role === ROLES.COUNTER_STAFF) {
+      if (['Dashboard', 'Counter', 'Seat', 'Trip'].includes(item.title)) {
+        return true;
+      }
+      return false;
+    }
+
+    // Default: Passenger or other
+    return ['Dashboard'].includes(item.title);
+  }).map((item) => {
+    let title = item.title;
+    if (item.title === 'User' && ![ROLES.SUPER_ADMIN, 'admin'].includes(role as any)) {
+      title = 'Manage Staff';
+    }
+
+    // Filter sub-items (e.g. prevent Counter Owner from seeing "Add Counter")
+    let items = item.items;
+    if (items) {
+      items = items.filter((subItem) => {
+        const isSystemAdmin = role === ROLES.SUPER_ADMIN || role === 'admin';
+        const isOperatorAdmin = [ROLES.OPERATOR_ADMIN, ROLES.OPERATOR_MANAGER].includes(role as any);
+
+        if (subItem.title.startsWith('Add ')) {
+          return isSystemAdmin || isOperatorAdmin;
+        }
+
+        if (subItem.title === 'Manage Counter') {
+          return isSystemAdmin || isOperatorAdmin || [ROLES.COUNTER_OWNER, ROLES.COUNTER_STAFF].includes(role as any);
+        }
+
+        return true;
+      });
+    }
+
+    return { ...item, title, items };
+  });
+
+  const currentUser = {
+    name: user?.name || 'Guest User',
+    email: user?.email || 'Not logged in',
+    avatar: user?.image || 'https://github.com/shadcn.png',
+  };
+
   return (
     <Sidebar collapsible="offcanvas" {...props}>
       <SidebarHeader>
@@ -196,19 +270,19 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             >
               <a href="/dashboard">
                 <ArrowUpCircleIcon className="h-5 w-5" />
-                <span className="font-semibold text-base">Sofor-Admin</span>
+                <span className="font-semibold text-base">Sofor Panel</span>
               </a>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={data.navMain} />
+        <NavMain items={filteredNavMain} />
         {/* <NavDocuments items={data.documents} /> */}
         <NavSecondary className="mt-auto" items={data.navSecondary} />
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={data.user} />
+        <NavUser user={currentUser} />
       </SidebarFooter>
     </Sidebar>
   );
