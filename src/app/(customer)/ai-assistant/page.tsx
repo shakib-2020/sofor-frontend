@@ -133,6 +133,7 @@ export default function AIAssistantPage() {
   const [acFilter, setAcFilter] = useState(false);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const chatContainerRef = useRef<HTMLDivElement>(null);
 
   const [input, setInput] = useState("");
   const { messages, sendMessage, setMessages, status } = useChat({
@@ -201,7 +202,12 @@ export default function AIAssistantPage() {
 
   const scrollToBottom = () => {
     setTimeout(() => {
-      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+      if (chatContainerRef.current) {
+        chatContainerRef.current.scrollTo({
+          top: chatContainerRef.current.scrollHeight,
+          behavior: "smooth"
+        });
+      }
     }, 100);
   };
 
@@ -469,13 +475,40 @@ export default function AIAssistantPage() {
   };
 
   return (
-    <main className="min-h-[calc(100vh-5rem)] bg-slate-50 flex items-center justify-center p-4 md:p-8">
-      <div className="w-full max-w-6xl h-[720px] bg-white rounded-3xl border border-slate-100 shadow-2xl flex overflow-hidden">
+    <main className="w-full min-h-screen bg-slate-50 flex flex-col">
+      {/* Page Header Banner */}
+      <section className="relative overflow-hidden bg-gradient-to-b from-[#0e5c42] to-[#083b2a] py-8 text-white">
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#0c573e_1px,transparent_1px),linear-gradient(to_bottom,#0c573e_1px,transparent_1px)] bg-[size:4rem_4rem] opacity-10" />
+        <div className="relative mx-auto max-w-6xl px-4 sm:px-6">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+            <div>
+              <div className="inline-flex items-center gap-2 rounded-full bg-emerald-950/40 px-3.5 py-1.5 text-[10px] font-semibold text-emerald-300 border border-emerald-500/20 mb-2">
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                Sofor AI Ticketing Agent
+              </div>
+              <h1 className="text-2xl sm:text-3xl font-black tracking-tight">
+                AI Ticket Booking Assistant
+              </h1>
+              <p className="text-xs sm:text-sm text-emerald-100/80 mt-1 max-w-2xl">
+                Chat with Sofor AI to search departures, compare operators, select seats, and complete payment in real time.
+              </p>
+            </div>
 
+            <div className="flex items-center gap-3">
+              <a href="/ticket" className="text-xs font-bold bg-white/10 hover:bg-white/15 px-4 py-2.5 rounded-xl border border-white/5 text-white transition-all">
+                Manual Search
+              </a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Main Workspace */}
+      <div className="flex-1 mx-auto max-w-6xl w-full px-4 sm:px-6 py-6 md:py-8 flex gap-6 h-[680px]">
         {/* Sidebar Component */}
-        <div className="hidden lg:flex w-72 bg-slate-900 border-r border-slate-800 flex-col text-slate-100 shrink-0">
-          <div className="flex items-center gap-3 p-6 border-b border-slate-800">
-            <div className="h-10 w-10 bg-emerald-600 rounded-xl flex items-center justify-center text-white">
+        <div className="hidden lg:flex w-72 bg-gradient-to-b from-[#0a4837] to-[#052b20] border border-[#0d503d] rounded-2xl flex-col text-slate-100 shrink-0 overflow-hidden shadow-md">
+          <div className="flex items-center gap-3 p-6 border-b border-[#0d503d]">
+            <div className="h-10 w-10 bg-[#0E6E56] rounded-xl flex items-center justify-center text-white shadow-md shadow-emerald-950/40">
               <Bot className="h-6 w-6" />
             </div>
             <div>
@@ -489,36 +522,28 @@ export default function AIAssistantPage() {
 
           <div className="flex-1 p-4 space-y-6">
             <div className="space-y-1">
-              <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-emerald-600/10 text-emerald-400 font-semibold text-sm cursor-default">
-                <Bot className="h-5 w-5" />
+              <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-white/10 text-emerald-300 font-semibold text-sm cursor-default">
+                <Bot className="h-5 w-5 text-emerald-400" />
                 AI Assistant
               </div>
-              <a href="/my-bookings" className="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition-all text-sm">
-                <Ticket className="h-5 w-5" />
+              <a href="/my-bookings" className="flex items-center gap-3 px-4 py-3 rounded-xl text-emerald-100/70 hover:text-white hover:bg-white/5 transition-all text-sm">
+                <Ticket className="h-5 w-5 text-emerald-400/70" />
                 My Tickets
-              </a>
-              <a href="/ticket" className="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition-all text-sm">
-                <MapPin className="h-5 w-5" />
-                Routes
-              </a>
-              <a href="/profile" className="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition-all text-sm">
-                <Settings className="h-5 w-5" />
-                Settings
               </a>
             </div>
 
             <div>
-              <h3 className="px-4 text-xs font-semibold text-slate-500 uppercase tracking-widest mb-3">
+              <h3 className="px-4 text-xs font-semibold text-emerald-500/70 uppercase tracking-widest mb-3">
                 Recent Chats
               </h3>
               <div className="space-y-1">
-                <div onClick={() => handleQuickChip("Dhaka to Cox's Bazar")} className="px-4 py-2 text-xs text-slate-400 hover:bg-slate-850 rounded-lg hover:text-white cursor-pointer transition-colors truncate">
+                <div onClick={() => handleQuickChip("Dhaka to Cox's Bazar")} className="px-4 py-2 text-xs text-emerald-100/60 hover:bg-white/5 rounded-lg hover:text-white cursor-pointer transition-colors truncate">
                   Dhaka → Cox's Bazar
                 </div>
-                <div onClick={() => handleQuickChip("Sylhet to Dhaka")} className="px-4 py-2 text-xs text-slate-400 hover:bg-slate-850 rounded-lg hover:text-white cursor-pointer transition-colors truncate">
+                <div onClick={() => handleQuickChip("Sylhet to Dhaka")} className="px-4 py-2 text-xs text-emerald-100/60 hover:bg-white/5 rounded-lg hover:text-white cursor-pointer transition-colors truncate">
                   Sylhet → Dhaka
                 </div>
-                <div onClick={() => handleQuickChip("Bogra to Dhaka")} className="px-4 py-2 text-xs text-slate-400 hover:bg-slate-850 rounded-lg hover:text-white cursor-pointer transition-colors truncate">
+                <div onClick={() => handleQuickChip("Bogra to Dhaka")} className="px-4 py-2 text-xs text-emerald-100/60 hover:bg-white/5 rounded-lg hover:text-white cursor-pointer transition-colors truncate">
                   Bogra → Dhaka
                 </div>
               </div>
@@ -527,7 +552,7 @@ export default function AIAssistantPage() {
         </div>
 
         {/* Main Interface */}
-        <div className="flex-1 flex flex-col min-w-0 bg-[#f8fafc]">
+        <div className="flex-1 bg-white rounded-2xl border border-slate-100 shadow-md flex flex-col overflow-hidden min-w-0">
 
           {/* Top Header/Progress Bar */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between p-4 md:px-6 bg-white border-b border-slate-100 gap-4 shrink-0">
@@ -549,10 +574,10 @@ export default function AIAssistantPage() {
                 <React.Fragment key={step.s}>
                   <div className="flex items-center gap-1.5">
                     <span className={`h-5 w-5 rounded-full flex items-center justify-center text-[10px] font-bold ${currentStep > step.s
-                        ? "bg-emerald-600 text-white"
-                        : currentStep === step.s
-                          ? "bg-emerald-600 text-white animate-pulse"
-                          : "bg-slate-100 text-slate-400"
+                      ? "bg-emerald-600 text-white"
+                      : currentStep === step.s
+                        ? "bg-emerald-600 text-white animate-pulse"
+                        : "bg-slate-100 text-slate-400"
                       }`}>
                       {currentStep > step.s ? <Check className="h-3 w-3" /> : step.s}
                     </span>
@@ -568,7 +593,7 @@ export default function AIAssistantPage() {
           </div>
 
           {/* Chat Stream Area */}
-          <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-6">
+          <div ref={chatContainerRef} className="flex-1 overflow-y-auto p-4 md:p-6 space-y-6 bg-slate-50/50">
             {messages.map((m) => (
               <div key={m.id} className={`flex gap-3 md:gap-4 ${m.role === "user" ? "flex-row-reverse" : ""}`}>
 
@@ -588,8 +613,8 @@ export default function AIAssistantPage() {
                       if (p.type === "text") {
                         return (
                           <div key={index} className={`rounded-2xl px-4 py-3 text-sm leading-relaxed border shadow-xs ${m.role === "user"
-                              ? "bg-emerald-600 text-white border-emerald-600"
-                              : "bg-white text-slate-800 border-slate-100"
+                            ? "bg-emerald-600 text-white border-emerald-600"
+                            : "bg-white text-slate-800 border-slate-100"
                             }`}>
                             {renderMarkdown(p.text)}
                           </div>
@@ -600,8 +625,8 @@ export default function AIAssistantPage() {
                   ) : (
                     (m as any).content && (
                       <div className={`rounded-2xl px-4 py-3 text-sm leading-relaxed border shadow-xs ${m.role === "user"
-                          ? "bg-emerald-600 text-white border-emerald-600"
-                          : "bg-white text-slate-800 border-slate-100"
+                        ? "bg-emerald-600 text-white border-emerald-600"
+                        : "bg-white text-slate-800 border-slate-100"
                         }`}>
                         {renderMarkdown((m as any).content)}
                       </div>
@@ -789,10 +814,10 @@ export default function AIAssistantPage() {
                               disabled={isTaken}
                               onClick={() => handleSeatClick(s)}
                               className={`h-9 w-9 rounded-lg border text-xs font-bold flex items-center justify-center transition-all ${isTaken
-                                  ? "bg-slate-200 border-slate-200 text-slate-400 cursor-not-allowed"
-                                  : isPicked
-                                    ? "bg-emerald-600 border-emerald-600 text-white shadow-md shadow-emerald-600/10 scale-105"
-                                    : "bg-white border-slate-200 text-slate-600 hover:border-emerald-500 hover:text-emerald-600"
+                                ? "bg-slate-200 border-slate-200 text-slate-400 cursor-not-allowed"
+                                : isPicked
+                                  ? "bg-emerald-600 border-emerald-600 text-white shadow-md shadow-emerald-600/10 scale-105"
+                                  : "bg-white border-slate-200 text-slate-600 hover:border-emerald-500 hover:text-emerald-600"
                                 }`}
                               title={`Seat ${s.seatName}`}
                             >
@@ -919,8 +944,8 @@ export default function AIAssistantPage() {
                               key={m}
                               onClick={() => setPaymentMethod(m as any)}
                               className={`py-2 rounded-xl text-xs font-bold border text-center transition-all ${paymentMethod === m
-                                  ? "bg-emerald-50 border-emerald-500 text-emerald-800 shadow-sm"
-                                  : "bg-white border-slate-200 text-slate-500 hover:border-slate-350"
+                                ? "bg-emerald-50 border-emerald-500 text-emerald-800 shadow-sm"
+                                : "bg-white border-slate-200 text-slate-500 hover:border-slate-350"
                                 }`}
                             >
                               {m}
