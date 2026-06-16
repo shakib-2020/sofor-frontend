@@ -265,7 +265,7 @@ export default function ManageTrip() {
 							<Label>Departure DateTime</Label>
 							<Input
 								type="datetime-local"
-								value={selectedTrip?.departureDateTime || ""}
+								value={selectedTrip?.departureDateTime ? selectedTrip.departureDateTime.substring(0, 16) : ""}
 								onChange={(e) =>
 									setSelectedTrip((prev) =>
 										prev
@@ -279,7 +279,7 @@ export default function ManageTrip() {
 							<Label>Arrival DateTime</Label>
 							<Input
 								type="datetime-local"
-								value={selectedTrip?.arrivalDateTime || ""}
+								value={selectedTrip?.arrivalDateTime ? selectedTrip.arrivalDateTime.substring(0, 16) : ""}
 								onChange={(e) =>
 									setSelectedTrip((prev) =>
 										prev ? { ...prev, arrivalDateTime: e.target.value } : null,

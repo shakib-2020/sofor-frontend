@@ -18,7 +18,10 @@ type City = {
 };
 
 const formateDate = (date: Date) => {
-	return date.toISOString().split("T")[0];
+	const yyyy = date.getFullYear();
+	const mm = String(date.getMonth() + 1).padStart(2, "0");
+	const dd = String(date.getDate()).padStart(2, "0");
+	return `${yyyy}-${mm}-${dd}`;
 };
 
 export default function SearchForm() {
@@ -32,8 +35,8 @@ export default function SearchForm() {
 		name: "Uttara",
 		districtId: 1,
 	});
-	const [jDate, setJDate] = useState<string>(formateDate(new Date("2026-02-09"))); // YYYY-MM-DD
-	const [rDate, setRDate] = useState<string>("2026-02-10"); // YYYY-MM-DD
+	const [jDate, setJDate] = useState<string>(formateDate(new Date())); // YYYY-MM-DD
+	const [rDate, setRDate] = useState<string>(""); // YYYY-MM-DD
 	const [cities, setCities] = useState<City[]>([]);
 	const router = useRouter();
 

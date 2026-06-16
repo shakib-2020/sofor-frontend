@@ -263,7 +263,7 @@ function TicketPageContent() {
 								<div>
 									<span className="text-gray-600">Departure:</span>
 									<p className="font-medium">
-										{new Date(`${selectedTrip.departure_date}T${selectedTrip.departure_time}`).toLocaleTimeString([], {
+										{new Date(`${selectedTrip.departure_date}T${selectedTrip.departure_time.replace(/Z$/, "")}`).toLocaleTimeString([], {
 											hour: "2-digit",
 											minute: "2-digit",
 											hour12: true,
@@ -274,7 +274,7 @@ function TicketPageContent() {
 								<div>
 									<span className="text-gray-600">Arrival:</span>
 									<p className="font-medium">
-										{new Date(`${selectedTrip.arrival_date}T${selectedTrip.arrival_time}`).toLocaleTimeString([], {
+										{new Date(`${selectedTrip.arrival_date}T${selectedTrip.arrival_time.replace(/Z$/, "")}`).toLocaleTimeString([], {
 											hour: "2-digit",
 											minute: "2-digit",
 											hour12: true,

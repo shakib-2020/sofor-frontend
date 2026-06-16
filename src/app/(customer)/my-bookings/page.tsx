@@ -107,7 +107,12 @@ function MyBookingsContent() {
 
       // Try parsing as ISO string first
       if (typeof dateString === 'string') {
-        date = parseISO(dateString);
+        if (/^\d{4}-\d{2}-\d{2}$/.test(dateString)) {
+          const [year, month, day] = dateString.split('-').map(Number);
+          date = new Date(year, month - 1, day);
+        } else {
+          date = parseISO(dateString);
+        }
       } else {
         date = new Date(dateString);
       }
@@ -219,9 +224,9 @@ function MyBookingsContent() {
         passengerEmail: booking.passengerEmail,
         tripHeading: booking.trip?.heading || 'Bus Journey',
         departureDate: booking.trip?.departure_date || 'N/A',
-        departureTime: booking.trip?.departure_time || 'N/A',
+        departureTime: booking.trip?.departure_time ? booking.trip.departure_time.replace(/Z$/, '').substring(0, 5) : 'N/A',
         arrivalDate: booking.trip?.arrival_date || 'N/A',
-        arrivalTime: booking.trip?.arrival_time || 'N/A',
+        arrivalTime: booking.trip?.arrival_time ? booking.trip.arrival_time.replace(/Z$/, '').substring(0, 5) : 'N/A',
         busName: booking.bus?.name || 'Bus',
         seatNumber: seatLabel,
         seatNumbers: seatNames,
@@ -254,9 +259,9 @@ function MyBookingsContent() {
         passengerEmail: booking.passengerEmail,
         tripHeading: booking.trip?.heading || 'Bus Journey',
         departureDate: booking.trip?.departure_date || 'N/A',
-        departureTime: booking.trip?.departure_time || 'N/A',
+        departureTime: booking.trip?.departure_time ? booking.trip.departure_time.replace(/Z$/, '').substring(0, 5) : 'N/A',
         arrivalDate: booking.trip?.arrival_date || 'N/A',
-        arrivalTime: booking.trip?.arrival_time || 'N/A',
+        arrivalTime: booking.trip?.arrival_time ? booking.trip.arrival_time.replace(/Z$/, '').substring(0, 5) : 'N/A',
         busName: booking.bus?.name || 'Bus',
         seatNumber: seatLabel,
         seatNumbers: seatNames,
@@ -431,7 +436,7 @@ function MyBookingsContent() {
                             </div>
                             <div className="flex items-center text-gray-600">
                               <Clock className="h-4 w-4 mr-2" />
-                              {booking.trip.departure_time} - {booking.trip.arrival_time}
+                              {(booking.trip.departure_time || '').replace(/Z$/, '').substring(0, 5)} - {(booking.trip.arrival_time || '').replace(/Z$/, '').substring(0, 5)}
                             </div>
                           </div>
                         )}

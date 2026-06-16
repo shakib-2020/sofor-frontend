@@ -39,8 +39,8 @@ function TicketSelectionCard({ trip }: TripCardProps) {
 		);
 	}
 
-	const departure = new Date(`${trip.departure_date}T${trip.departure_time}`);
-	const arrival = new Date(`${trip.arrival_date}T${trip.arrival_time}`);
+	const departure = new Date(`${trip.departure_date}T${trip.departure_time.replace(/Z$/, "")}`);
+	const arrival = new Date(`${trip.arrival_date}T${trip.arrival_time.replace(/Z$/, "")}`);
 
 	const fromCity = trip.boarding_points?.[0]?.name ?? "N/A";
 	const toCity =
