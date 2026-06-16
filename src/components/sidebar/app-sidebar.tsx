@@ -149,23 +149,7 @@ const data = {
       isActive: false,
     },
   ],
-  navSecondary: [
-    {
-      title: 'Settings',
-      url: '#',
-      icon: SettingsIcon,
-    },
-    {
-      title: 'Get Help',
-      url: '#',
-      icon: HelpCircleIcon,
-    },
-    {
-      title: 'Search',
-      url: '#',
-      icon: SearchIcon,
-    },
-  ],
+  navSecondary: [],
   // documents: [
   //   {
   //     name: "Data Library",
@@ -257,7 +241,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const currentUser = {
     name: user?.name || 'Guest User',
     email: user?.email || 'Not logged in',
-    avatar: user?.image || 'https://github.com/shadcn.png',
+    avatar: user?.image || '',
   };
 
   return (
