@@ -151,6 +151,10 @@ export default function StaffManagementPage() {
 
   const handleCreateUser = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (['counterOwner', 'counterStaff'].includes(newUser.role) && !newUser.counterId) {
+      toast.error('Please select an Assigned Ticket Counter');
+      return;
+    }
     setIsLoading('create');
     try {
       await apiClient.post('/api/user/staff', {

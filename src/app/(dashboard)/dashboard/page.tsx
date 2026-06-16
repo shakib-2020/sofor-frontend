@@ -13,6 +13,7 @@ import {
   Armchair,
   Ticket,
   UserCog,
+  CircleDollarSign,
 } from 'lucide-react';
 
 export default function Page() {
@@ -38,6 +39,7 @@ export default function Page() {
     routes: null as number | null | string,
     trips: null as number | null | string,
     bookings: null as number | null | string,
+    totalSales: null as number | null | string,
   });
 
   useEffect(() => {
@@ -79,18 +81,30 @@ export default function Page() {
           );
         }
 
-        // Bookings (scoped by backend)
+        // Bookings & Sales statistics (scoped by backend)
         promises.push(
-          apiClient.get('/api/booking?limit=1')
-            .then(res => ({ key: 'bookings', value: res.data?.data?.pagination?.total ?? 0 }))
-            .catch(() => ({ key: 'bookings', value: 'Error' }))
+          apiClient.get('/api/booking/stats')
+            .then(res => [
+              { key: 'bookings', value: res.data?.totalBookings ?? 0 },
+              { key: 'totalSales', value: res.data?.totalSales ?? 0 }
+            ])
+            .catch(() => [
+              { key: 'bookings', value: 'Error' },
+              { key: 'totalSales', value: 'Error' }
+            ])
         );
 
         const results = await Promise.all(promises);
         const newCounts = { ...counts };
         for (const res of results) {
           if (res) {
-            newCounts[res.key as keyof typeof counts] = res.value;
+            if (Array.isArray(res)) {
+              for (const item of res) {
+                newCounts[item.key as keyof typeof counts] = item.value;
+              }
+            } else {
+              newCounts[res.key as keyof typeof counts] = res.value;
+            }
           }
         }
         setCounts(newCounts as any);
@@ -194,6 +208,16 @@ export default function Page() {
           title={getBookingCardTitle()}
           count={formatCount(counts.bookings)}
           icon={Ticket}
+          actions={[
+            { label: 'View Bookings', href: '/dashboard/booking', variant: 'secondary' },
+          ]}
+        />
+
+        {/* Total Sales Section */}
+        <DashboardCard
+          title="Total Sales"
+          count={counts.totalSales !== null && counts.totalSales !== 'Error' ? `৳${counts.totalSales}` : formatCount(counts.totalSales)}
+          icon={CircleDollarSign}
           actions={[
             { label: 'View Bookings', href: '/dashboard/booking', variant: 'secondary' },
           ]}

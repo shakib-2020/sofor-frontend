@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/select";
 import { addCounterSiteText } from "./sitetext";
 import { apiClient } from "@/lib/api";
+import { useAuth } from "@/lib/auth-context";
 
 const formSchema = z.object({
 	name: z.string().min(1, "Counter name is required"),
@@ -30,9 +31,12 @@ const formSchema = z.object({
 	districtId: z.string().min(1, "District is required"),
 	cityId: z.string().min(1, "City is required"),
 	locationNote: z.string().optional(),
+	operatorId: z.string().optional(),
 });
 
 export function AddCounterForm() {
+	const { user } = useAuth();
+	const isAdmin = user?.role === "superAdmin" || user?.role === "admin";
 	const { form_info } = addCounterSiteText;
 	const form = useForm<z.infer<typeof formSchema>>({
 		resolver: zodResolver(formSchema),
@@ -42,6 +46,7 @@ export function AddCounterForm() {
 			districtId: "",
 			cityId: "",
 			locationNote: "",
+			operatorId: "",
 		},
 	});
 
@@ -51,16 +56,24 @@ export function AddCounterForm() {
 
 	const [loading, setLoading] = useState(false);
 
+	const [operators, setOperators] = useState<{ id: number; name: string }[]>([]);
 	const [divisions, setDivisions] = useState([]);
 	const [districts, setDistricts] = useState([]);
 	const [cities, setCities] = useState([]);
 
-	// Load divisions once
+	// Load operators for admin and divisions once
 	useEffect(() => {
+		if (isAdmin) {
+			apiClient.get("/api/bus-owner")
+				.then((res) => res.data)
+				.then(setOperators)
+				.catch((err) => console.error("Error fetching operators:", err));
+		}
+
 		apiClient.get("/api/division")
 			.then((res) => res.data)
 			.then(setDivisions);
-	}, []);
+	}, [isAdmin]);
 
 	// Division change handler
 	const handleDivisionChange = async (value: string) => {
@@ -89,11 +102,31 @@ export function AddCounterForm() {
 	};
 
 	const onSubmit = async (data: z.infer<typeof formSchema>) => {
+		if (isAdmin && !data.operatorId) {
+			toast.error("Please select a bus operator company");
+			return;
+		}
+
 		setLoading(true);
-		await apiClient.post("/api/counter", data);
-		setLoading(false);
-		toast.success("Counter has been created.");
-		form.reset();
+		
+		const payload = {
+			name: data.name,
+			divisionId: data.divisionId,
+			districtId: data.districtId,
+			cityId: data.cityId,
+			locationNote: data.locationNote,
+			operatorId: isAdmin ? Number(data.operatorId) : undefined,
+		};
+
+		try {
+			await apiClient.post("/api/counter", payload);
+			toast.success("Counter has been created.");
+			form.reset();
+		} catch (err) {
+			toast.error("Failed to create counter");
+		} finally {
+			setLoading(false);
+		}
 	};
 
 	return (
@@ -102,6 +135,34 @@ export function AddCounterForm() {
 				className="mb-4 max-w-lg space-y-6"
 				onSubmit={form.handleSubmit(onSubmit)}
 			>
+				{/* Operator Owner dropdown for Admins */}
+				{isAdmin && (
+					<FormField
+						control={form.control}
+						name="operatorId"
+						render={({ field }) => (
+							<FormItem>
+								<FormLabel>Operator / Bus Company</FormLabel>
+								<Select value={field.value} onValueChange={field.onChange}>
+									<FormControl>
+										<SelectTrigger>
+											<SelectValue placeholder="Select Operator Company" />
+										</SelectTrigger>
+									</FormControl>
+									<SelectContent>
+										{operators.map((owner) => (
+											<SelectItem key={owner.id} value={String(owner.id)}>
+												{owner.name}
+											</SelectItem>
+										))}
+									</SelectContent>
+								</Select>
+								<FormMessage />
+							</FormItem>
+						)}
+					/>
+				)}
+
 				{/* Counter Name */}
 				<FormField
 					control={form.control}

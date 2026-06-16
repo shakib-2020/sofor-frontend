@@ -1,6 +1,6 @@
 "use client";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import ReactSelect from "react-select";
 import { Button } from "@/components/ui/button";
 import {
@@ -31,11 +31,13 @@ interface Counter {
 interface Route {
 	id: number;
 	name: string;
+	operatorId?: number;
 }
 
 interface Bus {
 	id: number;
 	name: string;
+	ownerId?: number;
 }
 
 interface Trip {
@@ -78,6 +80,38 @@ export default function ManageTrip() {
 			})
 			.catch((err) => console.error("Error fetching data:", err));
 	}, []);
+
+	const [editRouteStops, setEditRouteStops] = useState<{ id: number; name: string }[]>([]);
+
+	// Compute filtered routes based on selected trip's bus's operator
+	const filteredRoutesForEdit = useMemo(() => {
+		if (!selectedTrip?.busId) return routes;
+		const selectedBus = buses.find((b) => b.id === selectedTrip.busId);
+		if (!selectedBus) return routes;
+		const operatorId = (selectedBus as any).ownerId;
+		if (!operatorId) return routes;
+		return routes.filter((r) => (r as any).operatorId === operatorId);
+	}, [selectedTrip?.busId, buses, routes]);
+
+	// Fetch route stops whenever the selected trip's route changes
+	useEffect(() => {
+		if (selectedTrip?.routeId) {
+			apiClient.get(`/api/route/${selectedTrip.routeId}`)
+				.then((res) => {
+					const mappedStops = res.data.stops.map((stop: any) => ({
+						id: stop.routeStopId,
+						name: stop.name,
+					}));
+					setEditRouteStops(mappedStops);
+				})
+				.catch((err) => {
+					console.error("Error fetching route stops for edit:", err);
+					setEditRouteStops([]);
+				});
+		} else {
+			setEditRouteStops([]);
+		}
+	}, [selectedTrip?.routeId]);
 
 	const handleDelete = async (id: number) => {
 		await apiClient.delete(`/api/trip/${id}`);
@@ -221,11 +255,26 @@ export default function ManageTrip() {
 							<Label>Bus</Label>
 							<Select
 								value={selectedTrip?.busId?.toString() || ""}
-								onValueChange={(val) =>
-									setSelectedTrip((prev) =>
-										prev ? { ...prev, busId: Number(val) } : null,
-									)
-								}
+								onValueChange={(val) => {
+									const newBusId = Number(val);
+									setSelectedTrip((prev) => {
+										if (!prev) return null;
+										const selectedBus = buses.find((b) => b.id === newBusId);
+										const busOperatorId = selectedBus ? (selectedBus as any).ownerId : null;
+										
+										const currentRoute = routes.find((r) => r.id === prev.routeId);
+										const isRouteValid = currentRoute && (currentRoute as any).operatorId === busOperatorId;
+										
+										return {
+											...prev,
+											busId: newBusId,
+											routeId: isRouteValid ? prev.routeId : 0,
+											heading: isRouteValid ? prev.heading : "",
+											boarding_points: isRouteValid ? prev.boarding_points : [],
+											dropping_points: isRouteValid ? prev.dropping_points : [],
+										};
+									});
+								}}
 							>
 								<SelectTrigger>
 									<SelectValue placeholder="Select a bus" />
@@ -242,18 +291,27 @@ export default function ManageTrip() {
 						<div>
 							<Label>Route</Label>
 							<Select
-								value={selectedTrip?.routeId?.toString() || ""}
-								onValueChange={(val) =>
-									setSelectedTrip((prev) =>
-										prev ? { ...prev, routeId: Number(val) } : null,
-									)
-								}
+								value={selectedTrip?.routeId && selectedTrip.routeId !== 0 ? selectedTrip.routeId.toString() : ""}
+								onValueChange={(val) => {
+									const newRouteId = Number(val);
+									setSelectedTrip((prev) => {
+										if (!prev) return null;
+										const routeObj = routes.find((r) => r.id === newRouteId);
+										return {
+											...prev,
+											routeId: newRouteId,
+											heading: routeObj ? routeObj.name : prev.heading,
+											boarding_points: [],
+											dropping_points: [],
+										};
+									});
+								}}
 							>
 								<SelectTrigger>
 									<SelectValue placeholder="Select a route" />
 								</SelectTrigger>
 								<SelectContent>
-									{routes.map((route) => (
+									{filteredRoutesForEdit.map((route) => (
 										<SelectItem key={route.id} value={route.id.toString()}>
 											{route.name}
 										</SelectItem>
@@ -291,9 +349,9 @@ export default function ManageTrip() {
 							<Label>Boarding Points</Label>
 							<ReactSelect
 								isMulti
-								options={counters.map((counter) => ({
-									value: counter.id,
-									label: counter.name,
+								options={editRouteStops.map((stop) => ({
+									value: stop.id,
+									label: stop.name,
 								}))}
 								value={
 									selectedTrip?.boarding_points.map((b) => ({
@@ -308,7 +366,9 @@ export default function ManageTrip() {
 													...prev,
 													boarding_points: (
 														selected as { value: number; label: string }[]
-													).map((s) => counters.find((c) => c.id === s.value)!),
+													)
+														.map((s) => counters.find((c) => c.id === s.value))
+														.filter((c): c is Counter => !!c),
 												}
 											: null,
 									)
@@ -316,14 +376,14 @@ export default function ManageTrip() {
 								placeholder="Select boarding points..."
 							/>
 						</div>
-
+ 
 						<div>
 							<Label>Dropping Points</Label>
 							<ReactSelect
 								isMulti
-								options={counters.map((counter) => ({
-									value: counter.id,
-									label: counter.name,
+								options={editRouteStops.map((stop) => ({
+									value: stop.id,
+									label: stop.name,
 								}))}
 								value={
 									selectedTrip?.dropping_points.map((d) => ({
@@ -338,7 +398,9 @@ export default function ManageTrip() {
 													...prev,
 													dropping_points: (
 														selected as { value: number; label: string }[]
-													).map((s) => counters.find((c) => c.id === s.value)!),
+													)
+														.map((s) => counters.find((c) => c.id === s.value))
+														.filter((c): c is Counter => !!c),
 												}
 											: null,
 									)

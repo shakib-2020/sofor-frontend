@@ -79,7 +79,56 @@ export function AddTripForm() {
 	});
 
 	const selectedRouteId = form.watch("routeId");
+	const selectedBusId = form.watch("busId");
 	const [routeStopsList, setRouteStopsList] = useState<nameIdTypes[]>([]);
+
+	// Compute filtered routes based on selected bus's operator
+	const filteredRoutes = React.useMemo(() => {
+		if (!selectedBusId) return routes;
+		const selectedBus = buses.find((b) => String(b.id) === String(selectedBusId));
+		if (!selectedBus) return routes;
+		const operatorId = (selectedBus as any).ownerId;
+		if (!operatorId) return routes;
+		return routes.filter((r) => (r as any).operatorId === operatorId);
+	}, [selectedBusId, buses, routes]);
+
+	// Auto-reset selected route if selected bus's operator doesn't match
+	useEffect(() => {
+		if (selectedBusId && selectedRouteId) {
+			const selectedBus = buses.find((b) => String(b.id) === String(selectedBusId));
+			if (selectedBus) {
+				const busOperatorId = (selectedBus as any).ownerId;
+				const selectedRoute = routes.find((r) => String(r.id) === String(selectedRouteId));
+				if (selectedRoute && (selectedRoute as any).operatorId !== busOperatorId) {
+					form.setValue("routeId", "");
+					form.setValue("heading", "");
+				}
+			}
+		}
+	}, [selectedBusId, buses, routes, selectedRouteId, form]);
+
+	// Auto-generate Heading when Route changes
+	useEffect(() => {
+		if (selectedRouteId) {
+			const routeObj = routes.find((r) => String(r.id) === String(selectedRouteId));
+			if (routeObj) {
+				form.setValue("heading", routeObj.name);
+			}
+		}
+	}, [selectedRouteId, routes, form]);
+
+	// Auto-generate Trip Number when Bus changes
+	useEffect(() => {
+		if (selectedBusId) {
+			const busObj = buses.find((b) => String(b.id) === String(selectedBusId));
+			if (busObj) {
+				const busNum = (busObj as any).busNumber ? `-${(busObj as any).busNumber}` : "";
+				const randomSuffix = Math.random().toString(36).substring(2, 6).toUpperCase();
+				const autoTripNum = `${busObj.name}${busNum}-${randomSuffix}`.replace(/\s+/g, "-");
+				form.setValue("tripNumber", autoTripNum);
+			}
+		}
+	}, [selectedBusId, buses, form]);
 
 	const fetchBuses = async () => {
 		try {
@@ -268,7 +317,7 @@ export function AddTripForm() {
 									</SelectTrigger>
 								</FormControl>
 								<SelectContent>
-									{routes?.map((div: any) => (
+									{filteredRoutes?.map((div: any) => (
 										<SelectItem key={div.id} value={String(div.id)}>
 											{div.name}
 										</SelectItem>

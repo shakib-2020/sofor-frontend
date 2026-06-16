@@ -18,11 +18,23 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { cn } from '@/lib/utils';
 import { apiClient } from '@/lib/api';
+import { useAuth } from '@/lib/auth-context';
 
 export default function CreateRouteForm() {
+  const { user } = useAuth();
+  const isAdmin = user?.role === 'superAdmin' || user?.role === 'admin';
   const [cityList, setCityList] = useState<{ id: number; name: string }[]>([]);
+  const [operators, setOperators] = useState<{ id: number; name: string }[]>([]);
+  const [selectedOperatorId, setSelectedOperatorId] = useState('');
   const [route, setRoute] = useState<number[]>([]); // array of city IDs
   const [cityNameInput, setCityNameInput] = useState('');
   const { register, handleSubmit, reset } = useForm();
@@ -39,6 +51,14 @@ export default function CreateRouteForm() {
     fetchCities();
   }, []);
 
+  useEffect(() => {
+    if (isAdmin) {
+      apiClient.get('/api/bus-owner')
+        .then((res) => setOperators(res.data))
+        .catch((err) => console.error('Error fetching operators:', err));
+    }
+  }, [isAdmin]);
+
   const getCityName = (id: number) =>
     cityList.find((c) => c.id === id)?.name || '';
 
@@ -51,6 +71,11 @@ export default function CreateRouteForm() {
   };
 
   const onSubmit = async (data: any) => {
+    if (isAdmin && !selectedOperatorId) {
+      toast.error('Please select an operator company');
+      return;
+    }
+
     // Build fares object using actual DB IDs
     const fares: Record<string, number> = {};
     for (let i = 0; i < route.length; i++) {
@@ -68,7 +93,11 @@ export default function CreateRouteForm() {
       })
       .filter(Boolean);
 
-    const payload = { route: routeCities, fares };
+    const payload = {
+      route: routeCities,
+      fares,
+      operatorId: isAdmin ? Number(selectedOperatorId) : undefined,
+    };
 
     console.log('Payload to backend:', payload);
 
@@ -77,6 +106,7 @@ export default function CreateRouteForm() {
       toast.success('Route has been created.');
       reset();
       setRoute([]);
+      setSelectedOperatorId('');
     } catch (err) {
       console.error('Error creating route:', err);
       toast.error('Failed to create route.');
@@ -85,6 +115,25 @@ export default function CreateRouteForm() {
 
   return (
     <div className="max-w-3xl p-6 text-black">
+      {/* Operator Selector for Admins */}
+      {isAdmin && (
+        <div className="mb-6 max-w-xs">
+          <Label className="mb-2 block">Operator / Bus Company</Label>
+          <Select value={selectedOperatorId} onValueChange={setSelectedOperatorId}>
+            <SelectTrigger className="border-black text-black">
+              <SelectValue placeholder="Select Operator Company" />
+            </SelectTrigger>
+            <SelectContent>
+              {operators.map((op) => (
+                <SelectItem key={op.id} value={String(op.id)}>
+                  {op.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      )}
+
       {/* City Selector */}
       <div className="mb-4 flex gap-4">
         <Popover>
