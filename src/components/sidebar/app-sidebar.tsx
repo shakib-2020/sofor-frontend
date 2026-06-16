@@ -210,7 +210,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
     // Counter owner
     if (role === ROLES.COUNTER_OWNER) {
-      if (['Dashboard', 'Counter', 'Booking', 'Trip', 'User'].includes(item.title)) {
+      if (['Dashboard', 'Booking', 'Trip', 'User'].includes(item.title)) {
         return true;
       }
       return false;
@@ -218,7 +218,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
     // Counter staff
     if (role === ROLES.COUNTER_STAFF) {
-      if (['Dashboard', 'Counter', 'Booking', 'Trip'].includes(item.title)) {
+      if (['Dashboard', 'Booking', 'Trip'].includes(item.title)) {
         return true;
       }
       return false;

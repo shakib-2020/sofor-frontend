@@ -20,6 +20,8 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { apiClient } from "@/lib/api";
+import { useAuth } from "@/lib/auth-context";
+import { ROLES } from "@/lib/permissions";
 
 interface Counter {
 	id: number;
@@ -53,6 +55,11 @@ interface Trip {
 }
 
 export default function ManageTrip() {
+	const { user } = useAuth();
+	const isOperatorOrAdmin = user?.role === ROLES.SUPER_ADMIN || 
+		user?.role === "admin" || 
+		[ROLES.OPERATOR_ADMIN, ROLES.OPERATOR_MANAGER, ROLES.OPERATOR_STAFF].includes(user?.role as any);
+
 	const [trips, setTrips] = useState<Trip[]>([]);
 	const [counters, setCounters] = useState<Counter[]>([]);
 	const [routes, setRoutes] = useState<Route[]>([]);
@@ -140,9 +147,11 @@ export default function ManageTrip() {
 		<div className="p-6">
 			<div className="mb-4 flex justify-between">
 				<h1 className="font-bold text-2xl">Manage Trips</h1>
-				<Button onClick={() => router.push("/dashboard/add-trip")}>
-					Add Trip
-				</Button>
+				{isOperatorOrAdmin && (
+					<Button onClick={() => router.push("/dashboard/add-trip")}>
+						Add Trip
+					</Button>
+				)}
 			</div>
 
 			<table className="w-full rounded-lg border border-gray-300">
@@ -155,7 +164,7 @@ export default function ManageTrip() {
 						<th className="border p-2">Route</th>
 						<th className="border p-2">Departure</th>
 						<th className="border p-2">Arrival</th>
-						<th className="border p-2">Actions</th>
+						{isOperatorOrAdmin && <th className="border p-2">Actions</th>}
 					</tr>
 				</thead>
 				<tbody>
@@ -172,23 +181,25 @@ export default function ManageTrip() {
 							</td>
 							<td className="border p-2">{trip.departureDateTime}</td>
 							<td className="border p-2">{trip.arrivalDateTime}</td>
-							<td className="flex justify-center gap-2 border p-2">
-								<Button
-									onClick={() => {
-										setSelectedTrip(trip);
-										setIsDialogOpen(true);
-									}}
-									variant="outline"
-								>
-									Update
-								</Button>
-								<Button
-									onClick={() => handleDelete(trip.id)}
-									variant="destructive"
-								>
-									Delete
-								</Button>
-							</td>
+							{isOperatorOrAdmin && (
+								<td className="flex justify-center gap-2 border p-2">
+									<Button
+										onClick={() => {
+											setSelectedTrip(trip);
+											setIsDialogOpen(true);
+										}}
+										variant="outline"
+									>
+										Update
+									</Button>
+									<Button
+										onClick={() => handleDelete(trip.id)}
+										variant="destructive"
+									>
+										Delete
+									</Button>
+								</td>
+							)}
 						</tr>
 					))}
 				</tbody>
