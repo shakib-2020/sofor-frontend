@@ -104,7 +104,7 @@ function renderMarkdown(text: string) {
 }
 
 export default function AIAssistantPage() {
-  const { user } = useAuth();
+  const { user, isLoading, isAuthenticated } = useAuth();
 
   // Custom Chat and Booking states
   const [currentStep, setCurrentStep] = useState<1 | 2 | 3 | 4 | 5>(1);
@@ -473,6 +473,69 @@ export default function AIAssistantPage() {
   const handleNewSearch = () => {
     window.location.reload();
   };
+
+  if (isLoading) {
+    return (
+      <main className="w-full min-h-screen bg-slate-50 flex items-center justify-center p-8">
+        <div className="flex flex-col items-center gap-3">
+          <Loader2 className="h-10 w-10 animate-spin text-[#0E6E56]" />
+          <p className="text-sm text-slate-500 font-semibold">Loading your profile...</p>
+        </div>
+      </main>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return (
+      <main className="w-full min-h-screen bg-slate-50 flex flex-col">
+        {/* Page Header Banner */}
+        <section className="relative overflow-hidden bg-gradient-to-b from-[#0e5c42] to-[#083b2a] py-12 text-white">
+          <div className="absolute inset-0 bg-[linear-gradient(to_right,#0c573e_1px,transparent_1px),linear-gradient(to_bottom,#0c573e_1px,transparent_1px)] bg-[size:4rem_4rem] opacity-10" />
+          <div className="relative mx-auto max-w-6xl px-4 sm:px-6 text-center">
+            <div className="inline-flex items-center gap-2 rounded-full bg-emerald-950/40 px-3.5 py-1.5 text-[10px] font-semibold text-emerald-300 border border-emerald-500/20 mb-3">
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              Sofor AI Ticketing Agent
+            </div>
+            <h1 className="text-3xl sm:text-4xl font-black tracking-tight">
+              AI Ticket Booking Assistant
+            </h1>
+            <p className="text-xs sm:text-sm text-emerald-100/80 mt-2 max-w-2xl mx-auto">
+              Unlock the power of our smart AI assistant to search departures, compare operators, select seats, and complete payment in real time.
+            </p>
+          </div>
+        </section>
+
+        {/* Login Card */}
+        <div className="flex-1 flex items-center justify-center p-6 md:p-12">
+          <div className="w-full max-w-md bg-white rounded-3xl border border-slate-100 shadow-xl p-8 text-center space-y-6">
+            <div className="mx-auto h-16 w-16 bg-emerald-50 rounded-2xl flex items-center justify-center text-[#0E6E56] shadow-sm">
+              <Lock className="h-8 w-8" />
+            </div>
+            <div className="space-y-2">
+              <h2 className="font-extrabold text-xl text-slate-900">Login Required</h2>
+              <p className="text-sm text-slate-500 leading-relaxed">
+                You must be logged in to chat with Sofor AI and book tickets. Please sign in or create an account to get started.
+              </p>
+            </div>
+            <div className="pt-2 flex flex-col gap-3">
+              <a
+                href="/sign-in?callbackUrl=/ai-assistant"
+                className="w-full h-11 bg-[#0E6E56] hover:bg-[#085041] text-white rounded-xl text-sm font-bold flex items-center justify-center shadow-md shadow-emerald-800/10 hover:shadow-lg transition-all"
+              >
+                Sign In to Your Account
+              </a>
+              <a
+                href="/signup"
+                className="text-xs font-bold text-[#0E6E56] hover:text-[#085041] transition-all"
+              >
+                Don't have an account? Sign up
+              </a>
+            </div>
+          </div>
+        </div>
+      </main>
+    );
+  }
 
   return (
     <main className="w-full min-h-screen bg-slate-50 flex flex-col">
