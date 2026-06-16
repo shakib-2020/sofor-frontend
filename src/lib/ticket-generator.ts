@@ -1,5 +1,3 @@
-import jsPDF from 'jspdf';
-import html2canvas from 'html2canvas';
 
 export interface TicketData {
   bookingNumber: string;
@@ -25,6 +23,9 @@ export interface TicketData {
 
 export const generateTicketPDF = async (ticketData: TicketData): Promise<void> => {
   try {
+    const html2canvas = (await import('html2canvas')).default;
+    const jsPDF = (await import('jspdf')).default;
+
     // Create a temporary div for the ticket
     const ticketElement = createTicketElement(ticketData);
     document.body.appendChild(ticketElement);

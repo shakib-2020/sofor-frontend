@@ -68,6 +68,12 @@ function NavBar() {
                     asChild
                     className={navigationMenuTriggerStyle()}
                   >
+                    <Link href="/ai-assistant">AI Assistant</Link>
+                  </NavigationMenuLink>
+                  <NavigationMenuLink
+                    asChild
+                    className={navigationMenuTriggerStyle()}
+                  >
                     <Link href="/my-bookings">Bookings</Link>
                   </NavigationMenuLink>
                   <NavigationMenuLink
@@ -146,6 +152,13 @@ function NavBar() {
                   </div>
                 ) : isAuthenticated ? (
                   <>
+                    <Link
+                      href="/ai-assistant"
+                      onClick={() => setIsOpen(false)}
+                      className="flex items-center px-4 py-3 text-base font-semibold text-gray-700 hover:text-emerald-700 hover:bg-emerald-50 rounded-xl transition-all"
+                    >
+                      AI Assistant
+                    </Link>
                     <Link
                       href="/my-bookings"
                       onClick={() => setIsOpen(false)}
