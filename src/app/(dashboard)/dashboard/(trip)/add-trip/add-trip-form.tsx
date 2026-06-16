@@ -43,8 +43,8 @@ const formSchema = z.object({
 	departureTime: z.string(),
 	arrivalDate: z.date(),
 	arrivalTime: z.string(),
-	boardingPoints: z.array(z.object({ name: z.string(), id: z.int() })),
-	droppingPoints: z.array(z.object({ name: z.string(), id: z.int() })),
+	boardingPoints: z.array(z.object({ name: z.string(), id: z.number().int() })),
+	droppingPoints: z.array(z.object({ name: z.string(), id: z.number().int() })),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -77,6 +77,9 @@ export function AddTripForm() {
 			droppingPoints: [],
 		},
 	});
+
+	const selectedRouteId = form.watch("routeId");
+	const [routeStopsList, setRouteStopsList] = useState<nameIdTypes[]>([]);
 
 	const fetchBuses = async () => {
 		try {
@@ -112,6 +115,32 @@ export function AddTripForm() {
 		fetchRoutes();
 		fetchCounters();
 	}, []);
+
+	useEffect(() => {
+		const currentBoarding = form.getValues("boardingPoints");
+		const currentDropping = form.getValues("droppingPoints");
+		if (currentBoarding && currentBoarding.length > 0) form.setValue("boardingPoints", []);
+		if (currentDropping && currentDropping.length > 0) form.setValue("droppingPoints", []);
+
+		if (selectedRouteId) {
+			const fetchRouteStops = async () => {
+				try {
+					const res = await apiClient.get(`/api/route/${selectedRouteId}`);
+					console.log("Route stops response:", res.data);
+					const mappedStops = res.data.stops.map((stop: any) => ({
+						id: stop.routeStopId,
+						name: stop.name,
+					}));
+					setRouteStopsList(mappedStops);
+				} catch (err) {
+					console.error("Error fetching route stops:", err);
+				}
+			};
+			fetchRouteStops();
+		} else {
+			setRouteStopsList([]);
+		}
+	}, [selectedRouteId, form]);
 
 	async function onSubmit(data: z.infer<typeof formSchema>) {
 		const departureDateTime = combineDateAndTime(
@@ -208,7 +237,7 @@ export function AddTripForm() {
 					render={({ field }) => (
 						<FormItem>
 							<FormLabel>Bus</FormLabel>
-							<Select defaultValue={field.value} onValueChange={field.onChange}>
+							<Select value={field.value} onValueChange={field.onChange}>
 								<FormControl>
 									<SelectTrigger>
 										<SelectValue placeholder="Select Bus" />
@@ -233,7 +262,7 @@ export function AddTripForm() {
 					render={({ field }) => (
 						<FormItem>
 							<FormLabel>Route</FormLabel>
-							<Select defaultValue={field.value} onValueChange={field.onChange}>
+							<Select value={field.value} onValueChange={field.onChange}>
 								<FormControl>
 									<SelectTrigger>
 										<SelectValue placeholder="Select Route" />
@@ -377,50 +406,46 @@ export function AddTripForm() {
 				<FormField
 					control={form.control}
 					name="boardingPoints"
-					render={() => (
+					render={({ field }) => (
 						<FormItem>
 							<FormLabel>Boarding Points</FormLabel>
 							<div className="space-y-2">
-								{counters?.map((counter) => (
-									<FormField
-										control={form.control}
-										key={counter.id}
-										name="boardingPoints"
-										render={({ field }) => {
-											return (
-												<FormItem
-													className="flex flex-row items-start space-x-3 space-y-0"
-													key={counter.id}
-												>
-													<FormControl>
-														<Checkbox
-															checked={field.value?.some(
-																(v) => v.id === counter.id,
-															)}
-															onCheckedChange={(checked) => {
-																if (checked) {
-																	field.onChange([
-																		...field.value,
-																		{ name: counter.name, id: counter.id },
-																	]);
-																} else {
-																	field.onChange(
-																		field.value.filter(
-																			(v) => v.id !== counter.id,
-																		),
-																	);
-																}
-															}}
-														/>
-													</FormControl>
-													<FormLabel className="font-normal">
-														{counter.name}
-													</FormLabel>
-												</FormItem>
-											);
-										}}
-									/>
-								))}
+								{selectedRouteId ? (
+									routeStopsList?.map((counter) => (
+										<FormItem
+											className="flex flex-row items-start space-x-3 space-y-0"
+											key={counter.id}
+										>
+											<FormControl>
+												<Checkbox
+													checked={field.value?.some(
+														(v) => v.id === counter.id,
+													)}
+													onCheckedChange={(checked) => {
+														const currentValue = field.value || [];
+														if (checked) {
+															field.onChange([
+																...currentValue,
+																{ name: counter.name, id: counter.id },
+															]);
+														} else {
+															field.onChange(
+																currentValue.filter(
+																	(v) => v.id !== counter.id,
+																),
+															);
+														}
+													}}
+												/>
+											</FormControl>
+											<FormLabel className="font-normal">
+												{counter.name}
+											</FormLabel>
+										</FormItem>
+									))
+								) : (
+									<p className="text-sm text-gray-500 italic">Please select a route first.</p>
+								)}
 							</div>
 							<FormMessage />
 						</FormItem>
@@ -430,50 +455,46 @@ export function AddTripForm() {
 				<FormField
 					control={form.control}
 					name="droppingPoints"
-					render={() => (
+					render={({ field }) => (
 						<FormItem>
 							<FormLabel>Dropping Points</FormLabel>
 							<div className="space-y-2">
-								{counters?.map((counter) => (
-									<FormField
-										control={form.control}
-										key={counter.id}
-										name="droppingPoints"
-										render={({ field }) => {
-											return (
-												<FormItem
-													className="flex flex-row items-start space-x-3 space-y-0"
-													key={counter.id}
-												>
-													<FormControl>
-														<Checkbox
-															checked={field.value?.some(
-																(v) => v.id === counter.id,
-															)}
-															onCheckedChange={(checked) => {
-																if (checked) {
-																	field.onChange([
-																		...field.value,
-																		{ name: counter.name, id: counter.id },
-																	]);
-																} else {
-																	field.onChange(
-																		field.value.filter(
-																			(v) => v.id !== counter.id,
-																		),
-																	);
-																}
-															}}
-														/>
-													</FormControl>
-													<FormLabel className="font-normal">
-														{counter.name}
-													</FormLabel>
-												</FormItem>
-											);
-										}}
-									/>
-								))}
+								{selectedRouteId ? (
+									routeStopsList?.map((counter) => (
+										<FormItem
+											className="flex flex-row items-start space-x-3 space-y-0"
+											key={counter.id}
+										>
+											<FormControl>
+												<Checkbox
+													checked={field.value?.some(
+														(v) => v.id === counter.id,
+													)}
+													onCheckedChange={(checked) => {
+														const currentValue = field.value || [];
+														if (checked) {
+															field.onChange([
+																...currentValue,
+																{ name: counter.name, id: counter.id },
+															]);
+														} else {
+															field.onChange(
+																currentValue.filter(
+																	(v) => v.id !== counter.id,
+																),
+															);
+														}
+													}}
+												/>
+											</FormControl>
+											<FormLabel className="font-normal">
+												{counter.name}
+											</FormLabel>
+										</FormItem>
+									))
+								) : (
+									<p className="text-sm text-gray-500 italic">Please select a route first.</p>
+								)}
 							</div>
 							<FormMessage />
 						</FormItem>
