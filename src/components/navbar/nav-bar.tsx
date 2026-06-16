@@ -28,6 +28,22 @@ function NavBar() {
   const { user, isLoading, isAuthenticated } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
 
+  const getSignInUrl = () => {
+    if (typeof window !== 'undefined') {
+      const currentUrl = window.location.pathname + window.location.search;
+      return `/sign-in?callbackUrl=${encodeURIComponent(currentUrl)}`;
+    }
+    return '/sign-in';
+  };
+
+  const getSignUpUrl = () => {
+    if (typeof window !== 'undefined') {
+      const currentUrl = window.location.pathname + window.location.search;
+      return `/signup?callbackUrl=${encodeURIComponent(currentUrl)}`;
+    }
+    return '/signup';
+  };
+
   // Hide Navbar on /dashboard and all its subroutes
   if (pathname.startsWith('/dashboard')) {
     return null;
@@ -89,13 +105,13 @@ function NavBar() {
                     asChild
                     className={navigationMenuTriggerStyle()}
                   >
-                    <Link href="/signup">Sign Up</Link>
+                    <Link href={getSignUpUrl()}>Sign Up</Link>
                   </NavigationMenuLink>
                   <NavigationMenuLink
                     asChild
                     className={navigationMenuTriggerStyle()}
                   >
-                    <Link href="/sign-in">Sign In</Link>
+                    <Link href={getSignInUrl()}>Sign In</Link>
                   </NavigationMenuLink>
                 </>
               )}
@@ -158,14 +174,14 @@ function NavBar() {
                 ) : (
                   <>
                     <Link
-                      href="/signup"
+                      href={getSignUpUrl()}
                       onClick={() => setIsOpen(false)}
                       className="flex items-center px-4 py-3 text-base font-semibold text-gray-700 hover:text-emerald-700 hover:bg-emerald-50 rounded-xl transition-all"
                     >
                       Sign Up
                     </Link>
                     <Link
-                      href="/sign-in"
+                      href={getSignInUrl()}
                       onClick={() => setIsOpen(false)}
                       className="flex items-center px-4 py-3 text-base font-semibold text-gray-700 hover:text-emerald-700 hover:bg-emerald-50 rounded-xl transition-all"
                     >

@@ -3,7 +3,7 @@
 import { Loader2, X } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
@@ -24,6 +24,8 @@ export default function RegisterForm() {
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const searchParams = useSearchParams();
+  const callbackUrl = searchParams.get('callbackUrl') || '/dashboard';
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -40,13 +42,14 @@ export default function RegisterForm() {
   const signInWithGoogle = async () => {
     const data = await signIn.social({
       provider: "google",
+      callbackURL: callbackUrl,
     });
     if (data.error) {
       toast.error(data.error.message);
     }
     else {
       toast.success("Logged in successfully");
-      router.push("/");
+      router.push(callbackUrl);
     }
   };
 
@@ -56,7 +59,7 @@ export default function RegisterForm() {
       password,
       name: `${firstName} ${lastName}`,
       image: image ? await convertImageToBase64(image) : '',
-      callbackURL: '/dashboard',
+      callbackURL: callbackUrl,
       fetchOptions: {
         onResponse: () => {
           setLoading(false);
@@ -68,7 +71,7 @@ export default function RegisterForm() {
           toast.error(ctx.error.message);
         },
         onSuccess: async () => {
-          await router.push('/dashboard');
+          await router.push(callbackUrl);
         },
       },
     });
@@ -244,7 +247,7 @@ export default function RegisterForm() {
         <p className="text-center text-accent-foreground text-sm">
           Have an account ?
           <Button asChild className="px-2" variant="link">
-            <Link href="/sign-in">Sign In</Link>
+            <Link href={callbackUrl ? `/sign-in?callbackUrl=${encodeURIComponent(callbackUrl)}` : "/sign-in"}>Sign In</Link>
           </Button>
         </p>
       </div>

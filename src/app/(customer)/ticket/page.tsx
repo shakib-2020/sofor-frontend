@@ -79,12 +79,12 @@ function TicketPageContent() {
 		return trip.bus_info?.name === selectedBusOperator;
 	});
 
-	useEffect(() => {
-		const from = searchParams.get("from");
-		const to = searchParams.get("to");
-		const jDate = searchParams.get("jDate");
-		const rDate = searchParams.get("rDate");
+	const from = searchParams.get("from");
+	const to = searchParams.get("to");
+	const jDate = searchParams.get("jDate");
+	const rDate = searchParams.get("rDate");
 
+	useEffect(() => {
 		if (!from || !to || !jDate) return; // required params
 
 		const fetchTrips = async () => {
@@ -116,17 +116,84 @@ function TicketPageContent() {
 		};
 
 		fetchTrips();
-	}, [searchParams]);
+	}, [from, to, jDate, rDate]);
+
+	// Reconstruct state from URL query parameters (tripId, step, seats)
+	useEffect(() => {
+		const tripIdParam = searchParams.get("tripId");
+		const stepParam = searchParams.get("step") as 'trip-selection' | 'seat-selection' | 'payment' | null;
+		const seatsParam = searchParams.get("seats");
+
+		// Restore Step
+		if (stepParam && stepParam !== currentStep) {
+			setCurrentStep(stepParam);
+		} else if (!stepParam && currentStep !== 'trip-selection') {
+			setCurrentStep('trip-selection');
+		}
+
+		// Restore Selected Trip
+		if (tripIdParam && trips.length > 0) {
+			const trip = trips.find(t => t.id === Number(tripIdParam));
+			if (trip && selectedTrip?.id !== trip.id) {
+				setSelectedTrip(trip);
+			}
+		} else if (!tripIdParam && selectedTrip !== null) {
+			setSelectedTrip(null);
+		}
+
+		// Restore Selected Seats
+		if (seatsParam) {
+			try {
+				const seatsList: SelectedSeat[] = seatsParam.split(',').map(part => {
+					const [id, seatName, row, column] = part.split('-');
+					return {
+						id: Number(id),
+						seatName,
+						status: 'pending' as const,
+						row: Number(row),
+						column: Number(column)
+					};
+				});
+				
+				const isDiff = seatsList.length !== selectedSeats.length ||
+					seatsList.some((s, idx) => s.id !== selectedSeats[idx]?.id);
+
+				if (isDiff) {
+					setSelectedSeats(seatsList);
+				}
+			} catch (e) {
+				console.error("Error parsing seats from URL:", e);
+			}
+		} else if (selectedSeats.length > 0) {
+			setSelectedSeats([]);
+		}
+	}, [searchParams, trips, currentStep, selectedTrip, selectedSeats]);
 
 	const handleTripSelect = (trip: Trip) => {
 		setSelectedTrip(trip);
 		setCurrentStep('seat-selection');
 		setSelectedSeats([]);
 		setSeatSyncPending(false);
+
+		const params = new URLSearchParams(window.location.search);
+		params.set('tripId', trip.id.toString());
+		params.set('step', 'seat-selection');
+		params.delete('seats');
+		router.push(`${window.location.pathname}?${params.toString()}`);
 	};
 
 	const handleSeatSelect = (seats: SelectedSeat[]) => {
 		setSelectedSeats(seats);
+
+		const params = new URLSearchParams(window.location.search);
+		if (seats.length > 0) {
+			const seatsStr = seats.map(s => `${s.id}-${s.seatName}-${s.row}-${s.column}`).join(',');
+			params.set('seats', seatsStr);
+		} else {
+			params.delete('seats');
+		}
+		const newUrl = `${window.location.pathname}?${params.toString()}`;
+		window.history.replaceState(null, '', newUrl);
 	};
 
 	const handleProceedToPayment = () => {
@@ -141,6 +208,10 @@ function TicketPageContent() {
 		}
 
 		setCurrentStep('payment');
+
+		const params = new URLSearchParams(window.location.search);
+		params.set('step', 'payment');
+		router.push(`${window.location.pathname}?${params.toString()}`);
 	};
 
 	const handleBackToTripSelection = () => {
@@ -148,10 +219,20 @@ function TicketPageContent() {
 		setSelectedTrip(null);
 		setSelectedSeats([]);
 		setSeatSyncPending(false);
+
+		const params = new URLSearchParams(window.location.search);
+		params.delete('tripId');
+		params.delete('step');
+		params.delete('seats');
+		router.push(`${window.location.pathname}?${params.toString()}`);
 	};
 
 	const handleBackToSeatSelection = () => {
 		setCurrentStep('seat-selection');
+
+		const params = new URLSearchParams(window.location.search);
+		params.set('step', 'seat-selection');
+		router.push(`${window.location.pathname}?${params.toString()}`);
 	};
 
 	const handlePaymentSuccess = (paymentData: any) => {

@@ -470,7 +470,8 @@ export function EnhancedSeatPlan({
 
     if (!user) {
       toast.error('Please sign in before selecting a seat');
-      router.push('/sign-in');
+      const currentUrl = window.location.pathname + window.location.search;
+      router.push(`/sign-in?callbackUrl=${encodeURIComponent(currentUrl)}`);
       return;
     }
 

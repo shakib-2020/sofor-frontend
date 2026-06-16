@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -11,6 +11,7 @@ import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import { paymentAPI } from '@/lib/api';
 import { Loader2 } from 'lucide-react';
+import { useAuth } from '@/lib/auth-context';
 
 const paymentFormSchema = z.object({
   passengerName: z
@@ -50,15 +51,28 @@ interface PaymentFormProps {
 
 export function PaymentForm({ bookingData, onPaymentSuccess, onCancel }: PaymentFormProps) {
   const [isLoading, setIsLoading] = useState(false);
+  const { user } = useAuth();
 
   const form = useForm<z.infer<typeof paymentFormSchema>>({
     resolver: zodResolver(paymentFormSchema),
     defaultValues: {
-      passengerName: '',
+      passengerName: user?.name || '',
       passengerPhone: '',
-      passengerEmail: '',
+      passengerEmail: user?.email || '',
     },
   });
+
+  useEffect(() => {
+    if (user) {
+      const currentValues = form.getValues();
+      if (!currentValues.passengerName && user.name) {
+        form.setValue('passengerName', user.name);
+      }
+      if (!currentValues.passengerEmail && user.email) {
+        form.setValue('passengerEmail', user.email);
+      }
+    }
+  }, [user, form]);
 
   const onSubmit = async (values: z.infer<typeof paymentFormSchema>) => {
     setIsLoading(true);

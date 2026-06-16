@@ -1,8 +1,7 @@
 'use client';
-
 import { Loader2 } from 'lucide-react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useState, useTransition } from 'react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
@@ -19,18 +18,20 @@ export default function LoginForm() {
   const [loading, startTransition] = useTransition();
   const [rememberMe, setRememberMe] = useState(false);
   const router = useRouter();
-
+  const searchParams = useSearchParams();
+  const callbackUrl = searchParams.get('callbackUrl') || '/';
 
   const signInWithGoogle = async () => {
     const data = await signIn.social({
       provider: "google",
+      callbackURL: callbackUrl,
     });
     if (data.error) {
       toast.error(data.error.message);
     }
     else {
       toast.success("Logged in successfully");
-      router.push("/");
+      router.push(callbackUrl);
     }
   };
 
@@ -44,7 +45,7 @@ export default function LoginForm() {
         { email, password, rememberMe },
         {
           onSuccess(_context) {
-            router.push('/');
+            router.push(callbackUrl);
           },
           onError: (ctx) => {
             _log(ctx);
@@ -166,7 +167,7 @@ export default function LoginForm() {
         <p className="text-center text-accent-foreground text-sm">
           Don't have an account ?
           <Button asChild className="px-2" variant="link">
-            <Link href="/signup">Create account</Link>
+            <Link href={callbackUrl ? `/signup?callbackUrl=${encodeURIComponent(callbackUrl)}` : "/signup"}>Create account</Link>
           </Button>
         </p>
       </div>
