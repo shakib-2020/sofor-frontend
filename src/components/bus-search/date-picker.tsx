@@ -65,7 +65,7 @@ export function DatePicker({ curretDate, onDateSelect, className, variant = "out
 				<PopoverContent align="start" className="w-auto overflow-hidden p-0">
 					<Calendar
 						captionLayout="dropdown"
-						disabled={{ before: new Date() }}
+						disabled={{ before: new Date(new Date().setHours(0, 0, 0, 0)) }}
 						mode="single"
 						onSelect={handleSelect}
 						required={false}

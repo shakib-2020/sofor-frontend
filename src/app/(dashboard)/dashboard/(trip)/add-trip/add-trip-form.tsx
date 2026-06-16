@@ -303,6 +303,7 @@ export function AddTripForm() {
 										<PopoverContent className="p-0">
 											<Calendar
 												captionLayout="dropdown"
+												disabled={{ before: new Date(new Date().setHours(0, 0, 0, 0)) }}
 												mode="single"
 												onSelect={(date) => {
 													if (!date) return;
@@ -364,6 +365,7 @@ export function AddTripForm() {
 										<PopoverContent className="p-0">
 											<Calendar
 												captionLayout="dropdown"
+												disabled={{ before: new Date(new Date().setHours(0, 0, 0, 0)) }}
 												mode="single"
 												onSelect={(date) => {
 													if (!date) return;

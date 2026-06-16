@@ -26,12 +26,12 @@ const formateDate = (date: Date) => {
 
 export default function SearchForm() {
 	const [to, setTo] = useState<City>({
-		id: 5,
+		id: 281,
 		name: "Sreemangal",
 		districtId: 6,
 	});
 	const [from, setFrom] = useState<City>({
-		id: 1,
+		id: 123,
 		name: "Uttara",
 		districtId: 1,
 	});
@@ -62,13 +62,19 @@ export default function SearchForm() {
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
 
-		const params = new URLSearchParams({
+		const queryParams: Record<string, string> = {
 			from: String(from.id),
 			to: String(to.id),
-			...(jDate && { jDate }),
-			...(rDate && { rDate }),
-		});
+		};
 
+		if (jDate) {
+			queryParams.jDate = jDate;
+		}
+		if (rDate) {
+			queryParams.rDate = rDate;
+		}
+
+		const params = new URLSearchParams(queryParams);
 		router.push(`/ticket?${params.toString()}`);
 	};
 
@@ -77,7 +83,7 @@ export default function SearchForm() {
 			<h3 className="text-center font-black text-xl sm:text-2xl text-[#107050] tracking-tight mb-6 uppercase">
 				Plan Your Journey
 			</h3>
-			
+
 			<form onSubmit={handleSubmit} className="space-y-6">
 				<div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
 					{/* From & To Container */}
@@ -157,8 +163,8 @@ export default function SearchForm() {
 
 				{/* Search Button */}
 				<div className="pt-2 flex justify-center">
-					<Button 
-						className="w-full max-w-md bg-[#107050] hover:bg-[#0e5c42] text-white font-extrabold text-lg py-6 rounded-2xl shadow-md shadow-emerald-700/10 hover:shadow-lg hover:shadow-emerald-700/20 transition-all flex items-center justify-center gap-2 h-14" 
+					<Button
+						className="w-full max-w-md bg-[#107050] hover:bg-[#0e5c42] text-white font-extrabold text-lg py-6 rounded-2xl shadow-md shadow-emerald-700/10 hover:shadow-lg hover:shadow-emerald-700/20 transition-all flex items-center justify-center gap-2 h-14"
 						type="submit"
 					>
 						Search Buses
