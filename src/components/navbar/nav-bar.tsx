@@ -54,7 +54,7 @@ function NavBar() {
       <Link href={'/'}>
         <Logo className="h-10 w-auto" />
       </Link>
-      
+
       {/* Desktop Menu */}
       <div className="hidden md:block">
         <NavigationMenu>
@@ -68,7 +68,7 @@ function NavBar() {
                     asChild
                     className={navigationMenuTriggerStyle()}
                   >
-                    <Link href="/ai-assistant">AI Assistant</Link>
+                    <Link href="/ai">AI Agent</Link>
                   </NavigationMenuLink>
                   <NavigationMenuLink
                     asChild

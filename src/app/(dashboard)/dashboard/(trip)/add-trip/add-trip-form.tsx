@@ -54,10 +54,17 @@ interface nameIdTypes {
 	name: string;
 }
 
+interface Counter {
+	id: number;
+	name: string;
+	cityId: number;
+	operatorId?: number;
+}
+
 export function AddTripForm() {
 	const [buses, setBuses] = useState<nameIdTypes[]>([]);
 	const [routes, setRoutes] = useState<nameIdTypes[]>([]);
-	const [counters, setCounters] = useState<nameIdTypes[]>([]);
+	const [counters, setCounters] = useState<Counter[]>([]);
 	const [openDeparture, setOpenDeparture] = useState(false);
 	const [openArrival, setOpenArrival] = useState(false);
 	const [loading, setLoading] = useState(false);
@@ -189,7 +196,28 @@ export function AddTripForm() {
 		} else {
 			setRouteStopsList([]);
 		}
-	}, [selectedRouteId, form]);
+	}, [selectedRouteId, selectedBusId, form]);
+
+	const matchedCounters = React.useMemo(() => {
+		if (!selectedBusId || !selectedRouteId) return [];
+		const selectedBus = buses.find((b) => String(b.id) === String(selectedBusId));
+		if (!selectedBus) return [];
+		const operatorId = (selectedBus as any).ownerId;
+		if (!operatorId) return [];
+
+		const routeCityIds = routeStopsList.map((stop) => stop.id);
+
+		return counters.filter((c: any) => {
+			const matchesOperator = String(c.operatorId) === String(operatorId);
+			const matchesCity = routeCityIds.includes(c.cityId);
+			return matchesOperator && matchesCity;
+		});
+	}, [selectedBusId, selectedRouteId, buses, routeStopsList, counters]);
+
+	const getCityNameForCounter = (counterCityId: number) => {
+		const stop = routeStopsList.find((s) => s.id === counterCityId);
+		return stop ? stop.name : "";
+	};
 
 	async function onSubmit(data: z.infer<typeof formSchema>) {
 		const departureDateTime = combineDateAndTime(
@@ -461,38 +489,46 @@ export function AddTripForm() {
 							<FormLabel>Boarding Points</FormLabel>
 							<div className="space-y-2">
 								{selectedRouteId ? (
-									routeStopsList?.map((counter) => (
-										<FormItem
-											className="flex flex-row items-start space-x-3 space-y-0"
-											key={counter.id}
-										>
-											<FormControl>
-												<Checkbox
-													checked={field.value?.some(
-														(v) => v.id === counter.id,
-													)}
-													onCheckedChange={(checked) => {
-														const currentValue = field.value || [];
-														if (checked) {
-															field.onChange([
-																...currentValue,
-																{ name: counter.name, id: counter.id },
-															]);
-														} else {
-															field.onChange(
-																currentValue.filter(
-																	(v) => v.id !== counter.id,
-																),
-															);
-														}
-													}}
-												/>
-											</FormControl>
-											<FormLabel className="font-normal">
-												{counter.name}
-											</FormLabel>
-										</FormItem>
-									))
+									matchedCounters.length > 0 ? (
+										matchedCounters.map((counter) => {
+											const cityName = getCityNameForCounter(counter.cityId);
+											const labelText = cityName ? `${counter.name} (${cityName})` : counter.name;
+											return (
+												<FormItem
+													className="flex flex-row items-start space-x-3 space-y-0"
+													key={counter.id}
+												>
+													<FormControl>
+														<Checkbox
+															checked={field.value?.some(
+																(v) => v.id === counter.id,
+															)}
+															onCheckedChange={(checked) => {
+																const currentValue = field.value || [];
+																if (checked) {
+																	field.onChange([
+																		...currentValue,
+																		{ name: counter.name, id: counter.id },
+																	]);
+																} else {
+																	field.onChange(
+																		currentValue.filter(
+																			(v) => v.id !== counter.id,
+																		),
+																	);
+																}
+															}}
+														/>
+													</FormControl>
+													<FormLabel className="font-normal">
+														{labelText}
+													</FormLabel>
+												</FormItem>
+											);
+										})
+									) : (
+										<p className="text-sm text-gray-500 italic">No matching counters found for this operator along this route.</p>
+									)
 								) : (
 									<p className="text-sm text-gray-500 italic">Please select a route first.</p>
 								)}
@@ -510,38 +546,46 @@ export function AddTripForm() {
 							<FormLabel>Dropping Points</FormLabel>
 							<div className="space-y-2">
 								{selectedRouteId ? (
-									routeStopsList?.map((counter) => (
-										<FormItem
-											className="flex flex-row items-start space-x-3 space-y-0"
-											key={counter.id}
-										>
-											<FormControl>
-												<Checkbox
-													checked={field.value?.some(
-														(v) => v.id === counter.id,
-													)}
-													onCheckedChange={(checked) => {
-														const currentValue = field.value || [];
-														if (checked) {
-															field.onChange([
-																...currentValue,
-																{ name: counter.name, id: counter.id },
-															]);
-														} else {
-															field.onChange(
-																currentValue.filter(
-																	(v) => v.id !== counter.id,
-																),
-															);
-														}
-													}}
-												/>
-											</FormControl>
-											<FormLabel className="font-normal">
-												{counter.name}
-											</FormLabel>
-										</FormItem>
-									))
+									matchedCounters.length > 0 ? (
+										matchedCounters.map((counter) => {
+											const cityName = getCityNameForCounter(counter.cityId);
+											const labelText = cityName ? `${counter.name} (${cityName})` : counter.name;
+											return (
+												<FormItem
+													className="flex flex-row items-start space-x-3 space-y-0"
+													key={counter.id}
+												>
+													<FormControl>
+														<Checkbox
+															checked={field.value?.some(
+																(v) => v.id === counter.id,
+															)}
+															onCheckedChange={(checked) => {
+																const currentValue = field.value || [];
+																if (checked) {
+																	field.onChange([
+																		...currentValue,
+																		{ name: counter.name, id: counter.id },
+																	]);
+																} else {
+																	field.onChange(
+																		currentValue.filter(
+																			(v) => v.id !== counter.id,
+																		),
+																	);
+																}
+															}}
+														/>
+													</FormControl>
+													<FormLabel className="font-normal">
+														{labelText}
+													</FormLabel>
+												</FormItem>
+											);
+										})
+									) : (
+										<p className="text-sm text-gray-500 italic">No matching counters found for this operator along this route.</p>
+									)
 								) : (
 									<p className="text-sm text-gray-500 italic">Please select a route first.</p>
 								)}

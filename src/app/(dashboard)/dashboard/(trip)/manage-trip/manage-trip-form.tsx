@@ -120,6 +120,22 @@ export default function ManageTrip() {
 		}
 	}, [selectedTrip?.routeId]);
 
+	const editMatchedCounters = useMemo(() => {
+		if (!selectedTrip?.busId || !selectedTrip?.routeId) return [];
+		const selectedBus = buses.find((b) => b.id === selectedTrip.busId);
+		if (!selectedBus) return [];
+		const operatorId = (selectedBus as any).ownerId;
+		if (!operatorId) return [];
+
+		const routeCityIds = editRouteStops.map((stop) => stop.id);
+
+		return counters.filter((c: any) => {
+			const matchesOperator = String(c.operatorId) === String(operatorId);
+			const matchesCity = routeCityIds.includes(c.cityId);
+			return matchesOperator && matchesCity;
+		});
+	}, [selectedTrip?.busId, selectedTrip?.routeId, buses, editRouteStops, counters]);
+
 	const handleDelete = async (id: number) => {
 		await apiClient.delete(`/api/trip/${id}`);
 		setTrips((prev) => prev.filter((t) => t.id !== id));
@@ -128,8 +144,19 @@ export default function ManageTrip() {
 	const handleUpdate = async () => {
 		if (!selectedTrip) return;
 
+		const payload = {
+			tripNumber: selectedTrip.tripNumber,
+			heading: selectedTrip.heading,
+			busId: selectedTrip.busId,
+			routeId: selectedTrip.routeId,
+			departureDateTime: selectedTrip.departureDateTime,
+			arrivalDateTime: selectedTrip.arrivalDateTime,
+			boardingPoints: selectedTrip.boarding_points.map((bp) => bp.id),
+			droppingPoints: selectedTrip.dropping_points.map((dp) => dp.id),
+		};
+
 		setLoading(true);
-		await apiClient.put(`/api/trip/${selectedTrip.id}`, selectedTrip);
+		await apiClient.put(`/api/trip/${selectedTrip.id}`, payload);
 
 		setTrips((prev) =>
 			prev.map((t) => (t.id === selectedTrip.id ? selectedTrip : t)),
@@ -360,15 +387,23 @@ export default function ManageTrip() {
 							<Label>Boarding Points</Label>
 							<ReactSelect
 								isMulti
-								options={editRouteStops.map((stop) => ({
-									value: stop.id,
-									label: stop.name,
-								}))}
+								options={editMatchedCounters.map((counter) => {
+									const stop = editRouteStops.find((s) => s.id === counter.cityId);
+									const cityName = stop ? stop.name : "";
+									return {
+										value: counter.id,
+										label: cityName ? `${counter.name} (${cityName})` : counter.name,
+									};
+								})}
 								value={
-									selectedTrip?.boarding_points.map((b) => ({
-										value: b.id,
-										label: b.name,
-									})) || []
+									selectedTrip?.boarding_points.map((b) => {
+										const stop = editRouteStops.find((s) => s.id === b.cityId);
+										const cityName = stop ? stop.name : "";
+										return {
+											value: b.id,
+											label: cityName ? `${b.name} (${cityName})` : b.name,
+										};
+									}) || []
 								}
 								onChange={(selected) =>
 									setSelectedTrip((prev) =>
@@ -392,15 +427,23 @@ export default function ManageTrip() {
 							<Label>Dropping Points</Label>
 							<ReactSelect
 								isMulti
-								options={editRouteStops.map((stop) => ({
-									value: stop.id,
-									label: stop.name,
-								}))}
+								options={editMatchedCounters.map((counter) => {
+									const stop = editRouteStops.find((s) => s.id === counter.cityId);
+									const cityName = stop ? stop.name : "";
+									return {
+										value: counter.id,
+										label: cityName ? `${counter.name} (${cityName})` : counter.name,
+									};
+								})}
 								value={
-									selectedTrip?.dropping_points.map((d) => ({
-										value: d.id,
-										label: d.name,
-									})) || []
+									selectedTrip?.dropping_points.map((d) => {
+										const stop = editRouteStops.find((s) => s.id === d.cityId);
+										const cityName = stop ? stop.name : "";
+										return {
+											value: d.id,
+											label: cityName ? `${d.name} (${cityName})` : d.name,
+										};
+									}) || []
 								}
 								onChange={(selected) =>
 									setSelectedTrip((prev) =>
