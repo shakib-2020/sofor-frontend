@@ -519,7 +519,7 @@ export default function AIAssistantPage() {
             </div>
             <div className="pt-2 flex flex-col gap-3">
               <a
-                href="/sign-in?callbackUrl=/ai-assistant"
+                href="/sign-in?callbackUrl=/ai"
                 className="w-full h-11 bg-[#0E6E56] hover:bg-[#085041] text-white rounded-xl text-sm font-bold flex items-center justify-center shadow-md shadow-emerald-800/10 hover:shadow-lg transition-all"
               >
                 Sign In to Your Account

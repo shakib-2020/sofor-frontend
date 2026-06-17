@@ -153,7 +153,7 @@ function NavBar() {
                 ) : isAuthenticated ? (
                   <>
                     <Link
-                      href="/ai-assistant"
+                      href="/ai"
                       onClick={() => setIsOpen(false)}
                       className="flex items-center px-4 py-3 text-base font-semibold text-gray-700 hover:text-emerald-700 hover:bg-emerald-50 rounded-xl transition-all"
                     >
