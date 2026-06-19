@@ -107,20 +107,45 @@ function renderMarkdown(text: string) {
   });
 }
 
+// Helper to clean trailing punctuation from a URL while keeping balanced parentheses
+function cleanTrailingPunctuation(url: string): string {
+  let cleaned = url;
+  while (cleaned.length > 0) {
+    const lastChar = cleaned[cleaned.length - 1];
+    if ([".", ",", ";", "?", "!", "/"].includes(lastChar)) {
+      if (lastChar === "/") break;
+      cleaned = cleaned.slice(0, -1);
+    } else if (lastChar === ")") {
+      const openCount = (cleaned.split("(").length - 1);
+      const closeCount = (cleaned.split(")").length - 1);
+      if (closeCount > openCount) {
+        cleaned = cleaned.slice(0, -1);
+      } else {
+        break;
+      }
+    } else {
+      break;
+    }
+  }
+  return cleaned;
+}
+
 // Renders clickable bKash links found in AI text messages
 function renderTextWithLinks(text: string) {
   if (!text) return null;
 
-  // Convert raw URLs to markdown links first
-  const processedText = text.replace(/(?<!\]\()https?:\/\/[^\s)]+/g, (url) => {
-    if (url.includes("bkash")) {
-      return `[Pay with bKash](${url})`;
+  // Convert raw URLs (not inside markdown links) to markdown links first
+  // Matches http/https URLs followed by any non-whitespace characters
+  const processedText = text.replace(/(?<!\]\()https?:\/\/\S+/g, (url) => {
+    const cleanedUrl = cleanTrailingPunctuation(url);
+    if (cleanedUrl.includes("bkash") || cleanedUrl.includes("bka.sh")) {
+      return `[Pay with bKash](${cleanedUrl})`;
     }
-    return `[Open Link](${url})`;
+    return `[Open Link](${cleanedUrl})`;
   });
 
-  // Split text by markdown links: [text](url)
-  const linkRegex = /\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g;
+  // Split text by markdown links: [text](url) where the url can contain parentheses
+  const linkRegex = /\[([^\]]+)\]\((https?:\/\/\S+)\)/g;
   const parts: React.ReactNode[] = [];
   let lastIndex = 0;
   let match;
@@ -131,9 +156,10 @@ function renderTextWithLinks(text: string) {
       parts.push(...(renderMarkdown(processedText.substring(lastIndex, match.index)) || []));
     }
 
-    // Add the link as a button
     const linkText = match[1];
     const linkUrl = match[2];
+
+    // Add the link as a button
     parts.push(
       <a
         key={`link-${match.index}`}
@@ -186,6 +212,9 @@ export default function AIAssistantPage() {
   const [paymentPolling, setPaymentPolling] = useState(false);
 
   const [confirmedBooking, setConfirmedBooking] = useState<any>(null);
+  const [chatConfirmedBooking, setChatConfirmedBooking] = useState<any>(null);
+
+  const activeConfirmedBooking = interactionMode === "chat" ? chatConfirmedBooking : confirmedBooking;
 
   // Sort/Filter states inside interactive Trip Card
   const [sortCriteria, setSortCriteria] = useState<"price" | "time">("price");
@@ -198,26 +227,31 @@ export default function AIAssistantPage() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
 
-  const [input, setInput] = useState("");
+  const [chatInput, setChatInput] = useState("");
+  const [uiInput, setUiInput] = useState("");
 
-  // Create transport that sends mode along with messages
-  const chatTransportRef = useRef(
+  const input = interactionMode === "chat" ? chatInput : uiInput;
+  const setInput = interactionMode === "chat" ? setChatInput : setUiInput;
+
+  // Chat agent transport (mode: "chat")
+  const chatTransport = useRef(
     new DefaultChatTransport({
       api: "/api/ai/chat",
       body: { mode: "chat" },
     })
   );
 
-  // Update transport when mode changes
-  useEffect(() => {
-    chatTransportRef.current = new DefaultChatTransport({
+  // UI agent transport (mode: "ui")
+  const uiTransport = useRef(
+    new DefaultChatTransport({
       api: "/api/ai/chat",
-      body: { mode: interactionMode },
-    });
-  }, [interactionMode]);
+      body: { mode: "ui" },
+    })
+  );
 
-  const { messages, sendMessage, setMessages, status } = useChat({
-    transport: chatTransportRef.current,
+  // Chat agent hook
+  const chatAgent = useChat({
+    transport: chatTransport.current,
     messages: [
       {
         id: "welcome",
@@ -234,12 +268,36 @@ export default function AIAssistantPage() {
       toast.error(err.message || "Failed to query AI assistant.");
     },
     onFinish: () => {
-      // Auto scroll to bottom
       scrollToBottom();
     }
   });
 
-  const aiLoading = status === "submitted" || status === "streaming";
+  // UI agent hook
+  const uiAgent = useChat({
+    transport: uiTransport.current,
+    messages: [
+      {
+        id: "welcome",
+        role: "assistant",
+        parts: [
+          {
+            type: "text",
+            text: "Hi! I am **Sofor AI**, your smart ticketing assistant. 🚌\n\nI can help you search, compare, and book bus tickets instantly. Where would you like to travel? (e.g. *\"bogra to dhaka tomorrow\"*)"
+          }
+        ]
+      }
+    ] as UIMessage[],
+    onError: (err) => {
+      toast.error(err.message || "Failed to query AI assistant.");
+    },
+    onFinish: () => {
+      scrollToBottom();
+    }
+  });
+
+  const activeAgent = interactionMode === "chat" ? chatAgent : uiAgent;
+
+  const aiLoading = activeAgent.status === "submitted" || activeAgent.status === "streaming";
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setInput(e.target.value);
@@ -248,7 +306,7 @@ export default function AIAssistantPage() {
   const handleSubmit = (e?: React.FormEvent<HTMLFormElement>) => {
     e?.preventDefault();
     if (!input.trim()) return;
-    sendMessage({ text: input });
+    activeAgent.sendMessage({ text: input });
     setInput("");
   };
 
@@ -264,7 +322,7 @@ export default function AIAssistantPage() {
   useEffect(() => {
     if (interactionMode !== "ui") return; // Only auto-advance steps in UI mode
 
-    const lastMessage = messages[messages.length - 1];
+    const lastMessage = uiAgent.messages[uiAgent.messages.length - 1];
     if (lastMessage?.role === "assistant" && lastMessage.parts) {
       for (const part of lastMessage.parts) {
         const p = part as any;
@@ -278,13 +336,13 @@ export default function AIAssistantPage() {
         }
       }
     }
-  }, [messages, tripsList.length, interactionMode]);
+  }, [uiAgent.messages, tripsList.length, interactionMode]);
 
   // Chat-mode: detect create_booking tool results for payment polling
   useEffect(() => {
     if (interactionMode !== "chat") return;
 
-    const lastMessage = messages[messages.length - 1];
+    const lastMessage = chatAgent.messages[chatAgent.messages.length - 1];
     if (lastMessage?.role === "assistant" && lastMessage.parts) {
       for (const part of lastMessage.parts) {
         const p = part as any;
@@ -301,7 +359,7 @@ export default function AIAssistantPage() {
         }
       }
     }
-  }, [messages, interactionMode, chatPaymentPolling, chatPaymentId]);
+  }, [chatAgent.messages, interactionMode, chatPaymentPolling, chatPaymentId]);
 
   const scrollToBottom = () => {
     setTimeout(() => {
@@ -316,11 +374,11 @@ export default function AIAssistantPage() {
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages, currentStep]);
+  }, [activeAgent.messages, currentStep]);
 
   // Handle click on quick chip buttons
   const handleQuickChip = (text: string) => {
-    sendMessage({ text });
+    activeAgent.sendMessage({ text });
   };
 
   // Filter and sort trips dynamically
@@ -564,7 +622,7 @@ export default function AIAssistantPage() {
             const bookingRes = await apiClient.get(`/api/booking/${bookingId}`);
 
             if (bookingRes.data.success) {
-              setConfirmedBooking(bookingRes.data.data);
+              setChatConfirmedBooking(bookingRes.data.data);
               toast.success("🎉 Ticket booking confirmed!");
             }
           } else if (status === "failed" || status === "cancelled") {
@@ -581,27 +639,27 @@ export default function AIAssistantPage() {
 
   // Download PDF ticket
   const handleDownloadTicket = async () => {
-    if (!confirmedBooking) return;
+    if (!activeConfirmedBooking) return;
     try {
-      const seatNames = confirmedBooking.seats?.map((s: any) => s.seatName) || [confirmedBooking.seat?.seatName];
+      const seatNames = activeConfirmedBooking.seats?.map((s: any) => s.seatName) || [activeConfirmedBooking.seat?.seatName];
       const seatLabel = seatNames.join(", ");
 
       const ticketData = {
-        bookingNumber: confirmedBooking.bookingNumber,
-        passengerName: confirmedBooking.passengerName,
-        passengerPhone: confirmedBooking.passengerPhone,
-        passengerEmail: confirmedBooking.passengerEmail || "N/A",
-        tripHeading: confirmedBooking.trip?.heading || activeTrip?.heading || "Bogra → Dhaka",
-        departureDate: confirmedBooking.trip?.departureDateTime?.split("T")[0] || activeTrip?.departure_date || "N/A",
-        departureTime: confirmedBooking.trip?.departureDateTime?.split("T")[1]?.substring(0, 5) || activeTrip?.departure_time || "N/A",
-        arrivalDate: confirmedBooking.trip?.arrivalDateTime?.split("T")[0] || activeTrip?.arrival_date || "N/A",
-        arrivalTime: confirmedBooking.trip?.arrivalDateTime?.split("T")[1]?.substring(0, 5) || activeTrip?.arrival_time || "N/A",
-        busName: confirmedBooking.bus?.name || activeTrip?.bus_info.name || "Bus",
+        bookingNumber: activeConfirmedBooking.bookingNumber,
+        passengerName: activeConfirmedBooking.passengerName,
+        passengerPhone: activeConfirmedBooking.passengerPhone,
+        passengerEmail: activeConfirmedBooking.passengerEmail || "N/A",
+        tripHeading: activeConfirmedBooking.trip?.heading || activeTrip?.heading || "Bogra → Dhaka",
+        departureDate: activeConfirmedBooking.trip?.departureDateTime?.split("T")[0] || activeTrip?.departure_date || "N/A",
+        departureTime: activeConfirmedBooking.trip?.departureDateTime?.split("T")[1]?.substring(0, 5) || activeTrip?.departure_time || "N/A",
+        arrivalDate: activeConfirmedBooking.trip?.arrivalDateTime?.split("T")[0] || activeTrip?.arrival_date || "N/A",
+        arrivalTime: activeConfirmedBooking.trip?.arrivalDateTime?.split("T")[1]?.substring(0, 5) || activeTrip?.arrival_time || "N/A",
+        busName: activeConfirmedBooking.bus?.name || activeTrip?.bus_info.name || "Bus",
         seatNumber: seatLabel,
         seatNumbers: seatNames,
-        boardingPoint: confirmedBooking.boardingPoint?.name || "Bogra Central Terminal",
-        droppingPoint: confirmedBooking.droppingPoint?.name || "Gabtoli Terminal, Dhaka",
-        totalAmount: confirmedBooking.totalAmount,
+        boardingPoint: activeConfirmedBooking.boardingPoint?.name || "Bogra Central Terminal",
+        droppingPoint: activeConfirmedBooking.droppingPoint?.name || "Gabtoli Terminal, Dhaka",
+        totalAmount: activeConfirmedBooking.totalAmount,
         paymentMethod: "bKash",
         status: "Confirmed"
       };
@@ -839,7 +897,7 @@ export default function AIAssistantPage() {
 
           {/* Chat Stream Area */}
           <div ref={chatContainerRef} className="flex-1 overflow-y-auto p-4 md:p-6 space-y-6 bg-slate-50/50">
-            {messages.map((m) => (
+            {activeAgent.messages.map((m) => (
               <div key={m.id} className={`flex gap-3 md:gap-4 ${m.role === "user" ? "flex-row-reverse" : ""}`}>
 
                 {/* Avatar */}
@@ -1035,7 +1093,7 @@ export default function AIAssistantPage() {
             )}
 
             {/* Chat mode: confirmed booking inline card */}
-            {interactionMode === "chat" && confirmedBooking && (
+            {interactionMode === "chat" && chatConfirmedBooking && (
               <div className="flex gap-4 animate-fade-in">
                 <div className="h-8 w-8 rounded-full bg-emerald-600 text-white flex items-center justify-center font-bold text-xs shrink-0">
                   S
@@ -1055,37 +1113,37 @@ export default function AIAssistantPage() {
                     <div className="flex justify-between">
                       <span className="text-slate-400">PNR Code:</span>
                       <span className="font-mono font-bold text-emerald-700 tracking-wider">
-                        {confirmedBooking.bookingNumber}
+                        {chatConfirmedBooking.bookingNumber}
                       </span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-slate-400">Route:</span>
                       <span className="font-semibold text-slate-800">
-                        {confirmedBooking.trip?.heading || activeTrip?.heading}
+                        {chatConfirmedBooking.trip?.heading || activeTrip?.heading}
                       </span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-slate-400">Bus:</span>
                       <span className="font-semibold text-slate-800">
-                        {confirmedBooking.bus?.name || activeTrip?.bus_info.name}
+                        {chatConfirmedBooking.bus?.name || activeTrip?.bus_info.name}
                       </span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-slate-400">Seats:</span>
                       <span className="font-semibold text-slate-800">
-                        {confirmedBooking.seats?.map((s: any) => s.seatName).join(", ") || confirmedBooking.seat?.seatName}
+                        {chatConfirmedBooking.seats?.map((s: any) => s.seatName).join(", ") || chatConfirmedBooking.seat?.seatName}
                       </span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-slate-400">Departure:</span>
                       <span className="font-semibold text-slate-800">
-                        {confirmedBooking.trip?.departureDateTime?.split("T")[0]} at{" "}
-                        {confirmedBooking.trip?.departureDateTime?.split("T")[1]?.substring(0, 5)}
+                        {chatConfirmedBooking.trip?.departureDateTime?.split("T")[0]} at{" "}
+                        {chatConfirmedBooking.trip?.departureDateTime?.split("T")[1]?.substring(0, 5)}
                       </span>
                     </div>
                     <div className="border-t border-slate-100 pt-2 flex justify-between font-bold text-slate-800">
                       <span>Total Paid:</span>
-                      <span className="text-emerald-700">৳{confirmedBooking.totalAmount}</span>
+                      <span className="text-emerald-700">৳{chatConfirmedBooking.totalAmount}</span>
                     </div>
                   </div>
 
