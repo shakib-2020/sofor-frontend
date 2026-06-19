@@ -8,6 +8,7 @@ import {
   useState,
 } from 'react';
 import { useSession } from '@/lib/auth-client';
+import { toast } from 'sonner';
 
 interface AuthUser {
   id: string;
@@ -67,6 +68,20 @@ export function AuthProvider({ children }: AuthProviderProps) {
       setError(null);
     }
   }, [sessionError]);
+
+  // Handle success login toast when redirected back from social login
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get('login') === 'success') {
+        toast.success("Logged in successfully");
+        urlParams.delete('login');
+        const newSearch = urlParams.toString();
+        const newUrl = window.location.pathname + (newSearch ? `?${newSearch}` : '');
+        window.history.replaceState({}, '', newUrl);
+      }
+    }
+  }, []);
 
   const refreshSession = async () => {
     try {

@@ -22,16 +22,15 @@ export default function LoginForm() {
   const callbackUrl = searchParams.get('callbackUrl') || '/';
 
   const signInWithGoogle = async () => {
+    const nextCallbackUrl = callbackUrl.includes('?') 
+      ? `${callbackUrl}&login=success` 
+      : `${callbackUrl}?login=success`;
     const data = await signIn.social({
       provider: "google",
-      callbackURL: callbackUrl,
+      callbackURL: nextCallbackUrl,
     });
     if (data.error) {
       toast.error(data.error.message);
-    }
-    else {
-      toast.success("Logged in successfully");
-      router.push(callbackUrl);
     }
   };
 
