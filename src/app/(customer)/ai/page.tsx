@@ -111,16 +111,24 @@ function renderMarkdown(text: string) {
 function renderTextWithLinks(text: string) {
   if (!text) return null;
 
+  // Convert raw URLs to markdown links first
+  const processedText = text.replace(/(?<!\]\()https?:\/\/[^\s)]+/g, (url) => {
+    if (url.includes("bkash")) {
+      return `[Pay with bKash](${url})`;
+    }
+    return `[Open Link](${url})`;
+  });
+
   // Split text by markdown links: [text](url)
   const linkRegex = /\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g;
   const parts: React.ReactNode[] = [];
   let lastIndex = 0;
   let match;
 
-  while ((match = linkRegex.exec(text)) !== null) {
+  while ((match = linkRegex.exec(processedText)) !== null) {
     // Add text before the link
     if (match.index > lastIndex) {
-      parts.push(...(renderMarkdown(text.substring(lastIndex, match.index)) || []));
+      parts.push(...(renderMarkdown(processedText.substring(lastIndex, match.index)) || []));
     }
 
     // Add the link as a button
@@ -144,11 +152,11 @@ function renderTextWithLinks(text: string) {
   }
 
   // Add remaining text
-  if (lastIndex < text.length) {
-    parts.push(...(renderMarkdown(text.substring(lastIndex)) || []));
+  if (lastIndex < processedText.length) {
+    parts.push(...(renderMarkdown(processedText.substring(lastIndex)) || []));
   }
 
-  return parts.length > 0 ? parts : renderMarkdown(text);
+  return parts.length > 0 ? parts : renderMarkdown(processedText);
 }
 
 export default function AIAssistantPage() {
@@ -282,15 +290,18 @@ export default function AIAssistantPage() {
         const p = part as any;
         if (p.type === "tool-create_booking" && p.state === "output-available") {
           const result = p.output;
-          if (result.success && result.paymentId && !chatPaymentPolling) {
+          if (result.success && result.paymentId && chatPaymentId !== result.paymentId) {
             setChatPaymentId(result.paymentId);
             setChatPaymentPolling(true);
+            if (result.bkashURL) {
+              window.open(result.bkashURL, "_blank");
+            }
             startChatPaymentPolling(result.paymentId);
           }
         }
       }
     }
-  }, [messages, interactionMode, chatPaymentPolling]);
+  }, [messages, interactionMode, chatPaymentPolling, chatPaymentId]);
 
   const scrollToBottom = () => {
     setTimeout(() => {
