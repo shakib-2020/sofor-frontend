@@ -40,6 +40,7 @@ export default function Page() {
     trips: null as number | null | string,
     bookings: null as number | null | string,
     totalSales: null as number | null | string,
+    totalCommission: null as number | null | string,
   });
 
   useEffect(() => {
@@ -86,11 +87,13 @@ export default function Page() {
           apiClient.get('/api/booking/stats')
             .then(res => [
               { key: 'bookings', value: res.data?.totalBookings ?? 0 },
-              { key: 'totalSales', value: res.data?.totalSales ?? 0 }
+              { key: 'totalSales', value: res.data?.totalSales ?? 0 },
+              { key: 'totalCommission', value: res.data?.totalCommission ?? 0 }
             ])
             .catch(() => [
               { key: 'bookings', value: 'Error' },
-              { key: 'totalSales', value: 'Error' }
+              { key: 'totalSales', value: 'Error' },
+              { key: 'totalCommission', value: 'Error' }
             ])
         );
 
@@ -217,6 +220,16 @@ export default function Page() {
         <DashboardCard
           title="Total Sales"
           count={counts.totalSales !== null && counts.totalSales !== 'Error' ? `৳${counts.totalSales}` : formatCount(counts.totalSales)}
+          icon={CircleDollarSign}
+          actions={[
+            { label: 'View Bookings', href: '/dashboard/booking', variant: 'secondary' },
+          ]}
+        />
+
+        {/* Total Commission Section */}
+        <DashboardCard
+          title={['counterOwner', 'counterStaff'].includes(role) ? "Total Commission Earned" : "Total Commission Paid"}
+          count={counts.totalCommission !== null && counts.totalCommission !== 'Error' ? `৳${counts.totalCommission}` : formatCount(counts.totalCommission)}
           icon={CircleDollarSign}
           actions={[
             { label: 'View Bookings', href: '/dashboard/booking', variant: 'secondary' },

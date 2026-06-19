@@ -24,6 +24,7 @@ interface Booking {
   passengerPhone: string;
   passengerEmail: string;
   totalAmount: string;
+  commissionAmount?: string;
   status: string;
   bookingDate: string;
   seats: Array<{ seatName: string }>;
@@ -126,6 +127,7 @@ export default function BookingsManagementPage() {
                   <TableHead>Trip / Bus</TableHead>
                   <TableHead>Seats</TableHead>
                   <TableHead>Fare</TableHead>
+                  <TableHead>Commission</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
@@ -144,6 +146,7 @@ export default function BookingsManagementPage() {
                       {booking.seats?.map(s => s.seatName).join(', ') || 'N/A'}
                     </TableCell>
                     <TableCell className="font-semibold text-green-600">৳{booking.totalAmount}</TableCell>
+                    <TableCell className="font-semibold text-blue-600">৳{booking.commissionAmount || (Number(booking.totalAmount) * 0.10).toFixed(0)}</TableCell>
                     <TableCell>{getStatusBadge(booking.status)}</TableCell>
                     <TableCell className="text-right whitespace-nowrap">
                       <div className="inline-flex gap-2">
@@ -185,7 +188,7 @@ export default function BookingsManagementPage() {
                 ))}
                 {bookings.length === 0 && (
                   <TableRow>
-                    <TableCell colSpan={8} className="text-center py-8 text-gray-500">
+                    <TableCell colSpan={9} className="text-center py-8 text-gray-500">
                       No bookings found.
                     </TableCell>
                   </TableRow>
