@@ -1056,6 +1056,101 @@ export default function AIAssistantPage() {
                     return null;
                   })}
 
+                  {/* === CHAT MODE ONLY: Render inline payment status / confirmed card in sequence === */}
+                  {interactionMode === "chat" && m.parts?.map((part) => {
+                    const p = part as any;
+                    if (p.type === "tool-create_booking" && p.state === "output-available") {
+                      const result = p.output;
+                      const isThisPolling = chatPaymentPolling && chatPaymentId === result.paymentId;
+                      const isThisConfirmed = chatConfirmedBooking && chatConfirmedBooking.id === result.bookingId;
+
+                      return (
+                        <React.Fragment key={p.toolCallId}>
+                          {isThisPolling && (
+                            <div className="bg-amber-50 border border-amber-200 rounded-2xl px-5 py-4 space-y-2 max-w-[400px] mt-1 shadow-xs">
+                              <div className="flex items-center gap-2">
+                                <Loader2 className="h-4 w-4 animate-spin text-amber-600" />
+                                <span className="text-sm font-bold text-amber-800">Waiting for payment...</span>
+                              </div>
+                              <p className="text-xs text-amber-600">
+                                Please complete the bKash payment in the tab that was opened. I'll confirm your ticket once it's done.
+                              </p>
+                            </div>
+                          )}
+
+                          {isThisConfirmed && (
+                            <div className="w-full max-w-[420px] bg-emerald-50 border border-emerald-200 rounded-2xl p-5 shadow-md space-y-4 mt-1">
+                              <div className="flex items-center gap-2">
+                                <div className="h-10 w-10 bg-emerald-600 rounded-full flex items-center justify-center text-white shadow-md shadow-emerald-600/20">
+                                  <Check className="h-5 w-5" />
+                                </div>
+                                <div>
+                                  <h4 className="font-black text-emerald-800 text-sm">Ticket Confirmed!</h4>
+                                  <p className="text-[10px] text-emerald-600">Your reservation is complete 🎉</p>
+                                </div>
+                              </div>
+
+                              <div className="bg-white border border-emerald-100 rounded-xl p-3.5 text-xs space-y-2 shadow-sm">
+                                <div className="flex justify-between">
+                                  <span className="text-slate-400">PNR Code:</span>
+                                  <span className="font-mono font-bold text-emerald-700 tracking-wider">
+                                    {chatConfirmedBooking.bookingNumber}
+                                  </span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span className="text-slate-400">Route:</span>
+                                  <span className="font-semibold text-slate-800">
+                                    {chatConfirmedBooking.trip?.heading || activeTrip?.heading}
+                                  </span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span className="text-slate-400">Bus:</span>
+                                  <span className="font-semibold text-slate-800">
+                                    {chatConfirmedBooking.bus?.name || activeTrip?.bus_info.name}
+                                  </span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span className="text-slate-400">Seats:</span>
+                                  <span className="font-semibold text-slate-800">
+                                    {chatConfirmedBooking.seats?.map((s: any) => s.seatName).join(", ") || chatConfirmedBooking.seat?.seatName}
+                                  </span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span className="text-slate-400">Departure:</span>
+                                  <span className="font-semibold text-slate-800">
+                                    {chatConfirmedBooking.trip?.departureDateTime?.split("T")[0]} at{" "}
+                                    {chatConfirmedBooking.trip?.departureDateTime?.split("T")[1]?.substring(0, 5)}
+                                  </span>
+                                </div>
+                                <div className="border-t border-slate-100 pt-2 flex justify-between font-bold text-slate-800">
+                                  <span>Total Paid:</span>
+                                  <span className="text-emerald-700">৳{chatConfirmedBooking.totalAmount}</span>
+                                </div>
+                              </div>
+
+                              <div className="grid grid-cols-2 gap-2">
+                                <Button
+                                  onClick={handleDownloadTicket}
+                                  className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs h-9 shadow-md gap-1"
+                                >
+                                  <Download className="h-3.5 w-3.5" /> Download PDF
+                                </Button>
+                                <Button
+                                  variant="outline"
+                                  onClick={handleNewSearch}
+                                  className="border-emerald-300 text-emerald-700 bg-white hover:bg-emerald-50/50 font-bold text-xs h-9"
+                                >
+                                  New Search
+                                </Button>
+                              </div>
+                            </div>
+                          )}
+                        </React.Fragment>
+                      );
+                    }
+                    return null;
+                  })}
+
                 </div>
               </div>
             ))}
@@ -1074,97 +1169,7 @@ export default function AIAssistantPage() {
               </div>
             )}
 
-            {/* Chat mode: payment polling indicator */}
-            {interactionMode === "chat" && chatPaymentPolling && (
-              <div className="flex gap-4 animate-fade-in">
-                <div className="h-8 w-8 rounded-full bg-emerald-600 text-white flex items-center justify-center font-bold text-xs shrink-0">
-                  S
-                </div>
-                <div className="bg-amber-50 border border-amber-200 rounded-2xl px-5 py-4 space-y-2 max-w-[400px]">
-                  <div className="flex items-center gap-2">
-                    <Loader2 className="h-4 w-4 animate-spin text-amber-600" />
-                    <span className="text-sm font-bold text-amber-800">Waiting for payment...</span>
-                  </div>
-                  <p className="text-xs text-amber-600">
-                    Please complete the bKash payment in the tab that was opened. I'll confirm your ticket once it's done.
-                  </p>
-                </div>
-              </div>
-            )}
 
-            {/* Chat mode: confirmed booking inline card */}
-            {interactionMode === "chat" && chatConfirmedBooking && (
-              <div className="flex gap-4 animate-fade-in">
-                <div className="h-8 w-8 rounded-full bg-emerald-600 text-white flex items-center justify-center font-bold text-xs shrink-0">
-                  S
-                </div>
-                <div className="w-full max-w-[420px] bg-emerald-50 border border-emerald-200 rounded-2xl p-5 shadow-lg space-y-4">
-                  <div className="flex items-center gap-2">
-                    <div className="h-10 w-10 bg-emerald-600 rounded-full flex items-center justify-center text-white shadow-md shadow-emerald-600/20">
-                      <Check className="h-5 w-5" />
-                    </div>
-                    <div>
-                      <h4 className="font-black text-emerald-800 text-sm">Ticket Confirmed!</h4>
-                      <p className="text-[10px] text-emerald-600">Your reservation is complete 🎉</p>
-                    </div>
-                  </div>
-
-                  <div className="bg-white border border-emerald-100 rounded-xl p-3.5 text-xs space-y-2 shadow-sm">
-                    <div className="flex justify-between">
-                      <span className="text-slate-400">PNR Code:</span>
-                      <span className="font-mono font-bold text-emerald-700 tracking-wider">
-                        {chatConfirmedBooking.bookingNumber}
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-slate-400">Route:</span>
-                      <span className="font-semibold text-slate-800">
-                        {chatConfirmedBooking.trip?.heading || activeTrip?.heading}
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-slate-400">Bus:</span>
-                      <span className="font-semibold text-slate-800">
-                        {chatConfirmedBooking.bus?.name || activeTrip?.bus_info.name}
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-slate-400">Seats:</span>
-                      <span className="font-semibold text-slate-800">
-                        {chatConfirmedBooking.seats?.map((s: any) => s.seatName).join(", ") || chatConfirmedBooking.seat?.seatName}
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-slate-400">Departure:</span>
-                      <span className="font-semibold text-slate-800">
-                        {chatConfirmedBooking.trip?.departureDateTime?.split("T")[0]} at{" "}
-                        {chatConfirmedBooking.trip?.departureDateTime?.split("T")[1]?.substring(0, 5)}
-                      </span>
-                    </div>
-                    <div className="border-t border-slate-100 pt-2 flex justify-between font-bold text-slate-800">
-                      <span>Total Paid:</span>
-                      <span className="text-emerald-700">৳{chatConfirmedBooking.totalAmount}</span>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-2">
-                    <Button
-                      onClick={handleDownloadTicket}
-                      className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs h-9 shadow-md gap-1"
-                    >
-                      <Download className="h-3.5 w-3.5" /> Download PDF
-                    </Button>
-                    <Button
-                      variant="outline"
-                      onClick={handleNewSearch}
-                      className="border-emerald-300 text-emerald-700 bg-white hover:bg-emerald-50/50 font-bold text-xs h-9"
-                    >
-                      New Search
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            )}
 
             {/* === UI MODE ONLY: Step 3 Seat Selection Card === */}
             {interactionMode === "ui" && currentStep === 3 && activeTrip && (
