@@ -23,7 +23,7 @@ function PaymentFailedContent() {
 
   useEffect(() => {
     const paymentID = searchParams.get('paymentID');
-    
+
     if (paymentID) {
       fetchFailureDetails(paymentID);
     } else {
@@ -35,7 +35,7 @@ function PaymentFailedContent() {
   const fetchFailureDetails = async (paymentID: string) => {
     try {
       const response = await apiClient.get(`/api/payment/status/${paymentID}`);
-      
+
       setFailureDetails({
         paymentID,
         reason: response.data.data?.statusMessage || 'Payment failed',
@@ -55,12 +55,12 @@ function PaymentFailedContent() {
 
   const handleRetryPayment = () => {
     // Go back to ticket booking to retry
-    router.push('/ticket');
+    router.push('/');
     toast.info('Please select your seats again to retry payment');
   };
 
   const handleBackToBooking = () => {
-    router.push('/ticket');
+    router.push('/');
   };
 
   const handleContactSupport = () => {
@@ -90,7 +90,7 @@ function PaymentFailedContent() {
             Payment Failed
           </CardTitle>
         </CardHeader>
-        
+
         <CardContent className="text-center space-y-6">
           <div className="bg-red-50 border border-red-200 rounded-lg p-4">
             <h3 className="text-lg font-semibold text-red-800 mb-2">
@@ -100,7 +100,7 @@ function PaymentFailedContent() {
               Don't worry, no amount has been charged from your account.
             </p>
           </div>
-          
+
           {failureDetails && (
             <div className="bg-gray-100 p-4 rounded-lg text-left">
               <h4 className="font-semibold mb-3">Failure Details:</h4>
@@ -130,7 +130,7 @@ function PaymentFailedContent() {
               </div>
             </div>
           )}
-          
+
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-left">
             <h4 className="font-semibold text-blue-800 mb-2">Common reasons for payment failure:</h4>
             <ul className="text-sm text-blue-700 space-y-1">
@@ -141,18 +141,18 @@ function PaymentFailedContent() {
               <li>• Daily transaction limit exceeded</li>
             </ul>
           </div>
-          
+
           <div className="space-y-3">
-            <Button 
+            <Button
               onClick={handleRetryPayment}
               className="w-full bg-blue-500 hover:bg-blue-600"
             >
               <RefreshCw className="mr-2 h-4 w-4" />
               Try Again
             </Button>
-            
+
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <Button 
+              <Button
                 onClick={handleBackToBooking}
                 variant="outline"
                 className="w-full"
@@ -160,7 +160,7 @@ function PaymentFailedContent() {
                 <ArrowLeft className="mr-2 h-4 w-4" />
                 Back to Booking
               </Button>
-              <Button 
+              <Button
                 onClick={handleContactSupport}
                 variant="outline"
                 className="w-full"
@@ -170,7 +170,7 @@ function PaymentFailedContent() {
               </Button>
             </div>
           </div>
-          
+
           <div className="text-sm text-gray-500 border-t pt-4">
             <p>
               💡 <strong>Tip:</strong> Make sure you have sufficient balance in your bKash account before retrying.

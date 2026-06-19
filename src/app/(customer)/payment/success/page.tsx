@@ -102,7 +102,7 @@ function PaymentSuccessContent() {
   };
 
   const handleNewBooking = () => {
-    router.push('/ticket');
+    router.push('/');
   };
 
   const getSeatNames = () => {

@@ -21,7 +21,7 @@ function PaymentCancelledContent() {
 
   useEffect(() => {
     const paymentID = searchParams.get('paymentID');
-    
+
     if (paymentID) {
       fetchCancellationDetails(paymentID);
     } else {
@@ -33,7 +33,7 @@ function PaymentCancelledContent() {
   const fetchCancellationDetails = async (paymentID: string) => {
     try {
       const response = await apiClient.get(`/api/payment/status/${paymentID}`);
-      
+
       setCancellationDetails({
         paymentID,
         amount: response.data.data?.amount
@@ -50,12 +50,12 @@ function PaymentCancelledContent() {
 
   const handleRetryPayment = () => {
     // Go back to ticket booking to retry
-    router.push('/ticket');
+    router.push('/');
     toast.info('Please select your seats again to retry payment');
   };
 
   const handleBackToBooking = () => {
-    router.push('/ticket');
+    router.push('/');
   };
 
   if (loading) {
@@ -80,7 +80,7 @@ function PaymentCancelledContent() {
             Payment Cancelled
           </CardTitle>
         </CardHeader>
-        
+
         <CardContent className="text-center space-y-6">
           <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
             <h3 className="text-lg font-semibold text-yellow-800 mb-2">
@@ -90,7 +90,7 @@ function PaymentCancelledContent() {
               You cancelled the payment process. No amount has been charged from your account.
             </p>
           </div>
-          
+
           {cancellationDetails && (
             <div className="bg-gray-100 p-4 rounded-lg text-left">
               <h4 className="font-semibold mb-3">Cancellation Details:</h4>
@@ -112,7 +112,7 @@ function PaymentCancelledContent() {
               </div>
             </div>
           )}
-          
+
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-left">
             <h4 className="font-semibold text-blue-800 mb-2">What happens next?</h4>
             <ul className="text-sm text-blue-700 space-y-1">
@@ -122,17 +122,17 @@ function PaymentCancelledContent() {
               <li>• Your booking attempt has been cancelled</li>
             </ul>
           </div>
-          
+
           <div className="space-y-3">
-            <Button 
+            <Button
               onClick={handleRetryPayment}
               className="w-full bg-blue-500 hover:bg-blue-600"
             >
               <RefreshCw className="mr-2 h-4 w-4" />
               Try Booking Again
             </Button>
-            
-            <Button 
+
+            <Button
               onClick={handleBackToBooking}
               variant="outline"
               className="w-full"
@@ -141,7 +141,7 @@ function PaymentCancelledContent() {
               Back to Ticket Booking
             </Button>
           </div>
-          
+
           <div className="text-sm text-gray-500 border-t pt-4">
             <p>
               💡 <strong>Note:</strong> You can always come back and book tickets whenever you're ready.

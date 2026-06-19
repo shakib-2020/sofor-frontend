@@ -330,7 +330,7 @@ export default function Home() {
             <p className="mt-2 text-gray-600">Quickly book tickets for our most requested destinations</p>
           </div>
           <Link
-            href="/ticket"
+            href="/"
             className="group flex items-center gap-1.5 text-sm font-semibold text-emerald-600 hover:text-emerald-700 transition-colors"
           >
             View All Routes

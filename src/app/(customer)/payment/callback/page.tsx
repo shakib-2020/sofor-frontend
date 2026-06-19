@@ -272,7 +272,7 @@ function PaymentCallbackContent() {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => router.push('/ticket')}
+                  onClick={() => router.push('/')}
                 >
                   Back to Booking
                 </Button>
